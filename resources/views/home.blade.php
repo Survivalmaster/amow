@@ -110,25 +110,10 @@
             }
 
             .rank-mark {
-                position: relative;
-                width: 4rem;
-                height: 4.4rem;
+                width: clamp(6.4rem, 13vw, 8.8rem);
+                height: auto;
                 flex: 0 0 auto;
-                clip-path: polygon(50% 0%, 100% 70%, 50% 100%, 0% 70%);
-                background: linear-gradient(180deg, var(--red) 0 34%, var(--gold) 34% 63%, var(--blue) 63% 100%);
-                border: 4px solid #0a0f08;
-                box-shadow: inset 0 0 0 3px rgba(243, 244, 223, 0.12);
-            }
-
-            .rank-mark::after {
-                content: "";
-                position: absolute;
-                inset: auto 12% -0.95rem;
-                height: 1.4rem;
-                border-radius: 999px;
-                background: linear-gradient(180deg, #6a983e, #436725);
-                border: 3px solid #091008;
-                box-shadow: 0 10px 18px rgba(0, 0, 0, 0.28);
+                filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
             }
 
             .brand-copy strong,
@@ -457,7 +442,7 @@
 
                 .rank-mark {
                     width: 3.4rem;
-                    height: 3.8rem;
+                    height: auto;
                 }
 
                 h1 {
@@ -474,7 +459,14 @@
         <div class="shell">
             <header class="topbar">
                 <div class="brand-wrap">
-                    <div class="rank-mark" aria-hidden="true"></div>
+                    <svg class="rank-mark" viewBox="0 0 210 180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M105 8L145 95H65L105 8Z" fill="#b92a1a" stroke="#0a0f08" stroke-width="6" />
+                        <path d="M105 38L134 102H76L105 38Z" fill="#b69d2a" stroke="#0a0f08" stroke-width="6" />
+                        <path d="M105 67L123 108H87L105 67Z" fill="#1946bb" stroke="#0a0f08" stroke-width="6" />
+                        <path d="M24 116L186 116L178 152C153 166 125 172 105 172C85 172 57 166 32 152L24 116Z" fill="#557d32" stroke="#0a0f08" stroke-width="6" />
+                        <path d="M18 118C41 129 72 136 105 136C138 136 169 129 192 118" fill="none" stroke="#7eb451" stroke-width="8" stroke-linecap="round" />
+                        <text x="105" y="148" text-anchor="middle" fill="#f4f0db" font-size="24" font-family="Teko, sans-serif" letter-spacing="2">AMOW</text>
+                    </svg>
                     <div class="brand-copy">
                         <strong>Army Men of War</strong>
                         <span>Command lobby for the next wave of online battles.</span>
@@ -552,7 +544,7 @@
                     <div class="panel-card" id="briefing">
                         <p class="section-label">Mission Brief</p>
                         <p class="small-copy">
-                            The homepage now reads like a multiplayer staging area instead of a Laravel placeholder.
+                            The homepage now reads like a multiplayer staging area instead of a generic placeholder.
                             It gives first-time visitors a stronger world, stronger CTAs, and a clear pre-login purpose.
                         </p>
                     </div>
