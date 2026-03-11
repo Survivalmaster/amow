@@ -266,7 +266,7 @@
 
                     <div class="card">
                         <p class="label">Next Step</p>
-                        <div>Start the local server and open the root URL to confirm the page renders in the browser.</div>
+                        <div>Start the local TEST and open the root URL to confirm the page renders in the browser.</div>
                     </div>
                 </aside>
             </main>
