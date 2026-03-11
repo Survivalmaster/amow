@@ -116,6 +116,12 @@
                 filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
             }
 
+            .rank-mark img {
+                display: block;
+                width: 100%;
+                height: auto;
+            }
+
             .brand-copy strong,
             .eyebrow,
             .section-label,
@@ -139,8 +145,7 @@
             .top-links,
             .subcopy,
             .small-copy,
-            .card p,
-            .footer {
+            .card p {
                 color: var(--muted);
             }
 
@@ -386,12 +391,6 @@
                 line-height: 1;
             }
 
-            .footer {
-                margin-top: 1rem;
-                text-align: center;
-                font-size: 0.95rem;
-            }
-
             @keyframes rise {
                 from {
                     opacity: 0;
@@ -459,14 +458,9 @@
         <div class="shell">
             <header class="topbar">
                 <div class="brand-wrap">
-                    <svg class="rank-mark" viewBox="0 0 210 180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M105 8L145 95H65L105 8Z" fill="#b92a1a" stroke="#0a0f08" stroke-width="6" />
-                        <path d="M105 38L134 102H76L105 38Z" fill="#b69d2a" stroke="#0a0f08" stroke-width="6" />
-                        <path d="M105 67L123 108H87L105 67Z" fill="#1946bb" stroke="#0a0f08" stroke-width="6" />
-                        <path d="M24 116L186 116L178 152C153 166 125 172 105 172C85 172 57 166 32 152L24 116Z" fill="#557d32" stroke="#0a0f08" stroke-width="6" />
-                        <path d="M18 118C41 129 72 136 105 136C138 136 169 129 192 118" fill="none" stroke="#7eb451" stroke-width="8" stroke-linecap="round" />
-                        <text x="105" y="148" text-anchor="middle" fill="#f4f0db" font-size="24" font-family="Teko, sans-serif" letter-spacing="2">AMOW</text>
-                    </svg>
+                    <div class="rank-mark" aria-hidden="true">
+                        <img src="{{ asset('Images/amowog.png') }}" alt="">
+                    </div>
                     <div class="brand-copy">
                         <strong>Army Men of War</strong>
                         <span>Command lobby for the next wave of online battles.</span>
@@ -599,8 +593,6 @@
                     </div>
                 </article>
             </section>
-
-            <p class="footer">Public entry screen for {{ config('app.name', 'Army Men of War') }} on {{ now()->format('j M Y') }}.</p>
         </div>
     </body>
 </html>
