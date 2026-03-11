@@ -459,7 +459,7 @@
             <header class="topbar">
                 <div class="brand-wrap">
                     <div class="rank-mark" aria-hidden="true">
-                        <img src="{{ asset('Images/amowog.png') }}" alt="">
+                        <img src="{{ asset('images/amowog.png') }}" alt="Army Men of War logo">
                     </div>
                     <div class="brand-copy">
                         <strong>Army Men of War</strong>
