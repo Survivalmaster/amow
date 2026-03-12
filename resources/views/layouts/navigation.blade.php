@@ -35,21 +35,15 @@
 
 <nav x-data="{ open: false }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
     <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:hidden">
-        <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-            <img src="{{ asset('images/amowog.png') }}" alt="Army Men of War" class="h-auto w-full max-w-[8rem] object-contain" />
-        </a>
+        <a href="{{ route('dashboard') }}" class="font-['Teko'] text-3xl uppercase tracking-[0.16em] text-[#f4ecd0]">AMOW</a>
 
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
     </div>
 
     <div class="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:justify-between lg:px-6 lg:py-8">
         <div class="flex h-full flex-col">
-            <a href="{{ route('dashboard') }}" class="mx-auto block text-center">
-                <img src="{{ asset('images/amowog.png') }}" alt="Army Men of War" class="mx-auto h-auto w-full max-w-[10.5rem] object-contain" />
-            </a>
-
             @if ($navCharacter)
-                <div class="mt-7 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 shadow-xl shadow-black/25">
+                <div class="rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 shadow-xl shadow-black/25">
                     <div class="flex items-center gap-3">
                         <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
                             ?
@@ -57,7 +51,7 @@
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
                             <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
-                            <div class="mt-1.5 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
+                            <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
                                     {{ $healthPoints }}/100
@@ -66,10 +60,10 @@
                                     <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
                                     {{ $armorPoints }}
                                 </span>
-                            </div>
-                            <div class="mt-1 inline-flex items-center gap-1.5 whitespace-nowrap text-[12px] font-semibold text-[#f4ecd0]">
-                                <i class="fa-solid fa-coins text-[#c2a84f]"></i>
-                                <span class="min-w-[3.5rem]">{{ $formattedCredits }}</span>
+                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-[#f4ecd0]">
+                                    <i class="fa-solid fa-coins text-[#c2a84f]"></i>
+                                    <span class="min-w-[3.5rem]">{{ $formattedCredits }}</span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -126,7 +120,7 @@
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
                             <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
-                            <div class="mt-1.5 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
+                            <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
                                     <span>{{ $healthPoints }}/100</span>
@@ -135,10 +129,10 @@
                                     <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
                                     <span>{{ $armorPoints }}</span>
                                 </span>
-                            </div>
-                            <div class="mt-1 inline-flex items-center gap-1.5 whitespace-nowrap text-[12px] font-semibold text-[#f4ecd0]">
-                                <i class="fa-solid fa-coins text-[#c2a84f]"></i>
-                                <span class="min-w-[3.5rem]">{{ $formattedCredits }}</span>
+                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-[#f4ecd0]">
+                                    <i class="fa-solid fa-coins text-[#c2a84f]"></i>
+                                    <span class="min-w-[3.5rem]">{{ $formattedCredits }}</span>
+                                </span>
                             </div>
                         </div>
                     </div>
