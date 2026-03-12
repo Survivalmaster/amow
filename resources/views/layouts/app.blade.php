@@ -20,7 +20,7 @@
     </head>
     <body class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]">
         <div class="min-h-screen bg-[rgba(4,8,6,0.35)]">
-            <div class="lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
+            <div class="lg:grid lg:grid-cols-[320px_minmax(0,1fr)]">
                 @include('layouts.navigation')
 
                 <div class="min-w-0">
