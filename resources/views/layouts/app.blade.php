@@ -16,7 +16,7 @@
             <script src="https://cdn.tailwindcss.com"></script>
         @endif
     </head>
-    <body class="font-sans antialiased">
+    <body class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]">
         <div class="min-h-screen bg-[rgba(4,8,6,0.35)]">
             @include('layouts.navigation')
 

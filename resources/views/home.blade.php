@@ -13,7 +13,7 @@
             <script src="https://cdn.tailwindcss.com"></script>
         @endif
     </head>
-    <body class="min-h-screen bg-[#07100c] font-sans text-[#f4ecd0]">
+    <body class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.18),_transparent_26%),linear-gradient(180deg,_rgba(7,16,12,0.5),_rgba(2,6,4,0.95)),linear-gradient(180deg,_#0f1b15_0%,_#07100c_60%,_#030705_100%)] font-sans text-[#f4ecd0]">
         <div class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.18),_transparent_26%),linear-gradient(180deg,_rgba(7,16,12,0.5),_rgba(2,6,4,0.95)),linear-gradient(180deg,_#0f1b15_0%,_#07100c_60%,_#030705_100%)]">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                 <header class="rounded-[2rem] border border-white/10 bg-white/5 px-6 py-5 shadow-2xl shadow-black/30 backdrop-blur">
