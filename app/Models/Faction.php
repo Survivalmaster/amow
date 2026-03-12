@@ -24,4 +24,9 @@ class Faction extends Model
     {
         return $this->hasMany(City::class);
     }
+
+    public function mapMarkers(): HasMany
+    {
+        return $this->hasMany(MapMarker::class);
+    }
 }

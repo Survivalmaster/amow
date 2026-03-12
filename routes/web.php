@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CityAdminController;
 use App\Http\Controllers\Admin\FactionAdminController;
 use App\Http\Controllers\Admin\ItemAdminController;
 use App\Http\Controllers\Admin\LocationAdminController;
+use App\Http\Controllers\Admin\MapMarkerAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CityController;
@@ -68,6 +69,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/items', [ItemAdminController::class, 'index'])->name('items.index');
         Route::post('/items', [ItemAdminController::class, 'store'])->name('items.store');
         Route::patch('/items/{item}', [ItemAdminController::class, 'update'])->name('items.update');
+        Route::get('/map-markers', [MapMarkerAdminController::class, 'index'])->name('map-markers.index');
+        Route::post('/map-markers', [MapMarkerAdminController::class, 'store'])->name('map-markers.store');
+        Route::patch('/map-markers/{mapMarker}', [MapMarkerAdminController::class, 'update'])->name('map-markers.update');
+        Route::delete('/map-markers/{mapMarker}', [MapMarkerAdminController::class, 'destroy'])->name('map-markers.destroy');
     });
 });
 

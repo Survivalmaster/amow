@@ -6,4 +6,5 @@
     <a href="{{ route('admin.cities.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.cities.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Cities</a>
     <a href="{{ route('admin.locations.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.locations.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Locations</a>
     <a href="{{ route('admin.items.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.items.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Items</a>
+    <a href="{{ route('admin.map-markers.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.map-markers.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Map Markers</a>
 </nav>
