@@ -43,7 +43,7 @@ class GameController extends Controller
 
         return view('game.lobby', [
             'character' => $character,
-            'cities' => $character->faction->cities,
+            'cities' => $character->faction->cities->sortBy('name')->values(),
             'companies' => Company::query()->orderByDesc('current_price')->take(3)->get(),
         ]);
     }

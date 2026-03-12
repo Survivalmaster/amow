@@ -17,7 +17,7 @@
             <a href="{{ route('leaderboards.index') }}" class="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('leaderboards.*') ? 'border-[#7ead59]/35 text-[#7ead59]' : 'bg-white/5' }}">Leaderboards</a>
             <a href="{{ route('characters.show') }}" class="rounded-full border border-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('characters.show') ? 'border-[#7ead59]/35 text-[#7ead59]' : 'bg-white/5' }}">Character</a>
             @if (auth()->user()->is_admin)
-                <a href="{{ route('admin.factions.index') }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em]">Admin</a>
+                <a href="{{ route('admin.dashboard') }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em]">Admin</a>
             @endif
             <a href="{{ route('profile.edit') }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em]">Account</a>
             <form method="POST" action="{{ route('logout') }}">
@@ -36,7 +36,7 @@
             <a href="{{ route('characters.show') }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em]">Character</a>
             <a href="{{ route('profile.edit') }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em]">Account</a>
             @if (auth()->user()->is_admin)
-                <a href="{{ route('admin.factions.index') }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em]">Admin</a>
+                <a href="{{ route('admin.dashboard') }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.2em]">Admin</a>
             @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf

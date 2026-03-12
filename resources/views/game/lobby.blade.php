@@ -40,7 +40,20 @@
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Map of Plastica</p>
                     <p class="text-xs uppercase tracking-[0.24em] text-white/45">Interactive city links</p>
                 </div>
-                <div class="mt-5 grid gap-4 md:grid-cols-2">
+                <div class="relative mt-5 overflow-hidden rounded-[2rem] border border-white/10 bg-black/20">
+                    <img src="{{ asset('images/plastica_map.jpg') }}" alt="Map of Plastica" class="block w-full">
+                    @foreach ($cities as $city)
+                        <a
+                            href="{{ route('cities.show', $city->slug) }}"
+                            class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#7ead59]/40 bg-[#07100c]/85 px-3 py-2 text-center shadow-lg shadow-black/40 transition hover:scale-105 hover:border-[#7ead59]"
+                            style="left: {{ $city->map_x }}%; top: {{ $city->map_y }}%;"
+                        >
+                            <span class="block font-['Teko'] text-xl uppercase tracking-[0.08em] text-[#f4ecd0]">{{ $city->name }}</span>
+                            <span class="block text-[10px] uppercase tracking-[0.24em] text-[#c2a84f]">Travel</span>
+                        </a>
+                    @endforeach
+                </div>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
                     @foreach ($cities as $city)
                         <a href="{{ route('cities.show', $city->slug) }}" class="rounded-3xl border border-[#7ead59]/25 bg-[linear-gradient(180deg,rgba(126,173,89,0.14),rgba(0,0,0,0.15))] p-5 transition hover:-translate-y-0.5 hover:border-[#7ead59]/45">
                             <p class="font-['Teko'] text-3xl uppercase tracking-[0.1em]">{{ $city->name }}</p>

@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\CharacterAdminController;
 use App\Http\Controllers\Admin\CityAdminController;
 use App\Http\Controllers\Admin\FactionAdminController;
 use App\Http\Controllers\Admin\ItemAdminController;
 use App\Http\Controllers\Admin\LocationAdminController;
+use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\FactionController;
@@ -48,14 +51,23 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::prefix('admin')->middleware('can:access-admin')->name('admin.')->group(function () {
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/users', [UserAdminController::class, 'index'])->name('users.index');
+        Route::patch('/users/{user}', [UserAdminController::class, 'update'])->name('users.update');
+        Route::get('/characters', [CharacterAdminController::class, 'index'])->name('characters.index');
+        Route::patch('/characters/{character}', [CharacterAdminController::class, 'update'])->name('characters.update');
         Route::get('/factions', [FactionAdminController::class, 'index'])->name('factions.index');
         Route::post('/factions', [FactionAdminController::class, 'store'])->name('factions.store');
+        Route::patch('/factions/{faction}', [FactionAdminController::class, 'update'])->name('factions.update');
         Route::get('/cities', [CityAdminController::class, 'index'])->name('cities.index');
         Route::post('/cities', [CityAdminController::class, 'store'])->name('cities.store');
+        Route::patch('/cities/{city}', [CityAdminController::class, 'update'])->name('cities.update');
         Route::get('/locations', [LocationAdminController::class, 'index'])->name('locations.index');
         Route::post('/locations', [LocationAdminController::class, 'store'])->name('locations.store');
+        Route::patch('/locations/{location}', [LocationAdminController::class, 'update'])->name('locations.update');
         Route::get('/items', [ItemAdminController::class, 'index'])->name('items.index');
         Route::post('/items', [ItemAdminController::class, 'store'])->name('items.store');
+        Route::patch('/items/{item}', [ItemAdminController::class, 'update'])->name('items.update');
     });
 });
 

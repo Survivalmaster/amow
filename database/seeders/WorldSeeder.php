@@ -20,8 +20,19 @@ class WorldSeeder extends Seeder
         $major = Rank::query()->where('name', 'Major')->first();
         $recruitId = Rank::query()->where('name', 'Recruit')->value('id');
         $senator = Licence::query()->where('slug', 'senator')->first();
+        $mapPoints = [
+            'Red Empire' => ['x' => 22, 'y' => 32],
+            'Kingdom of Greenland' => ['x' => 38, 'y' => 18],
+            'Tan Empire' => ['x' => 61, 'y' => 28],
+            'Tangerian Republic' => ['x' => 52, 'y' => 55],
+            'Imperial Graul' => ['x' => 74, 'y' => 46],
+            'Kingdom of Blutannia' => ['x' => 31, 'y' => 68],
+            'Obsidian Purl' => ['x' => 81, 'y' => 67],
+            'New Purlanese Republic' => ['x' => 57, 'y' => 80],
+        ];
 
-        Faction::query()->get()->each(function (Faction $faction) use ($major, $recruitId, $senator) {
+        Faction::query()->get()->each(function (Faction $faction) use ($major, $recruitId, $senator, $mapPoints) {
+            $point = $mapPoints[$faction->name] ?? ['x' => 50, 'y' => 50];
             $city = City::query()->updateOrCreate(
                 ['slug' => Str::slug($faction->name.' Capital')],
                 [
@@ -29,6 +40,8 @@ class WorldSeeder extends Seeder
                     'name' => $faction->name.' Capital',
                     'slug' => Str::slug($faction->name.' Capital'),
                     'description' => "The administrative and military center of {$faction->name}.",
+                    'map_x' => $point['x'],
+                    'map_y' => $point['y'],
                 ]
             );
 

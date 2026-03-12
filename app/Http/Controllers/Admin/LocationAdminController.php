@@ -41,4 +41,24 @@ class LocationAdminController extends Controller
 
         return back()->with('status', 'Location created.');
     }
+
+    public function update(Request $request, Location $location): RedirectResponse
+    {
+        $validated = $request->validate([
+            'city_id' => ['required', 'exists:cities,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'required_rank_id' => ['nullable', 'exists:ranks,id'],
+            'required_licence_id' => ['nullable', 'exists:licences,id'],
+            'is_public' => ['nullable', 'boolean'],
+        ]);
+
+        $location->update([
+            ...$validated,
+            'is_public' => $request->boolean('is_public'),
+        ]);
+
+        return back()->with('status', 'Location updated.');
+    }
 }

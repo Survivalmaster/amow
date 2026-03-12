@@ -39,4 +39,23 @@ class ItemAdminController extends Controller
 
         return back()->with('status', 'Item created.');
     }
+
+    public function update(Request $request, Item $item): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:items,slug,'.$item->id],
+            'description' => ['required', 'string'],
+            'type' => ['required', 'string', 'max:255'],
+            'price' => ['required', 'integer', 'min:1'],
+            'required_rank_id' => ['nullable', 'exists:ranks,id'],
+            'required_role_type' => ['nullable', 'in:civilian,military'],
+            'required_licence_id' => ['nullable', 'exists:licences,id'],
+            'stock' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $item->update($validated);
+
+        return back()->with('status', 'Item updated.');
+    }
 }

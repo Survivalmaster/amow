@@ -29,4 +29,19 @@ class FactionAdminController extends Controller
 
         return back()->with('status', 'Faction created.');
     }
+
+    public function update(Request $request, Faction $faction): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:factions,slug,'.$faction->id],
+            'short_description' => ['required', 'string', 'max:255'],
+            'flag_image' => ['nullable', 'string', 'max:255'],
+            'lore' => ['nullable', 'string'],
+        ]);
+
+        $faction->update($validated);
+
+        return back()->with('status', 'Faction updated.');
+    }
 }

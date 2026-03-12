@@ -26,10 +26,28 @@ class CityAdminController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:cities,slug'],
             'description' => ['required', 'string'],
+            'map_x' => ['required', 'integer', 'between:0,100'],
+            'map_y' => ['required', 'integer', 'between:0,100'],
         ]);
 
         City::query()->create($validated);
 
         return back()->with('status', 'City created.');
+    }
+
+    public function update(Request $request, City $city): RedirectResponse
+    {
+        $validated = $request->validate([
+            'faction_id' => ['required', 'exists:factions,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:cities,slug,'.$city->id],
+            'description' => ['required', 'string'],
+            'map_x' => ['required', 'integer', 'between:0,100'],
+            'map_y' => ['required', 'integer', 'between:0,100'],
+        ]);
+
+        $city->update($validated);
+
+        return back()->with('status', 'City updated.');
     }
 }

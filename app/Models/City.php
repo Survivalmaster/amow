@@ -13,6 +13,8 @@ class City extends Model
         'name',
         'slug',
         'description',
+        'map_x',
+        'map_y',
     ];
 
     public function faction(): BelongsTo
