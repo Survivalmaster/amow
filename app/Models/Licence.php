@@ -24,7 +24,7 @@ class Licence extends Model
 
     public function characters(): BelongsToMany
     {
-        return $this->belongsToMany(Character::class)->withTimestamps();
+        return $this->belongsToMany(Character::class, 'character_licences')->withTimestamps();
     }
 
     public function locations(): HasMany

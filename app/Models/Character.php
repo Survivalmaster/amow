@@ -53,7 +53,7 @@ class Character extends Model
 
     public function licences(): BelongsToMany
     {
-        return $this->belongsToMany(Licence::class)->withTimestamps();
+        return $this->belongsToMany(Licence::class, 'character_licences')->withTimestamps();
     }
 
     public function inventory(): BelongsToMany
