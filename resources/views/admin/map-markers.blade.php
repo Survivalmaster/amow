@@ -31,20 +31,20 @@
                 @foreach ($markers as $marker)
                     <button
                         type="button"
-                        class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-black/80 p-3 shadow-lg shadow-black/40"
+                        class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-black/80 p-2 shadow-lg shadow-black/40"
                         style="left: {{ $marker->map_x }}%; top: {{ $marker->map_y }}%; color: {{ $marker->color ?: '#c2a84f' }};"
                         title="{{ $marker->name }}"
                         @click.stop="x = {{ (int) $marker->map_x }}; y = {{ (int) $marker->map_y }}"
                     >
-                        <i class="{{ $marker->icon_class }} text-lg"></i>
+                        <i class="{{ $marker->icon_class }} text-sm"></i>
                     </button>
                 @endforeach
                 <div
                     class="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
                     :style="`left: ${x}%; top: ${y}%;`"
                 >
-                    <div class="flex h-10 w-10 items-center justify-center rounded-full border border-[#7ead59]/40 bg-[#07100c]/90 text-[#7ead59] shadow-lg shadow-black/40">
-                        <i class="fa-solid fa-crosshairs"></i>
+                    <div class="flex h-6 w-6 items-center justify-center rounded-full border border-[#7ead59]/40 bg-[#07100c]/90 text-[#7ead59] shadow-lg shadow-black/40">
+                        <i class="fa-solid fa-crosshairs text-[10px]"></i>
                     </div>
                 </div>
             </div>

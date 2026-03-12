@@ -49,7 +49,7 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
-                            <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ ucfirst($navCharacter->role_type) }} | {{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
+                            <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
                             <div class="mt-2 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
@@ -63,11 +63,7 @@
                         </div>
                     </div>
                     <div class="mt-3 flex items-center justify-end gap-2">
-                        <img
-                            src="{{ asset('images/plastica_money/' . $creditTier . '.png') }}"
-                            alt="Plastic Credits tier"
-                            class="h-5 w-5 object-contain"
-                        />
+                        <i class="fa-solid fa-coins text-[#c2a84f]"></i>
                         <span class="text-sm font-semibold text-[#f4ecd0]">{{ number_format($creditAmount) }}</span>
                     </div>
                 </div>
@@ -122,7 +118,7 @@
                         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">?</div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
-                            <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ ucfirst($navCharacter->role_type) }} | {{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
+                            <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
                             <div class="mt-2 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
@@ -136,11 +132,7 @@
                         </div>
                     </div>
                     <div class="mt-3 flex items-center justify-end gap-2">
-                        <img
-                            src="{{ asset('images/plastica_money/' . $creditTier . '.png') }}"
-                            alt="Plastic Credits tier"
-                            class="h-5 w-5 object-contain"
-                        />
+                        <i class="fa-solid fa-coins text-[#c2a84f]"></i>
                         <span class="text-sm font-semibold text-[#f4ecd0]">{{ number_format($creditAmount) }}</span>
                     </div>
                 </div>
