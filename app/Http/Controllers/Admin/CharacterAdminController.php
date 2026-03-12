@@ -34,6 +34,7 @@ class CharacterAdminController extends Controller
             'influence_score' => ['required', 'integer', 'min:0'],
             'military_score' => ['required', 'integer', 'min:0'],
             'economic_score' => ['required', 'integer', 'min:0'],
+            'health_points' => ['required', 'integer', 'min:0', 'max:100'],
             'is_business_owner' => ['nullable', 'boolean'],
             'biography' => ['required', 'string', 'max:2000'],
         ]);

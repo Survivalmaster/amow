@@ -31,6 +31,7 @@
                         <option value="military" @selected($character->role_type === 'military')>Military</option>
                     </select>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="plastic_credits" type="number" min="0" value="{{ $character->plastic_credits }}" required>
+                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="health_points" type="number" min="0" max="100" value="{{ $character->health_points ?? 100 }}" required>
                     <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                         <input type="checkbox" name="is_business_owner" value="1" @checked($character->is_business_owner)>
                         Business owner

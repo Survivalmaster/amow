@@ -1,6 +1,6 @@
 @php($navCharacter = auth()->user()->character)
 @php($creditAmount = $navCharacter?->plastic_credits ?? 0)
-@php($characterInitials = $navCharacter ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($navCharacter->name, 0, 2)) : 'AM')
+@php($healthPoints = $navCharacter?->health_points ?? 100)
 @php(
     $creditTier = match (true) {
         $creditAmount <= 1000 => 'tier1',
@@ -11,17 +11,17 @@
 )
 @php(
     $primaryNav = [
-        ['label' => 'My Dashboard', 'route' => 'lobby', 'match' => 'lobby', 'icon' => 'fa-solid fa-gauge-high'],
-        ['label' => 'Store', 'route' => 'store.index', 'match' => 'store.*', 'icon' => 'fa-solid fa-store'],
-        ['label' => 'Stock Market', 'route' => 'market.index', 'match' => 'market.*', 'icon' => 'fa-solid fa-chart-line'],
-        ['label' => 'Leaderboards', 'route' => 'leaderboards.index', 'match' => 'leaderboards.*', 'icon' => 'fa-solid fa-trophy'],
+        ['label' => 'My Dashboard', 'route' => 'lobby', 'match' => ['lobby'], 'icon' => 'fa-solid fa-gauge-high'],
+        ['label' => 'Store', 'route' => 'store.index', 'match' => ['store.*'], 'icon' => 'fa-solid fa-store'],
+        ['label' => 'Stock Market', 'route' => 'market.index', 'match' => ['market.*'], 'icon' => 'fa-solid fa-chart-line'],
+        ['label' => 'Leaderboards', 'route' => 'leaderboards.index', 'match' => ['leaderboards.*'], 'icon' => 'fa-solid fa-trophy'],
     ]
 )
 @php(
     $operationsNav = array_values(array_filter([
-        ['label' => 'Character', 'route' => 'characters.show', 'match' => 'characters.show', 'icon' => 'fa-solid fa-id-badge'],
-        ['label' => 'Account', 'route' => 'profile.edit', 'match' => 'profile.edit', 'icon' => 'fa-solid fa-gear'],
-        auth()->user()->is_admin ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => 'admin.*', 'icon' => 'fa-solid fa-shield-halved'] : null,
+        ['label' => 'Character', 'route' => 'characters.show', 'match' => ['characters.show'], 'icon' => 'fa-solid fa-id-badge'],
+        ['label' => 'Account', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
+        auth()->user()->is_admin ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
     ]))
 )
 
@@ -29,7 +29,6 @@
     <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:hidden">
         <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
             <img src="{{ asset('images/amowog.png') }}" alt="Army Men of War" class="h-14 w-auto object-contain" />
-            <p class="text-xs uppercase tracking-[0.24em] text-white/45">{{ auth()->user()->name }}</p>
         </a>
 
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
@@ -39,31 +38,32 @@
         <div class="flex h-full flex-col">
             <a href="{{ route('dashboard') }}" class="mx-auto block text-center">
                 <img src="{{ asset('images/amowog.png') }}" alt="Army Men of War" class="mx-auto h-28 w-auto object-contain" />
-                <p class="mt-5 text-xs uppercase tracking-[0.28em] text-white/45">{{ auth()->user()->name }}</p>
             </a>
 
             @if ($navCharacter)
-                <div class="mt-7 rounded-[1.2rem] border border-[#7ead59]/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] p-2.5 shadow-xl shadow-black/20">
+                <div class="mt-7 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 shadow-xl shadow-black/25 ring-1 ring-[#1e3929]">
                     <div class="flex items-center gap-3">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#7ead59]/25 bg-[#7ead59]/10 font-['Teko'] text-lg uppercase tracking-[0.08em] text-[#dbe9c5]">
-                            {{ $characterInitials }}
+                        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
+                            ?
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
-                            <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ ucfirst($navCharacter->role_type) }}</p>
-                            <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
+                            <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ ucfirst($navCharacter->role_type) }} | {{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
+                            <div class="mt-2 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-heart text-[#d75b5b]"></i>
+                                    {{ $healthPoints }}/100
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-2.5 flex items-center justify-between rounded-xl border border-white/8 bg-black/15 px-3 py-2">
-                        <span class="text-[10px] uppercase tracking-[0.24em] text-white/40">Plastic Credits</span>
-                        <div class="flex items-center gap-2">
-                            <img
-                                src="{{ asset('images/plastica_money/' . $creditTier . '.png') }}"
-                                alt="Plastic Credits tier"
-                                class="h-5 w-5 object-contain"
-                            />
-                            <span class="text-sm font-semibold text-[#f4ecd0]">{{ number_format($creditAmount) }}</span>
-                        </div>
+                    <div class="mt-3 flex items-center justify-end gap-2">
+                        <img
+                            src="{{ asset('images/plastica_money/' . $creditTier . '.png') }}"
+                            alt="Plastic Credits tier"
+                            class="h-5 w-5 object-contain"
+                        />
+                        <span class="text-sm font-semibold text-[#f4ecd0]">{{ number_format($creditAmount) }}</span>
                     </div>
                 </div>
             @endif
@@ -72,10 +72,12 @@
                 <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Dashboard</p>
                 <div class="mt-3 grid gap-1">
                     @foreach ($primaryNav as $item)
+                        @php($isActive = request()->routeIs(...$item['match']))
                         <a
                             href="{{ route($item['route']) }}"
-                            class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#7ead59]/14 text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
+                            class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
                         >
+                            <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                             <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                             <span>{{ $item['label'] }}</span>
                         </a>
@@ -87,10 +89,12 @@
                 <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Operations</p>
                 <div class="mt-3 grid gap-1">
                     @foreach ($operationsNav as $item)
+                        @php($isActive = request()->routeIs(...$item['match']))
                         <a
                             href="{{ route($item['route']) }}"
-                            class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#7ead59]/14 text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
+                            class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
                         >
+                            <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                             <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                             <span>{{ $item['label'] }}</span>
                         </a>
@@ -108,51 +112,48 @@
     <div x-show="open" x-cloak class="border-t border-white/10 px-4 py-4 lg:hidden">
         <div class="grid gap-2">
             @if ($navCharacter)
-                <div class="mb-2 rounded-[1.5rem] border border-[#7ead59]/20 bg-white/5 p-3">
+                <div class="mb-2 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 ring-1 ring-[#1e3929]">
                     <div class="flex items-center gap-3">
-                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#7ead59]/25 bg-[#7ead59]/10 font-['Teko'] text-xl uppercase tracking-[0.08em] text-[#dbe9c5]">
-                            {{ $characterInitials }}
-                        </div>
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">?</div>
                         <div class="min-w-0 flex-1">
-                            <p class="truncate font-['Teko'] text-2xl uppercase leading-none tracking-[0.08em]">{{ $navCharacter->name }}</p>
-                            <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ ucfirst($navCharacter->role_type) }}</p>
-                            <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
+                            <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
+                            <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ ucfirst($navCharacter->role_type) }} | {{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
+                            <div class="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#d9e5d0]">
+                                <i class="fa-solid fa-heart text-[#d75b5b]"></i>
+                                <span>{{ $healthPoints }}/100</span>
+                            </div>
                         </div>
+                    </div>
+                    <div class="mt-3 flex items-center justify-end gap-2">
                         <img
                             src="{{ asset('images/plastica_money/' . $creditTier . '.png') }}"
                             alt="Plastic Credits tier"
-                            class="h-10 w-10 shrink-0 object-contain"
+                            class="h-5 w-5 object-contain"
                         />
-                    </div>
-                    <div class="mt-3 flex items-center justify-between rounded-2xl border border-white/8 bg-black/15 px-3 py-2">
-                        <span class="text-[10px] uppercase tracking-[0.24em] text-white/40">Plastic Credits</span>
-                        <div class="flex items-center gap-2">
-                            <img
-                                src="{{ asset('images/plastica_money/' . $creditTier . '.png') }}"
-                                alt="Plastic Credits tier"
-                                class="h-5 w-5 object-contain"
-                            />
-                            <span class="text-sm font-semibold text-[#f4ecd0]">{{ number_format($creditAmount) }}</span>
-                        </div>
+                        <span class="text-sm font-semibold text-[#f4ecd0]">{{ number_format($creditAmount) }}</span>
                     </div>
                 </div>
             @endif
             <p class="mt-2 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Dashboard</p>
             @foreach ($primaryNav as $item)
+                @php($isActive = request()->routeIs(...$item['match']))
                 <a
                     href="{{ route($item['route']) }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#7ead59]/14 text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
+                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
                 >
+                    <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                     <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                     <span>{{ $item['label'] }}</span>
                 </a>
             @endforeach
             <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Operations</p>
             @foreach ($operationsNav as $item)
+                @php($isActive = request()->routeIs(...$item['match']))
                 <a
                     href="{{ route($item['route']) }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#7ead59]/14 text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
+                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
                 >
+                    <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                     <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                     <span>{{ $item['label'] }}</span>
                 </a>

@@ -21,6 +21,7 @@ class Character extends Model
         'influence_score',
         'military_score',
         'economic_score',
+        'health_points',
         'role_type',
         'is_business_owner',
         'last_worked_at',
