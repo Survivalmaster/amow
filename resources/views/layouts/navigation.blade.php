@@ -57,16 +57,18 @@
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
                             <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
-                            <div class="mt-1.5 grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-3 text-[12px] font-semibold text-[#d9e5d0]">
-                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
-                                    <i class="fa-solid fa-heart text-[#d75b5b]"></i>
-                                    {{ $healthPoints }}/100
-                                </span>
-                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-white/75">
-                                    <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
-                                    {{ $armorPoints }}
-                                </span>
-                                <span class="inline-flex min-w-0 items-center justify-self-end gap-1.5 whitespace-nowrap text-[#f4ecd0]">
+                            <div class="mt-1.5 flex items-center justify-between gap-3 text-[12px] font-semibold text-[#d9e5d0]">
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                        <i class="fa-solid fa-heart text-[#d75b5b]"></i>
+                                        {{ $healthPoints }}/100
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-white/75">
+                                        <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
+                                        {{ $armorPoints }}
+                                    </span>
+                                </div>
+                                <span class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap pl-2 text-[#f4ecd0]">
                                     <i class="fa-solid fa-coins text-[#c2a84f]"></i>
                                     {{ $formattedCredits }}
                                 </span>
@@ -126,16 +128,18 @@
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
                             <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
-                            <div class="mt-1.5 grid grid-cols-[auto_auto_minmax(0,1fr)] items-center gap-x-3 text-[12px] font-semibold text-[#d9e5d0]">
-                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
-                                    <i class="fa-solid fa-heart text-[#d75b5b]"></i>
-                                    <span>{{ $healthPoints }}/100</span>
-                                </span>
-                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-white/75">
-                                    <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
-                                    <span>{{ $armorPoints }}</span>
-                                </span>
-                                <span class="inline-flex min-w-0 items-center justify-self-end gap-1.5 whitespace-nowrap text-[#f4ecd0]">
+                            <div class="mt-1.5 flex items-center justify-between gap-3 text-[12px] font-semibold text-[#d9e5d0]">
+                                <div class="flex min-w-0 items-center gap-3">
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                        <i class="fa-solid fa-heart text-[#d75b5b]"></i>
+                                        <span>{{ $healthPoints }}/100</span>
+                                    </span>
+                                    <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-white/75">
+                                        <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
+                                        <span>{{ $armorPoints }}</span>
+                                    </span>
+                                </div>
+                                <span class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap pl-2 text-[#f4ecd0]">
                                     <i class="fa-solid fa-coins text-[#c2a84f]"></i>
                                     <span>{{ $formattedCredits }}</span>
                                 </span>
