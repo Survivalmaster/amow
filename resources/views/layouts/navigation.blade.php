@@ -43,18 +43,18 @@
             </a>
 
             @if ($navCharacter)
-                <div class="mt-7 rounded-[1.35rem] border border-[#7ead59]/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] p-3 shadow-xl shadow-black/20">
+                <div class="mt-7 rounded-[1.2rem] border border-[#7ead59]/16 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.015))] p-2.5 shadow-xl shadow-black/20">
                     <div class="flex items-center gap-3">
-                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#7ead59]/25 bg-[#7ead59]/10 font-['Teko'] text-xl uppercase tracking-[0.08em] text-[#dbe9c5]">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#7ead59]/25 bg-[#7ead59]/10 font-['Teko'] text-lg uppercase tracking-[0.08em] text-[#dbe9c5]">
                             {{ $characterInitials }}
                         </div>
                         <div class="min-w-0 flex-1">
-                            <p class="truncate font-['Teko'] text-[1.55rem] uppercase leading-none tracking-[0.05em]">{{ $navCharacter->name }}</p>
-                            <p class="mt-2 text-[10px] uppercase tracking-[0.26em] text-white/45">{{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
-                            <p class="mt-1 text-[10px] uppercase tracking-[0.26em] text-white/45">{{ ucfirst($navCharacter->role_type) }}</p>
+                            <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
+                            <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ ucfirst($navCharacter->role_type) }}</p>
+                            <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
                         </div>
                     </div>
-                    <div class="mt-3 flex items-center justify-between rounded-xl border border-white/8 bg-black/15 px-3 py-2">
+                    <div class="mt-2.5 flex items-center justify-between rounded-xl border border-white/8 bg-black/15 px-3 py-2">
                         <span class="text-[10px] uppercase tracking-[0.24em] text-white/40">Plastic Credits</span>
                         <div class="flex items-center gap-2">
                             <img
@@ -74,9 +74,9 @@
                     @foreach ($primaryNav as $item)
                         <a
                             href="{{ route($item['route']) }}"
-                            class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#c9d7ea] text-[#133b73]' : 'text-white/82 hover:bg-white/[0.05]' }}"
+                            class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#7ead59]/14 text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
                         >
-                            <i class="{{ $item['icon'] }} w-5 text-center {{ request()->routeIs($item['match']) ? 'text-[#2a73d8]' : 'text-[#6da2ff]' }}"></i>
+                            <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                             <span>{{ $item['label'] }}</span>
                         </a>
                     @endforeach
@@ -89,9 +89,9 @@
                     @foreach ($operationsNav as $item)
                         <a
                             href="{{ route($item['route']) }}"
-                            class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#c9d7ea] text-[#133b73]' : 'text-white/82 hover:bg-white/[0.05]' }}"
+                            class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#7ead59]/14 text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
                         >
-                            <i class="{{ $item['icon'] }} w-5 text-center {{ request()->routeIs($item['match']) ? 'text-[#2a73d8]' : 'text-[#6da2ff]' }}"></i>
+                            <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                             <span>{{ $item['label'] }}</span>
                         </a>
                     @endforeach
@@ -115,8 +115,8 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-2xl uppercase leading-none tracking-[0.08em]">{{ $navCharacter->name }}</p>
-                            <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
-                            <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ ucfirst($navCharacter->role_type) }}</p>
+                            <p class="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ ucfirst($navCharacter->role_type) }}</p>
+                            <p class="mt-1 text-[10px] uppercase tracking-[0.24em] text-white/45">{{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
                         </div>
                         <img
                             src="{{ asset('images/plastica_money/' . $creditTier . '.png') }}"
@@ -141,9 +141,9 @@
             @foreach ($primaryNav as $item)
                 <a
                     href="{{ route($item['route']) }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#c9d7ea] text-[#133b73]' : 'text-white/82 hover:bg-white/[0.05]' }}"
+                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#7ead59]/14 text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
                 >
-                    <i class="{{ $item['icon'] }} w-5 text-center {{ request()->routeIs($item['match']) ? 'text-[#2a73d8]' : 'text-[#6da2ff]' }}"></i>
+                    <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                     <span>{{ $item['label'] }}</span>
                 </a>
             @endforeach
@@ -151,9 +151,9 @@
             @foreach ($operationsNav as $item)
                 <a
                     href="{{ route($item['route']) }}"
-                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#c9d7ea] text-[#133b73]' : 'text-white/82 hover:bg-white/[0.05]' }}"
+                    class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs($item['match']) ? 'bg-[#7ead59]/14 text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}"
                 >
-                    <i class="{{ $item['icon'] }} w-5 text-center {{ request()->routeIs($item['match']) ? 'text-[#2a73d8]' : 'text-[#6da2ff]' }}"></i>
+                    <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                     <span>{{ $item['label'] }}</span>
                 </a>
             @endforeach
