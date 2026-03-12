@@ -1,6 +1,7 @@
 @php($navCharacter = auth()->user()->character)
 @php($creditAmount = $navCharacter?->plastic_credits ?? 0)
 @php($healthPoints = $navCharacter?->health_points ?? 100)
+@php($armorPoints = $navCharacter?->armor_points ?? 0)
 @php(
     $creditTier = match (true) {
         $creditAmount <= 1000 => 'tier1',
@@ -11,7 +12,7 @@
 )
 @php(
     $primaryNav = [
-        ['label' => 'My Dashboard', 'route' => 'lobby', 'match' => ['lobby'], 'icon' => 'fa-solid fa-gauge-high'],
+        ['label' => 'My Dashboard', 'route' => 'lobby', 'match' => ['lobby', 'cities.*', 'locations.*', 'messages.*', 'work.*'], 'icon' => 'fa-solid fa-gauge-high'],
         ['label' => 'Store', 'route' => 'store.index', 'match' => ['store.*'], 'icon' => 'fa-solid fa-store'],
         ['label' => 'Stock Market', 'route' => 'market.index', 'match' => ['market.*'], 'icon' => 'fa-solid fa-chart-line'],
         ['label' => 'Leaderboards', 'route' => 'leaderboards.index', 'match' => ['leaderboards.*'], 'icon' => 'fa-solid fa-trophy'],
@@ -54,6 +55,10 @@
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
                                     {{ $healthPoints }}/100
                                 </span>
+                                <span class="inline-flex items-center gap-1.5 text-white/75">
+                                    <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
+                                    {{ $armorPoints }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -86,7 +91,7 @@
             </div>
 
             <div class="mt-7">
-                <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Operations</p>
+                <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">User Area</p>
                 <div class="mt-3 grid gap-1">
                     @foreach ($operationsNav as $item)
                         @php($isActive = request()->routeIs(...$item['match']))
@@ -118,9 +123,15 @@
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
                             <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ ucfirst($navCharacter->role_type) }} | {{ $navCharacter->rank?->name ?? 'Unranked' }}</p>
-                            <div class="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[#d9e5d0]">
-                                <i class="fa-solid fa-heart text-[#d75b5b]"></i>
-                                <span>{{ $healthPoints }}/100</span>
+                            <div class="mt-2 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
+                                <span class="inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-heart text-[#d75b5b]"></i>
+                                    <span>{{ $healthPoints }}/100</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 text-white/75">
+                                    <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
+                                    <span>{{ $armorPoints }}</span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -146,7 +157,7 @@
                     <span>{{ $item['label'] }}</span>
                 </a>
             @endforeach
-            <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Operations</p>
+            <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">User Area</p>
             @foreach ($operationsNav as $item)
                 @php($isActive = request()->routeIs(...$item['match']))
                 <a

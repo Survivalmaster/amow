@@ -55,6 +55,7 @@ class CharacterController extends Controller
             'rank_id' => $rank->id,
             'plastic_credits' => 100,
             'health_points' => 100,
+            'armor_points' => 0,
         ]);
 
         $request->session()->forget('selected_faction_id');
