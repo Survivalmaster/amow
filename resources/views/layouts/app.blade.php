@@ -19,31 +19,35 @@
     </head>
     <body class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]">
         <div class="min-h-screen bg-[rgba(4,8,6,0.35)]">
-            @include('layouts.navigation')
+            <div class="lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
+                @include('layouts.navigation')
 
-            @isset($header)
-                <header class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
-                    <div class="rounded-[2rem] border border-white/10 bg-white/5 px-6 py-5 shadow-2xl shadow-black/30 backdrop-blur">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+                <div class="min-w-0">
+                    @isset($header)
+                        <header class="px-4 pt-8 sm:px-6 lg:px-8">
+                            <div class="rounded-[2rem] border border-white/10 bg-white/5 px-6 py-5 shadow-2xl shadow-black/30 backdrop-blur">
+                                {{ $header }}
+                            </div>
+                        </header>
+                    @endisset
 
-            <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                @if (session('status'))
-                    <div class="mb-6 rounded-2xl border border-[#7ead59]/35 bg-[#7ead59]/10 px-4 py-3 text-sm">
-                        {{ session('status') }}
-                    </div>
-                @endif
+                    <main class="px-4 py-8 sm:px-6 lg:px-8">
+                        @if (session('status'))
+                            <div class="mb-6 rounded-2xl border border-[#7ead59]/35 bg-[#7ead59]/10 px-4 py-3 text-sm">
+                                {{ session('status') }}
+                            </div>
+                        @endif
 
-                @if ($errors->any())
-                    <div class="mb-6 rounded-2xl border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-4 py-3 text-sm">
-                        {{ $errors->first() }}
-                    </div>
-                @endif
+                        @if ($errors->any())
+                            <div class="mb-6 rounded-2xl border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-4 py-3 text-sm">
+                                {{ $errors->first() }}
+                            </div>
+                        @endif
 
-                {{ $slot }}
-            </main>
+                        {{ $slot }}
+                    </main>
+                </div>
+            </div>
         </div>
     </body>
 </html>

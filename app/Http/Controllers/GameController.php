@@ -7,6 +7,7 @@ use App\Models\Faction;
 use App\Models\MapMarker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class GameController extends Controller
@@ -44,14 +45,16 @@ class GameController extends Controller
         return view('game.lobby', [
             'character' => $character,
             'cities' => $character->faction->cities->sortBy('name')->values(),
-            'mapMarkers' => MapMarker::query()
-                ->with('faction')
-                ->where(function ($query) use ($character) {
-                    $query->whereNull('faction_id')
-                        ->orWhere('faction_id', $character->faction_id);
-                })
-                ->orderBy('name')
-                ->get(),
+            'mapMarkers' => Schema::hasTable('map_markers')
+                ? MapMarker::query()
+                    ->with('faction')
+                    ->where(function ($query) use ($character) {
+                        $query->whereNull('faction_id')
+                            ->orWhere('faction_id', $character->faction_id);
+                    })
+                    ->orderBy('name')
+                    ->get()
+                : collect(),
         ]);
     }
 }
