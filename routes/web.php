@@ -1,7 +1,62 @@
 <?php
 
+use App\Http\Controllers\Admin\CityAdminController;
+use App\Http\Controllers\Admin\FactionAdminController;
+use App\Http\Controllers\Admin\ItemAdminController;
+use App\Http\Controllers\Admin\LocationAdminController;
+use App\Http\Controllers\CharacterController;
+use App\Http\Controllers\CityController;
+use App\Http\Controllers\FactionController;
+use App\Http\Controllers\GameController;
+use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\MarketController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StoreController;
+use App\Http\Controllers\WorkController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('home');
+Route::get('/', [GameController::class, 'home'])->name('home');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [GameController::class, 'dashboard'])->name('dashboard');
+
+    Route::get('/factions', [FactionController::class, 'index'])->name('factions.index');
+    Route::post('/factions', [FactionController::class, 'store'])->name('factions.store');
+
+    Route::get('/character/create', [CharacterController::class, 'create'])->name('characters.create');
+    Route::post('/character', [CharacterController::class, 'store'])->name('characters.store');
+
+    Route::middleware('character')->group(function () {
+        Route::get('/lobby', [GameController::class, 'lobby'])->name('lobby');
+        Route::get('/cities/{city:slug}', [CityController::class, 'show'])->name('cities.show');
+        Route::get('/locations/{location}', [LocationController::class, 'show'])->name('locations.show');
+        Route::post('/locations/{location}/messages', [MessageController::class, 'store'])->name('messages.store');
+        Route::post('/locations/{location}/work', [WorkController::class, 'store'])->name('work.store');
+        Route::get('/store', [StoreController::class, 'index'])->name('store.index');
+        Route::post('/store/purchase', [StoreController::class, 'purchase'])->name('store.purchase');
+        Route::get('/profile/game', [CharacterController::class, 'show'])->name('characters.show');
+        Route::get('/leaderboards', [LeaderboardController::class, 'index'])->name('leaderboards.index');
+        Route::get('/stocks', [MarketController::class, 'index'])->name('market.index');
+        Route::post('/stocks/{company}/buy', [MarketController::class, 'buy'])->name('market.buy');
+        Route::post('/stocks/{company}/sell', [MarketController::class, 'sell'])->name('market.sell');
+    });
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::prefix('admin')->middleware('can:access-admin')->name('admin.')->group(function () {
+        Route::get('/factions', [FactionAdminController::class, 'index'])->name('factions.index');
+        Route::post('/factions', [FactionAdminController::class, 'store'])->name('factions.store');
+        Route::get('/cities', [CityAdminController::class, 'index'])->name('cities.index');
+        Route::post('/cities', [CityAdminController::class, 'store'])->name('cities.store');
+        Route::get('/locations', [LocationAdminController::class, 'index'])->name('locations.index');
+        Route::post('/locations', [LocationAdminController::class, 'store'])->name('locations.store');
+        Route::get('/items', [ItemAdminController::class, 'index'])->name('items.index');
+        Route::post('/items', [ItemAdminController::class, 'store'])->name('items.store');
+    });
 });
+
+require __DIR__.'/auth.php';

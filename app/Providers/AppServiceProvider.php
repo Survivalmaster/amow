@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Character;
+use App\Policies\CharacterPolicy;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::policy(Character::class, CharacterPolicy::class);
+        Gate::define('access-admin', fn ($user) => $user->is_admin);
     }
 }
