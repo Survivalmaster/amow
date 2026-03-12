@@ -42,15 +42,15 @@
             </a>
 
             @if ($navCharacter)
-                <div class="mt-7 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 shadow-xl shadow-black/25 ring-1 ring-[#1e3929]">
+                <div class="mt-7 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 shadow-xl shadow-black/25">
                     <div class="flex items-center gap-3">
                         <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
                             ?
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
-                            <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
-                            <div class="mt-2 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
+                            <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
+                            <div class="mt-1.5 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
                                     {{ $healthPoints }}/100
@@ -59,12 +59,12 @@
                                     <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
                                     {{ $armorPoints }}
                                 </span>
+                                <span class="inline-flex items-center gap-1.5 text-[#f4ecd0]">
+                                    <i class="fa-solid fa-coins text-[#c2a84f]"></i>
+                                    {{ number_format($creditAmount) }}
+                                </span>
                             </div>
                         </div>
-                    </div>
-                    <div class="mt-3 flex items-center justify-end gap-2">
-                        <i class="fa-solid fa-coins text-[#c2a84f]"></i>
-                        <span class="text-sm font-semibold text-[#f4ecd0]">{{ number_format($creditAmount) }}</span>
                     </div>
                 </div>
             @endif
@@ -113,13 +113,13 @@
     <div x-show="open" x-cloak class="border-t border-white/10 px-4 py-4 lg:hidden">
         <div class="grid gap-2">
             @if ($navCharacter)
-                <div class="mb-2 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 ring-1 ring-[#1e3929]">
+                <div class="mb-2 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3">
                     <div class="flex items-center gap-3">
                         <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">?</div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]">{{ $navCharacter->name }}</p>
-                            <p class="mt-1 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
-                            <div class="mt-2 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
+                            <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">{{ $navCharacter->rank?->name ?? 'Unranked' }} | {{ $navCharacter->starting_occupation }}</p>
+                            <div class="mt-1.5 flex items-center gap-3 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
                                     <span>{{ $healthPoints }}/100</span>
@@ -128,12 +128,12 @@
                                     <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
                                     <span>{{ $armorPoints }}</span>
                                 </span>
+                                <span class="inline-flex items-center gap-1.5 text-[#f4ecd0]">
+                                    <i class="fa-solid fa-coins text-[#c2a84f]"></i>
+                                    <span>{{ number_format($creditAmount) }}</span>
+                                </span>
                             </div>
                         </div>
-                    </div>
-                    <div class="mt-3 flex items-center justify-end gap-2">
-                        <i class="fa-solid fa-coins text-[#c2a84f]"></i>
-                        <span class="text-sm font-semibold text-[#f4ecd0]">{{ number_format($creditAmount) }}</span>
                     </div>
                 </div>
             @endif
