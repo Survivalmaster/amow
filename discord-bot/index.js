@@ -3,6 +3,7 @@ import { isAxiosError } from 'axios';
 import { api } from './api.js';
 import { config } from './config.js';
 import { buildLinkHelpText, buildProfileEmbed } from './responses.js';
+import { postWpnnAnnouncement } from './webhook.js';
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds],
@@ -29,6 +30,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.commandName === 'amowwhois') {
         await handleWhoIs(interaction);
+        return;
+    }
+
+    if (interaction.commandName === 'amowwpnn') {
+        await handleWpnn(interaction);
     }
 });
 
@@ -137,6 +143,57 @@ async function handleWhoIs(interaction) {
         console.error('amowwhois failed', error);
         await interaction.editReply('Profile lookup failed due to a server error.');
     }
+}
+
+async function handleWpnn(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+
+    if (!memberHasRole(interaction, config.adminRoleId)) {
+        await interaction.editReply('You do not have permission to use this command.');
+        return;
+    }
+
+    const headline = interaction.options.getString('headline', true).trim();
+    const announcement = interaction.options.getString('announcement', true).trim();
+    const imageUrl = interaction.options.getString('image_url')?.trim() || null;
+
+    try {
+        await postWpnnAnnouncement({
+            headline,
+            announcement,
+            imageUrl,
+            authorTag: interaction.user.globalName ?? interaction.user.username,
+        });
+
+        await interaction.editReply('WPNN announcement posted.');
+    } catch (error) {
+        console.error('amowwpnn failed', error);
+        await interaction.editReply('The WPNN announcement could not be posted.');
+    }
+}
+
+function memberHasRole(interaction, roleId) {
+    if (!interaction.inGuild() || !roleId) {
+        return false;
+    }
+
+    const { member } = interaction;
+
+    if (!member || typeof member !== 'object' || !('roles' in member)) {
+        return false;
+    }
+
+    const { roles } = member;
+
+    if (Array.isArray(roles)) {
+        return roles.includes(roleId);
+    }
+
+    if (roles?.cache) {
+        return roles.cache.has(roleId);
+    }
+
+    return false;
 }
 
 await client.login(config.botToken);

@@ -22,6 +22,29 @@ export const commands = [
                 .setDescription('The Discord user whose linked AMOW profile you want to show.')
                 .setRequired(true)
         ),
+    new SlashCommandBuilder()
+        .setName('amowwpnn')
+        .setDescription('Post an AMOW news announcement through the WPNN webhook.')
+        .addStringOption((option) =>
+            option
+                .setName('headline')
+                .setDescription('The news headline.')
+                .setRequired(true)
+                .setMaxLength(120)
+        )
+        .addStringOption((option) =>
+            option
+                .setName('announcement')
+                .setDescription('The announcement body text.')
+                .setRequired(true)
+                .setMaxLength(1900)
+        )
+        .addStringOption((option) =>
+            option
+                .setName('image_url')
+                .setDescription('Optional image URL for the news post.')
+                .setRequired(false)
+        ),
 ];
 
 export const commandPayload = commands.map((command) => command.toJSON());
