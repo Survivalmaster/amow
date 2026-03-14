@@ -1,4 +1,4 @@
-import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
 import { isAxiosError } from 'axios';
 import { api } from './api.js';
 import { fetchWebhookCommands } from './command-config.js';
@@ -16,7 +16,11 @@ client.once(Events.ClientReady, (readyClient) => {
 });
 
 client.once(Events.ClientReady, async () => {
-    webhookCommands = await fetchWebhookCommands();
+    try {
+        webhookCommands = await fetchWebhookCommands();
+    } catch (error) {
+        console.error('Failed to load Discord command config on startup.', error);
+    }
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -24,29 +28,55 @@ client.on(Events.InteractionCreate, async (interaction) => {
         return;
     }
 
-    if (interaction.commandName === 'amowlink') {
-        await handleLink(interaction);
-        return;
-    }
+    try {
+        if (interaction.commandName === 'amowlink') {
+            await handleLink(interaction);
+            return;
+        }
 
-    if (interaction.commandName === 'amowprofile') {
-        await handleProfile(interaction);
-        return;
-    }
+        if (interaction.commandName === 'amowprofile') {
+            await handleProfile(interaction);
+            return;
+        }
 
-    if (interaction.commandName === 'amowwhois') {
-        await handleWhoIs(interaction);
-        return;
-    }
+        if (interaction.commandName === 'amowwhois') {
+            await handleWhoIs(interaction);
+            return;
+        }
 
-    const webhookCommand = webhookCommands.find((command) => command.command_name === interaction.commandName);
-    if (webhookCommand) {
-        await handleWebhookCommand(interaction, webhookCommand);
+        if (webhookCommands.length === 0) {
+            webhookCommands = await fetchWebhookCommands();
+        }
+
+        const webhookCommand = webhookCommands.find((command) => command.command_name === interaction.commandName);
+        if (webhookCommand) {
+            await handleWebhookCommand(interaction, webhookCommand);
+        }
+    } catch (error) {
+        if (isUnknownInteractionError(error)) {
+            console.warn(`Ignored stale Discord interaction for /${interaction.commandName}.`);
+            return;
+        }
+
+        console.error(`Unhandled interaction error for /${interaction.commandName}.`, error);
+
+        if (!interaction.replied && !interaction.deferred) {
+            try {
+                await interaction.reply({
+                    content: 'The command failed before Discord could accept the response.',
+                    flags: MessageFlags.Ephemeral,
+                });
+            } catch (replyError) {
+                if (!isUnknownInteractionError(replyError)) {
+                    console.error('Failed to send fallback interaction reply.', replyError);
+                }
+            }
+        }
     }
 });
 
 async function handleLink(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const code = interaction.options.getString('code', true).trim().toUpperCase();
 
@@ -84,7 +114,7 @@ async function handleLink(interaction) {
 }
 
 async function handleProfile(interaction) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     try {
         const response = await api.get(`/api/discord/profile/${interaction.user.id}`);
@@ -153,7 +183,7 @@ async function handleWhoIs(interaction) {
 }
 
 async function handleWebhookCommand(interaction, webhookCommand) {
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     if (webhookCommand.access_mode === 'role' && !memberHasRole(interaction, webhookCommand.role_id)) {
         await interaction.editReply('You do not have permission to use this command.');
@@ -216,6 +246,12 @@ function memberHasRole(interaction, roleId) {
     }
 
     return false;
+}
+
+function isUnknownInteractionError(error) {
+    return isAxiosError(error)
+        ? error.response?.data?.code === 10062
+        : error?.code === 10062;
 }
 
 await client.login(config.botToken);
