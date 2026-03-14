@@ -7,6 +7,7 @@ use App\Models\City;
 use App\Models\Licence;
 use App\Models\Location;
 use App\Models\Rank;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -60,5 +61,16 @@ class LocationAdminController extends Controller
         ]);
 
         return back()->with('status', 'Location updated.');
+    }
+
+    public function destroy(Location $location): RedirectResponse
+    {
+        try {
+            $location->delete();
+        } catch (QueryException) {
+            return back()->withErrors('Location could not be deleted because related records still exist.');
+        }
+
+        return back()->with('status', 'Location deleted.');
     }
 }

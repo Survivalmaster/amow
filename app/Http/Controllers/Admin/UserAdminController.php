@@ -40,4 +40,12 @@ class UserAdminController extends Controller
 
         return back()->with('status', "Updated user {$user->email}.");
     }
+
+    public function destroy(User $user): RedirectResponse
+    {
+        $email = $user->email;
+        $user->delete();
+
+        return back()->with('status', "Deleted user {$email}.");
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Licence;
 use App\Models\Rank;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -57,5 +58,16 @@ class ItemAdminController extends Controller
         $item->update($validated);
 
         return back()->with('status', 'Item updated.');
+    }
+
+    public function destroy(Item $item): RedirectResponse
+    {
+        try {
+            $item->delete();
+        } catch (QueryException) {
+            return back()->withErrors('Item could not be deleted because related records still exist.');
+        }
+
+        return back()->with('status', 'Item deleted.');
     }
 }

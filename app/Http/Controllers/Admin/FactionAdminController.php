@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Faction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Database\QueryException;
 use Illuminate\View\View;
 
 class FactionAdminController extends Controller
@@ -43,5 +44,16 @@ class FactionAdminController extends Controller
         $faction->update($validated);
 
         return back()->with('status', 'Faction updated.');
+    }
+
+    public function destroy(Faction $faction): RedirectResponse
+    {
+        try {
+            $faction->delete();
+        } catch (QueryException) {
+            return back()->withErrors('Faction could not be deleted because related records still exist.');
+        }
+
+        return back()->with('status', 'Faction deleted.');
     }
 }

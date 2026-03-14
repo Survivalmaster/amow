@@ -81,45 +81,71 @@
                 </div>
             </form>
 
-            <div class="space-y-4">
-                @foreach ($markers as $marker)
-                    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
-                        <form method="POST" action="{{ route('admin.map-markers.update', $marker) }}" class="grid gap-4">
-                            @csrf
-                            @method('PATCH')
-                            <div class="grid gap-4 xl:grid-cols-[1fr_220px]">
-                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $marker->name }}" required>
-                                <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
-                                    <option value="">Visible to all factions</option>
-                                    @foreach ($factions as $faction)
-                                        <option value="{{ $faction->id }}" @selected($marker->faction_id === $faction->id)>{{ $faction->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="grid gap-4 xl:grid-cols-[1fr_120px_120px_160px]">
-                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" value="{{ $marker->icon_class }}" required>
-                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" value="{{ $marker->map_x }}" required>
-                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" value="{{ $marker->map_y }}" required>
-                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" value="{{ $marker->color }}" placeholder="#7ead59">
-                            </div>
-                            <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description">{{ $marker->description }}</textarea>
-                            <div class="flex flex-wrap items-center justify-between gap-3">
-                                <div class="flex items-center gap-3 text-sm text-white/60">
-                                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/20" style="color: {{ $marker->color ?: '#c2a84f' }};">
-                                        <i class="{{ $marker->icon_class }}"></i>
-                                    </span>
-                                    <span>{{ $marker->faction?->name ?? 'All factions' }}</span>
-                                </div>
-                                <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Update</button>
-                            </div>
-                        </form>
-                        <form method="POST" action="{{ route('admin.map-markers.destroy', $marker) }}" class="mt-3 flex justify-end">
-                            @csrf
-                            @method('DELETE')
-                            <button class="rounded-full bg-[#c65b3f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white">Delete</button>
-                        </form>
-                    </div>
-                @endforeach
+            <div x-data="{ openId: null }" class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-white/75">
+                        <thead class="bg-black/30 text-xs uppercase tracking-[0.2em] text-white/40">
+                            <tr>
+                                <th class="px-5 py-4 text-left">Name</th>
+                                <th class="px-5 py-4 text-left">Faction</th>
+                                <th class="px-5 py-4 text-left">Coords</th>
+                                <th class="px-5 py-4 text-left">Icon</th>
+                                <th class="px-5 py-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/10">
+                            @foreach ($markers as $marker)
+                                <tr>
+                                    <td class="px-5 py-4 font-semibold text-white">{{ $marker->name }}</td>
+                                    <td class="px-5 py-4">{{ $marker->faction?->name ?? 'All factions' }}</td>
+                                    <td class="px-5 py-4">{{ $marker->map_x }}%, {{ $marker->map_y }}%</td>
+                                    <td class="px-5 py-4">
+                                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/20" style="color: {{ $marker->color ?: '#c2a84f' }};">
+                                            <i class="{{ $marker->icon_class }}"></i>
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button type="button" @click="openId = openId === {{ $marker->id }} ? null : {{ $marker->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                            <form method="POST" action="{{ route('admin.map-markers.destroy', $marker) }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr x-show="openId === {{ $marker->id }}" x-cloak>
+                                    <td colspan="5" class="px-5 pb-5">
+                                        <form method="POST" action="{{ route('admin.map-markers.update', $marker) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+                                            @csrf
+                                            @method('PATCH')
+                                            <div class="grid gap-4 xl:grid-cols-[1fr_220px]">
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $marker->name }}" required>
+                                                <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
+                                                    <option value="">Visible to all factions</option>
+                                                    @foreach ($factions as $faction)
+                                                        <option value="{{ $faction->id }}" @selected($marker->faction_id === $faction->id)>{{ $faction->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="grid gap-4 xl:grid-cols-[1fr_120px_120px_160px]">
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" value="{{ $marker->icon_class }}" required>
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" value="{{ $marker->map_x }}" required>
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" value="{{ $marker->map_y }}" required>
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" value="{{ $marker->color }}" placeholder="#7ead59">
+                                            </div>
+                                            <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description">{{ $marker->description }}</textarea>
+                                            <div class="flex justify-end">
+                                                <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

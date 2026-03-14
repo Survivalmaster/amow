@@ -2,174 +2,130 @@
     <x-slot name="header">
         <div>
             <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">Admin: Discord</p>
-            <p class="text-sm uppercase tracking-[0.22em] text-white/55">Manage WPNN webhook delivery and embed defaults.</p>
+            <p class="text-sm uppercase tracking-[0.22em] text-white/55">Manage reusable Discord webhooks for bot announcements.</p>
         </div>
     </x-slot>
 
     @include('admin.partials.nav')
 
-    <form
-        method="POST"
-        action="{{ route('admin.discord.update') }}"
-        class="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]"
-        x-data='{
-            messagePrefix: @json(old('wpnn_message_prefix', $settings->wpnn_message_prefix)),
-            authorName: @json(old('wpnn_author_name', $settings->wpnn_author_name)),
-            authorIconUrl: @json(old('wpnn_author_icon_url', $settings->wpnn_author_icon_url)),
-            thumbnailUrl: @json(old('wpnn_thumbnail_url', $settings->wpnn_thumbnail_url)),
-            embedColor: @json(old('wpnn_embed_color', $settings->wpnn_embed_color)),
-            footerText: @json(old('wpnn_footer_text', $settings->wpnn_footer_text)),
-            showTimestamp: @json((bool) old('wpnn_show_timestamp', $settings->wpnn_show_timestamp)),
-            sampleHeadline: "Plastic Front Bulletin",
-            sampleAnnouncement: "The Green command has secured another district after a dawn offensive. Citizens are advised to remain alert while logistics teams stabilize supply lanes.",
-            sampleImageUrl: "https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=1200&q=80",
-        }'
-    >
-        @csrf
-        @method('PATCH')
-
-        <div class="space-y-6">
-            <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
-                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">WPNN Webhook</p>
-                <div class="mt-5 grid gap-4">
-                    <label class="grid gap-2 text-sm text-white/70">
-                        <span class="uppercase tracking-[0.18em] text-white/45">Webhook URL</span>
-                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="url" name="wpnn_webhook_url" value="{{ old('wpnn_webhook_url', $settings->wpnn_webhook_url) }}" placeholder="https://discord.com/api/webhooks/...">
-                    </label>
-
-                    <label class="grid gap-2 text-sm text-white/70">
-                        <span class="uppercase tracking-[0.18em] text-white/45">Message Prefix</span>
-                        <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="wpnn_message_prefix" x-model="messagePrefix" placeholder="@everyone&#10;Breaking from WPNN...">{{ old('wpnn_message_prefix', $settings->wpnn_message_prefix) }}</textarea>
-                    </label>
-
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <label class="grid gap-2 text-sm text-white/70">
-                            <span class="uppercase tracking-[0.18em] text-white/45">Author Name</span>
-                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="text" name="wpnn_author_name" x-model="authorName" value="{{ old('wpnn_author_name', $settings->wpnn_author_name) }}" placeholder="World Plastica News Network">
-                        </label>
-
-                        <label class="grid gap-2 text-sm text-white/70">
-                            <span class="uppercase tracking-[0.18em] text-white/45">Author Icon URL</span>
-                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="url" name="wpnn_author_icon_url" x-model="authorIconUrl" value="{{ old('wpnn_author_icon_url', $settings->wpnn_author_icon_url) }}" placeholder="https://...">
-                        </label>
-                    </div>
-
-                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80">
-                        <input type="checkbox" name="wpnn_enabled" value="1" @checked(old('wpnn_enabled', $settings->wpnn_enabled))>
-                        <span>Enable WPNN announcements from Discord.</span>
-                    </label>
-                </div>
-            </section>
-
-            <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
-                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Embed Defaults</p>
-                <div class="mt-5 grid gap-4">
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <label class="grid gap-2 text-sm text-white/70">
-                            <span class="uppercase tracking-[0.18em] text-white/45">Embed Color</span>
-                            <input class="h-12 rounded-2xl border border-white/10 bg-black/25 px-4 py-2" type="text" name="wpnn_embed_color" x-model="embedColor" value="{{ old('wpnn_embed_color', $settings->wpnn_embed_color) }}" placeholder="#C65B3F">
-                        </label>
-
-                        <label class="grid gap-2 text-sm text-white/70">
-                            <span class="uppercase tracking-[0.18em] text-white/45">Thumbnail URL</span>
-                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="url" name="wpnn_thumbnail_url" x-model="thumbnailUrl" value="{{ old('wpnn_thumbnail_url', $settings->wpnn_thumbnail_url) }}" placeholder="https://...">
-                        </label>
-                    </div>
-
-                    <label class="grid gap-2 text-sm text-white/70">
-                        <span class="uppercase tracking-[0.18em] text-white/45">Footer Text</span>
-                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="text" name="wpnn_footer_text" x-model="footerText" value="{{ old('wpnn_footer_text', $settings->wpnn_footer_text) }}" placeholder="WPNN desk">
-                    </label>
-
-                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80">
-                        <input type="checkbox" name="wpnn_show_timestamp" value="1" x-model="showTimestamp" @checked(old('wpnn_show_timestamp', $settings->wpnn_show_timestamp))>
-                        <span>Show timestamp on WPNN embeds.</span>
-                    </label>
-                </div>
-
-                <div class="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-white/60">
-                    <p>Bot credentials still stay in `.env`.</p>
-                    <p class="mt-2">Webhook URL, presentation defaults, and formatting live here so staff can tune news output without changing the bot runtime.</p>
-                </div>
-            </section>
-        </div>
-
-        <section class="rounded-[2rem] border border-white/10 bg-[#111318] p-6 shadow-2xl shadow-black/30">
-            <div class="flex items-center justify-between gap-4">
+    <div x-data="{ openId: null }" class="space-y-6">
+        <form method="POST" action="{{ route('admin.discord.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30" x-data="{ name: 'Webhook', color: '#C65B3F', accessMode: 'anyone' }">
+            @csrf
+            <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Preview</p>
-                    <p class="text-sm uppercase tracking-[0.18em] text-white/40">Approximate Discord render</p>
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Webhook</p>
+                    <p class="text-sm uppercase tracking-[0.18em] text-white/40">Channel-bound Discord delivery</p>
                 </div>
-                <div class="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/45">
-                    Live
+                <div class="w-40 rounded-xl border border-white/10 bg-[#313338] p-3 text-xs text-[#dbdee1]">
+                    <p class="font-semibold text-white" x-text="name || 'Webhook Name'"></p>
+                    <div class="mt-3 rounded-lg border-l-4 bg-[#2b2d31] p-3" :style="`border-left-color: ${color || '#C65B3F'}`">
+                        <p>Preview</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="mt-6 rounded-[1.5rem] border border-white/10 bg-[#313338] p-5 text-[#dbdee1]">
-                <template x-if="messagePrefix">
-                    <p class="mb-4 whitespace-pre-line text-sm text-[#f2f3f5]" x-text="messagePrefix"></p>
-                </template>
-
-                <div class="flex gap-4">
-                    <div class="mt-1 h-10 w-10 shrink-0 rounded-full bg-[linear-gradient(135deg,#6fbb56,#214315)]"></div>
-                    <div class="min-w-0 flex-1">
-                        <div class="flex flex-wrap items-center gap-2 text-sm">
-                            <span class="font-semibold text-white">WPNN</span>
-                            <span class="rounded bg-[#5865f2] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white">App</span>
-                            <span class="text-xs text-[#949ba4]">Today at 18:00</span>
-                        </div>
-
-                        <div class="mt-3 overflow-hidden rounded-xl border-l-4 bg-[#2b2d31]" :style="`border-left-color: ${embedColor || '#c65b3f'}`">
-                            <div class="p-4">
-                                <div class="flex gap-4" :class="thumbnailUrl ? 'justify-between' : ''">
-                                    <div class="min-w-0 flex-1">
-                                        <template x-if="authorName">
-                                            <div class="mb-2 flex items-center gap-2 text-xs text-white">
-                                                <template x-if="authorIconUrl">
-                                                    <img :src="authorIconUrl" alt="" class="h-5 w-5 rounded-full object-cover">
-                                                </template>
-                                                <span class="font-semibold" x-text="authorName"></span>
-                                            </div>
-                                        </template>
-
-                                        <p class="text-base font-semibold text-white" x-text="sampleHeadline"></p>
-                                        <p class="mt-2 whitespace-pre-line text-sm leading-6 text-[#dbdee1]" x-text="sampleAnnouncement"></p>
-                                    </div>
-
-                                    <template x-if="thumbnailUrl">
-                                        <img :src="thumbnailUrl" alt="" class="h-20 w-20 rounded-lg object-cover">
-                                    </template>
-                                </div>
-
-                                <img :src="sampleImageUrl" alt="" class="mt-4 max-h-72 w-full rounded-xl object-cover">
-
-                                <div class="mt-4 flex items-center gap-2 text-xs text-[#949ba4]">
-                                    <template x-if="footerText">
-                                        <span x-text="`${footerText} | Posted by Admin User`"></span>
-                                    </template>
-                                    <template x-if="showTimestamp">
-                                        <span>• Just now</span>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" x-model="name" placeholder="WPNN" required>
+                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="command_name" placeholder="amownews" required>
+                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="command_description" placeholder="Post a news announcement to this webhook">
+                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="channel_id" placeholder="123456789012345678" required>
+                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" type="url" name="webhook_url" placeholder="https://discord.com/api/webhooks/..." required>
+                <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
+                    <input class="h-11 w-14 cursor-pointer rounded-lg border border-white/10 bg-transparent p-0" type="color" name="embed_color" x-model="color" value="#C65B3F" required>
+                    <input class="min-w-0 flex-1 bg-transparent text-sm uppercase tracking-[0.18em] text-white/70 outline-none" x-model="color" readonly>
                 </div>
+                <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="access_mode" x-model="accessMode" required>
+                    <option value="anyone">Anyone can use this command</option>
+                    <option value="role">Specific role only</option>
+                </select>
+                <input x-show="accessMode === 'role'" x-cloak class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="role_id" placeholder="Discord role ID for access control">
+                <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80">
+                    <input type="checkbox" name="is_active" value="1" checked>
+                    <span>Webhook is active.</span>
+                </label>
+            </div>
+
+            <div class="mt-5 flex justify-end">
+                <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Webhook</button>
+            </div>
+        </form>
+
+        <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-white/75">
+                    <thead class="bg-black/30 text-xs uppercase tracking-[0.2em] text-white/40">
+                        <tr>
+                            <th class="px-5 py-4 text-left">Name</th>
+                            <th class="px-5 py-4 text-left">Command</th>
+                            <th class="px-5 py-4 text-left">Channel ID</th>
+                            <th class="px-5 py-4 text-left">Access</th>
+                            <th class="px-5 py-4 text-left">Color</th>
+                            <th class="px-5 py-4 text-left">Status</th>
+                            <th class="px-5 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/10">
+                        @forelse ($webhooks as $webhook)
+                            <tr>
+                                <td class="px-5 py-4 font-semibold text-white">{{ $webhook->name }}</td>
+                                <td class="px-5 py-4">/{{ $webhook->command_name }}</td>
+                                <td class="px-5 py-4">{{ $webhook->channel_id }}</td>
+                                <td class="px-5 py-4">{{ $webhook->access_mode === 'role' ? 'Role: '.$webhook->role_id : 'Anyone' }}</td>
+                                <td class="px-5 py-4">
+                                    <span class="inline-flex items-center gap-2">
+                                        <span class="h-4 w-4 rounded-full border border-white/10" style="background-color: {{ $webhook->embed_color }}"></span>
+                                        {{ $webhook->embed_color }}
+                                    </span>
+                                </td>
+                                <td class="px-5 py-4">{{ $webhook->is_active ? 'Active' : 'Disabled' }}</td>
+                                <td class="px-5 py-4 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button type="button" @click="openId = openId === {{ $webhook->id }} ? null : {{ $webhook->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                        <form method="POST" action="{{ route('admin.discord.destroy', $webhook) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr x-show="openId === {{ $webhook->id }}" x-cloak>
+                                <td colspan="7" class="px-5 pb-5">
+                                    <form method="POST" action="{{ route('admin.discord.update', $webhook) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2" x-data='@json(["name" => $webhook->name, "color" => $webhook->embed_color, "accessMode" => $webhook->access_mode])'>
+                                        @csrf
+                                        @method('PATCH')
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" x-model="name" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="command_name" value="{{ $webhook->command_name }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="command_description" value="{{ $webhook->command_description }}" placeholder="Post a news announcement to this webhook">
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="channel_id" value="{{ $webhook->channel_id }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" type="url" name="webhook_url" value="{{ $webhook->webhook_url }}" required>
+                                        <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
+                                            <input class="h-11 w-14 cursor-pointer rounded-lg border border-white/10 bg-transparent p-0" type="color" name="embed_color" x-model="color" required>
+                                            <input class="min-w-0 flex-1 bg-transparent text-sm uppercase tracking-[0.18em] text-white/70 outline-none" x-model="color" readonly>
+                                        </div>
+                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="access_mode" x-model="accessMode" required>
+                                            <option value="anyone">Anyone can use this command</option>
+                                            <option value="role">Specific role only</option>
+                                        </select>
+                                        <input x-show="accessMode === 'role'" x-cloak class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="role_id" value="{{ $webhook->role_id }}" placeholder="Discord role ID for access control">
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80">
+                                            <input type="checkbox" name="is_active" value="1" @checked($webhook->is_active)>
+                                            <span>Webhook is active.</span>
+                                        </label>
+                                        <div class="lg:col-span-2 flex justify-end">
+                                            <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-5 py-8 text-center text-sm text-white/55">No Discord webhooks have been created yet.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </section>
-
-        <div class="lg:col-span-2 flex items-center justify-between gap-4">
-            <div class="text-sm text-green-400">
-                @if (session('status'))
-                    {{ session('status') }}
-                @endif
-                @if ($errors->any())
-                    {{ $errors->first() }}
-                @endif
-            </div>
-            <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">
-                Save Discord Settings
-            </button>
-        </div>
-    </form>
+    </div>
 </x-app-layout>

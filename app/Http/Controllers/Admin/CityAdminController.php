@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Faction;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -49,5 +50,16 @@ class CityAdminController extends Controller
         $city->update($validated);
 
         return back()->with('status', 'City updated.');
+    }
+
+    public function destroy(City $city): RedirectResponse
+    {
+        try {
+            $city->delete();
+        } catch (QueryException) {
+            return back()->withErrors('City could not be deleted because related records still exist.');
+        }
+
+        return back()->with('status', 'City deleted.');
     }
 }

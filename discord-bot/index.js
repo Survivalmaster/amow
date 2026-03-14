@@ -1,6 +1,7 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
 import { isAxiosError } from 'axios';
 import { api } from './api.js';
+import { fetchWebhookCommands } from './command-config.js';
 import { config } from './config.js';
 import { buildLinkHelpText, buildProfileEmbed } from './responses.js';
 
@@ -8,8 +9,14 @@ const client = new Client({
     intents: [GatewayIntentBits.Guilds],
 });
 
+let webhookCommands = [];
+
 client.once(Events.ClientReady, (readyClient) => {
     console.log(`Discord bot logged in as ${readyClient.user.tag}.`);
+});
+
+client.once(Events.ClientReady, async () => {
+    webhookCommands = await fetchWebhookCommands();
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -32,8 +39,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
         return;
     }
 
-    if (interaction.commandName === 'amowwpnn') {
-        await handleWpnn(interaction);
+    const webhookCommand = webhookCommands.find((command) => command.command_name === interaction.commandName);
+    if (webhookCommand) {
+        await handleWebhookCommand(interaction, webhookCommand);
     }
 });
 
@@ -144,10 +152,10 @@ async function handleWhoIs(interaction) {
     }
 }
 
-async function handleWpnn(interaction) {
+async function handleWebhookCommand(interaction, webhookCommand) {
     await interaction.deferReply({ ephemeral: true });
 
-    if (!memberHasRole(interaction, config.adminRoleId)) {
+    if (webhookCommand.access_mode === 'role' && !memberHasRole(interaction, webhookCommand.role_id)) {
         await interaction.editReply('You do not have permission to use this command.');
         return;
     }
@@ -163,9 +171,10 @@ async function handleWpnn(interaction) {
             announcement,
             image_url: imageUrl,
             author_name: interaction.user.globalName ?? interaction.user.username,
+            command_name: webhookCommand.command_name,
         });
 
-        await interaction.editReply('WPNN announcement posted.');
+        await interaction.editReply('Discord announcement posted.');
     } catch (error) {
         if (isAxiosError(error)) {
             if (error.response?.status === 403) {
@@ -175,13 +184,13 @@ async function handleWpnn(interaction) {
 
             const apiMessage = error.response?.data?.message;
             if (typeof apiMessage === 'string' && apiMessage.length > 0) {
-                await interaction.editReply(`The WPNN announcement could not be posted: ${apiMessage}`);
+                await interaction.editReply(`The Discord announcement could not be posted: ${apiMessage}`);
                 return;
             }
         }
 
-        console.error('amowwpnn failed', error);
-        await interaction.editReply('The WPNN announcement could not be posted.');
+        console.error(`webhook command ${webhookCommand.command_name} failed`, error);
+        await interaction.editReply('The Discord announcement could not be posted.');
     }
 }
 

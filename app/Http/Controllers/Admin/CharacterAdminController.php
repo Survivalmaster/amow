@@ -47,4 +47,12 @@ class CharacterAdminController extends Controller
 
         return back()->with('status', "Updated character {$character->name}.");
     }
+
+    public function destroy(Character $character): RedirectResponse
+    {
+        $name = $character->name;
+        $character->delete();
+
+        return back()->with('status', "Deleted character {$name}.");
+    }
 }
