@@ -154,7 +154,8 @@ async function handleWpnn(interaction) {
 
     const headline = interaction.options.getString('headline', true).trim();
     const announcement = interaction.options.getString('announcement', true).trim();
-    const imageUrl = interaction.options.getString('image_url')?.trim() || null;
+    const imageAttachment = interaction.options.getAttachment('image');
+    const imageUrl = imageAttachment?.url ?? interaction.options.getString('image_url')?.trim() ?? null;
 
     try {
         await api.post('/api/discord/wpnn', {

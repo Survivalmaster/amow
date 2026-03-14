@@ -32,21 +32,47 @@ class DiscordWebhookService
             'title' => $headline,
             'description' => $announcement,
             'color' => hexdec(ltrim($settings->wpnn_embed_color, '#')),
-            'footer' => [
-                'text' => trim($settings->wpnn_footer_text.' | Posted by '.$authorName),
-            ],
-            'timestamp' => now()->toIso8601String(),
         ];
+
+        if ($settings->wpnn_author_name) {
+            $embed['author'] = [
+                'name' => $settings->wpnn_author_name,
+            ];
+
+            if ($settings->wpnn_author_icon_url) {
+                $embed['author']['icon_url'] = $settings->wpnn_author_icon_url;
+            }
+        }
+
+        if ($settings->wpnn_thumbnail_url) {
+            $embed['thumbnail'] = ['url' => $settings->wpnn_thumbnail_url];
+        }
+
+        if ($settings->wpnn_footer_text) {
+            $embed['footer'] = [
+                'text' => trim($settings->wpnn_footer_text.' | Posted by '.$authorName),
+            ];
+        }
+
+        if ($settings->wpnn_show_timestamp) {
+            $embed['timestamp'] = now()->toIso8601String();
+        }
 
         if ($imageUrl) {
             $embed['image'] = ['url' => $imageUrl];
         }
 
+        $payload = [
+            'embeds' => [$embed],
+        ];
+
+        if ($settings->wpnn_message_prefix) {
+            $payload['content'] = $settings->wpnn_message_prefix;
+        }
+
         $this->http
             ->acceptJson()
-            ->post($settings->wpnn_webhook_url, [
-                'embeds' => [$embed],
-            ])
+            ->post($settings->wpnn_webhook_url, $payload)
             ->throw();
     }
 }

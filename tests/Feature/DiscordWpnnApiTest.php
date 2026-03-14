@@ -8,8 +8,13 @@ test('discord wpnn api posts to configured webhook', function () {
 
     DiscordSetting::current()->update([
         'wpnn_webhook_url' => 'https://discord.com/api/webhooks/test/example',
+        'wpnn_message_prefix' => '@everyone',
+        'wpnn_author_name' => 'WPNN Central',
+        'wpnn_author_icon_url' => 'https://example.com/author.png',
+        'wpnn_thumbnail_url' => 'https://example.com/thumb.png',
         'wpnn_embed_color' => '#112233',
         'wpnn_footer_text' => 'Frontline desk',
+        'wpnn_show_timestamp' => true,
         'wpnn_enabled' => true,
     ]);
 
@@ -36,8 +41,13 @@ test('discord wpnn api posts to configured webhook', function () {
         $data = $request->data();
 
         return $request->url() === 'https://discord.com/api/webhooks/test/example'
+            && $data['content'] === '@everyone'
             && $data['embeds'][0]['title'] === 'Plastic Front Update'
-            && $data['embeds'][0]['color'] === hexdec('112233');
+            && $data['embeds'][0]['color'] === hexdec('112233')
+            && $data['embeds'][0]['author']['name'] === 'WPNN Central'
+            && $data['embeds'][0]['author']['icon_url'] === 'https://example.com/author.png'
+            && $data['embeds'][0]['thumbnail']['url'] === 'https://example.com/thumb.png'
+            && isset($data['embeds'][0]['timestamp']);
     });
 });
 

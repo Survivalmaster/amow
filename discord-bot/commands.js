@@ -39,10 +39,16 @@ export const commands = [
                 .setRequired(true)
                 .setMaxLength(1900)
         )
+        .addAttachmentOption((option) =>
+            option
+                .setName('image')
+                .setDescription('Optional image attachment for the news post.')
+                .setRequired(false)
+        )
         .addStringOption((option) =>
             option
                 .setName('image_url')
-                .setDescription('Optional image URL for the news post.')
+                .setDescription('Optional image URL if you do not want to upload a file.')
                 .setRequired(false)
         ),
 ];
