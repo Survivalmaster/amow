@@ -24,6 +24,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.commandName === 'amowprofile') {
         await handleProfile(interaction);
+        return;
+    }
+
+    if (interaction.commandName === 'amowwhois') {
+        await handleWhoIs(interaction);
     }
 });
 
@@ -94,6 +99,42 @@ async function handleProfile(interaction) {
         }
 
         console.error('amowprofile failed', error);
+        await interaction.editReply('Profile lookup failed due to a server error.');
+    }
+}
+
+async function handleWhoIs(interaction) {
+    await interaction.deferReply();
+
+    const targetUser = interaction.options.getUser('user', true);
+
+    try {
+        const response = await api.get(`/api/discord/profile/${targetUser.id}`);
+
+        await interaction.editReply({
+            content: `AMOW profile for <@${targetUser.id}>`,
+            embeds: [buildProfileEmbed(response.data)],
+        });
+    } catch (error) {
+        if (isAxiosError(error)) {
+            if (error.response?.status === 404) {
+                await interaction.editReply(`No linked AMOW account was found for <@${targetUser.id}>.`);
+                return;
+            }
+
+            if (error.response?.status === 403) {
+                await interaction.editReply('The bot could not authenticate with the AMOW website API.');
+                return;
+            }
+
+            const apiMessage = error.response?.data?.message;
+            if (typeof apiMessage === 'string' && apiMessage.length > 0) {
+                await interaction.editReply(`Profile lookup failed: ${apiMessage}`);
+                return;
+            }
+        }
+
+        console.error('amowwhois failed', error);
         await interaction.editReply('Profile lookup failed due to a server error.');
     }
 }

@@ -13,6 +13,15 @@ export const commands = [
     new SlashCommandBuilder()
         .setName('amowprofile')
         .setDescription('Show the linked AMOW character profile for this Discord account.'),
+    new SlashCommandBuilder()
+        .setName('amowwhois')
+        .setDescription('Show a linked AMOW character profile publicly in the channel.')
+        .addUserOption((option) =>
+            option
+                .setName('user')
+                .setDescription('The Discord user whose linked AMOW profile you want to show.')
+                .setRequired(true)
+        ),
 ];
 
 export const commandPayload = commands.map((command) => command.toJSON());
