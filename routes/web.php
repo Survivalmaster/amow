@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\MapMarkerAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\DiscordLinkController;
 use App\Http\Controllers\FactionController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\LeaderboardController;
@@ -50,6 +51,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/discord-link', [DiscordLinkController::class, 'store'])->name('profile.discord-link.store');
+    Route::delete('/profile/discord-link', [DiscordLinkController::class, 'destroy'])->name('profile.discord-link.destroy');
 
     Route::prefix('admin')->middleware('can:access-admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');

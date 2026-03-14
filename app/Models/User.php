@@ -22,6 +22,12 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'discord_user_id',
+        'discord_username',
+        'discord_avatar',
+        'discord_link_token',
+        'discord_link_token_expires_at',
+        'discord_linked_at',
         'password',
         'is_admin',
     ];
@@ -45,6 +51,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'discord_link_token_expires_at' => 'datetime',
+            'discord_linked_at' => 'datetime',
             'is_admin' => 'boolean',
             'password' => 'hashed',
         ];

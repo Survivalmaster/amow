@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'discord' => [
+        'application_id' => env('DISCORD_APPLICATION_ID'),
+        'public_key' => env('DISCORD_PUBLIC_KEY'),
+        'bot_token' => env('DISCORD_BOT_TOKEN'),
+        'guild_id' => env('DISCORD_GUILD_ID'),
+        'default_channel_id' => env('DISCORD_DEFAULT_CHANNEL_ID'),
+        'linking_secret' => env('DISCORD_LINKING_SECRET'),
+        'link_url' => env('DISCORD_LINK_URL'),
+    ],
+
 ];
