@@ -87,6 +87,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/discord', [DiscordWebhookAdminController::class, 'store'])->name('discord.store');
         Route::patch('/discord/{discordWebhook}', [DiscordWebhookAdminController::class, 'update'])->name('discord.update');
         Route::delete('/discord/{discordWebhook}', [DiscordWebhookAdminController::class, 'destroy'])->name('discord.destroy');
+        Route::post('/discord/commands', [DiscordWebhookAdminController::class, 'storeCommand'])->name('discord.commands.store');
+        Route::patch('/discord/commands/{discordCommand}', [DiscordWebhookAdminController::class, 'updateCommand'])->name('discord.commands.update');
+        Route::delete('/discord/commands/{discordCommand}', [DiscordWebhookAdminController::class, 'destroyCommand'])->name('discord.commands.destroy');
     });
 });
 

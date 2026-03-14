@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DiscordWebhook;
+use App\Models\DiscordCommand;
 use App\Services\Discord\DiscordWebhookService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,19 +32,20 @@ class DiscordWpnnController extends Controller
             'command_name' => ['required', 'string', 'max:32'],
         ])->validate();
 
-        $webhook = DiscordWebhook::query()
+        $command = DiscordCommand::query()
+            ->with('webhook')
             ->where('command_name', $payload['command_name'])
             ->first();
 
-        if (! $webhook) {
+        if (! $command) {
             return response()->json([
-                'message' => 'No Discord webhook is configured for this command.',
+                'message' => 'No Discord command is configured for this request.',
             ], 422);
         }
 
         try {
             $webhooks->postWpnnAnnouncement(
-                $webhook,
+                $command->webhook,
                 $payload['headline'],
                 $payload['announcement'],
                 $payload['author_name'],

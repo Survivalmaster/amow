@@ -1,18 +1,25 @@
 <?php
 
+use App\Models\DiscordCommand;
 use App\Models\DiscordWebhook;
 use Illuminate\Support\Facades\Http;
 
 test('discord wpnn api posts to configured webhook', function () {
     config()->set('services.discord.linking_secret', 'test-secret');
 
-    DiscordWebhook::query()->create([
+    $webhook = DiscordWebhook::query()->create([
         'name' => 'WPNN',
-        'command_name' => 'amowwpnn',
-        'command_description' => 'Post WPNN news',
         'channel_id' => '1482397590933864608',
         'webhook_url' => 'https://discord.com/api/webhooks/test/example',
         'embed_color' => '#112233',
+        'is_active' => true,
+    ]);
+
+    DiscordCommand::query()->create([
+        'discord_webhook_id' => $webhook->id,
+        'name' => 'WPNN News Command',
+        'command_name' => 'amowwpnn',
+        'command_description' => 'Post WPNN news',
         'access_mode' => 'role',
         'role_id' => '805824212060078142',
         'is_active' => true,
@@ -52,13 +59,19 @@ test('discord wpnn api posts to configured webhook', function () {
 test('discord wpnn api rejects when wpnn is disabled', function () {
     config()->set('services.discord.linking_secret', 'test-secret');
 
-    DiscordWebhook::query()->create([
+    $webhook = DiscordWebhook::query()->create([
         'name' => 'WPNN',
-        'command_name' => 'amowwpnn',
-        'command_description' => 'Post WPNN news',
         'channel_id' => '1482397590933864608',
         'webhook_url' => 'https://discord.com/api/webhooks/test/example',
         'embed_color' => '#112233',
+        'is_active' => false,
+    ]);
+
+    DiscordCommand::query()->create([
+        'discord_webhook_id' => $webhook->id,
+        'name' => 'WPNN News Command',
+        'command_name' => 'amowwpnn',
+        'command_description' => 'Post WPNN news',
         'access_mode' => 'anyone',
         'is_active' => false,
     ]);
