@@ -22,5 +22,4 @@ export const config = {
     guildId: requireEnv('DISCORD_GUILD_ID'),
     linkSecret: requireEnv('DISCORD_LINKING_SECRET'),
     linkUrl: process.env.DISCORD_LINK_URL || '',
-    wpnnWebhookUrl: process.env.DISCORD_WPNN_WEBHOOK_URL || '',
 };

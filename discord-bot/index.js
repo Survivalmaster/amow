@@ -3,7 +3,6 @@ import { isAxiosError } from 'axios';
 import { api } from './api.js';
 import { config } from './config.js';
 import { buildLinkHelpText, buildProfileEmbed } from './responses.js';
-import { postWpnnAnnouncement } from './webhook.js';
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds],
@@ -158,15 +157,28 @@ async function handleWpnn(interaction) {
     const imageUrl = interaction.options.getString('image_url')?.trim() || null;
 
     try {
-        await postWpnnAnnouncement({
+        await api.post('/api/discord/wpnn', {
             headline,
             announcement,
-            imageUrl,
-            authorTag: interaction.user.globalName ?? interaction.user.username,
+            image_url: imageUrl,
+            author_name: interaction.user.globalName ?? interaction.user.username,
         });
 
         await interaction.editReply('WPNN announcement posted.');
     } catch (error) {
+        if (isAxiosError(error)) {
+            if (error.response?.status === 403) {
+                await interaction.editReply('The bot could not authenticate with the AMOW website API.');
+                return;
+            }
+
+            const apiMessage = error.response?.data?.message;
+            if (typeof apiMessage === 'string' && apiMessage.length > 0) {
+                await interaction.editReply(`The WPNN announcement could not be posted: ${apiMessage}`);
+                return;
+            }
+        }
+
         console.error('amowwpnn failed', error);
         await interaction.editReply('The WPNN announcement could not be posted.');
     }

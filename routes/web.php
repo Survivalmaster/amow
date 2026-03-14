@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ItemAdminController;
 use App\Http\Controllers\Admin\LocationAdminController;
 use App\Http\Controllers\Admin\MapMarkerAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\Admin\DiscordAdminController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\DiscordLinkController;
@@ -76,6 +77,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/map-markers', [MapMarkerAdminController::class, 'store'])->name('map-markers.store');
         Route::patch('/map-markers/{mapMarker}', [MapMarkerAdminController::class, 'update'])->name('map-markers.update');
         Route::delete('/map-markers/{mapMarker}', [MapMarkerAdminController::class, 'destroy'])->name('map-markers.destroy');
+        Route::get('/discord', [DiscordAdminController::class, 'index'])->name('discord.index');
+        Route::patch('/discord', [DiscordAdminController::class, 'update'])->name('discord.update');
     });
 });
 
