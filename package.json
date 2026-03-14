@@ -4,7 +4,13 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "discord:bot": "node discord-bot/index.js",
+        "discord:register": "node discord-bot/register-commands.js"
+    },
+    "dependencies": {
+        "discord.js": "^14.22.1",
+        "dotenv": "^17.2.3"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",

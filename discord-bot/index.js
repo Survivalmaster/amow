@@ -1,0 +1,75 @@
+import { Client, Events, GatewayIntentBits } from 'discord.js';
+import { AxiosError } from 'axios';
+import { api } from './api.js';
+import { config } from './config.js';
+import { buildLinkHelpText, buildProfileEmbed } from './responses.js';
+
+const client = new Client({
+    intents: [GatewayIntentBits.Guilds],
+});
+
+client.once(Events.ClientReady, (readyClient) => {
+    console.log(`Discord bot logged in as ${readyClient.user.tag}.`);
+});
+
+client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) {
+        return;
+    }
+
+    if (interaction.commandName === 'amowlink') {
+        await handleLink(interaction);
+        return;
+    }
+
+    if (interaction.commandName === 'amowprofile') {
+        await handleProfile(interaction);
+    }
+});
+
+async function handleLink(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+
+    const code = interaction.options.getString('code', true).trim().toUpperCase();
+
+    try {
+        await api.post('/api/discord/link/complete', {
+            token: code,
+            discord_user_id: interaction.user.id,
+            discord_username: interaction.user.tag,
+            discord_avatar: interaction.user.avatar,
+        });
+
+        await interaction.editReply('Your Discord account is now linked to AMOW.');
+    } catch (error) {
+        if (error instanceof AxiosError && error.response?.status === 422) {
+            await interaction.editReply(`That code is invalid or expired. ${buildLinkHelpText(config.linkUrl)}`);
+            return;
+        }
+
+        console.error(error);
+        await interaction.editReply('Linking failed due to a server error.');
+    }
+}
+
+async function handleProfile(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+
+    try {
+        const response = await api.get(`/api/discord/profile/${interaction.user.id}`);
+
+        await interaction.editReply({
+            embeds: [buildProfileEmbed(response.data)],
+        });
+    } catch (error) {
+        if (error instanceof AxiosError && error.response?.status === 404) {
+            await interaction.editReply(`No linked AMOW account was found. ${buildLinkHelpText(config.linkUrl)}`);
+            return;
+        }
+
+        console.error(error);
+        await interaction.editReply('Profile lookup failed due to a server error.');
+    }
+}
+
+await client.login(config.botToken);
