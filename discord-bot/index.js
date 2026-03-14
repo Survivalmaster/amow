@@ -1,5 +1,5 @@
 import { Client, Events, GatewayIntentBits } from 'discord.js';
-import { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { api } from './api.js';
 import { config } from './config.js';
 import { buildLinkHelpText, buildProfileEmbed } from './responses.js';
@@ -36,18 +36,31 @@ async function handleLink(interaction) {
         await api.post('/api/discord/link/complete', {
             token: code,
             discord_user_id: interaction.user.id,
-            discord_username: interaction.user.tag,
+            discord_username: interaction.user.globalName ?? interaction.user.username,
             discord_avatar: interaction.user.avatar,
         });
 
         await interaction.editReply('Your Discord account is now linked to AMOW.');
     } catch (error) {
-        if (error instanceof AxiosError && error.response?.status === 422) {
-            await interaction.editReply(`That code is invalid or expired. ${buildLinkHelpText(config.linkUrl)}`);
-            return;
+        if (isAxiosError(error)) {
+            if (error.response?.status === 422) {
+                await interaction.editReply(`That code is invalid or expired. ${buildLinkHelpText(config.linkUrl)}`);
+                return;
+            }
+
+            if (error.response?.status === 403) {
+                await interaction.editReply('The bot could not authenticate with the AMOW website API.');
+                return;
+            }
+
+            const apiMessage = error.response?.data?.message;
+            if (typeof apiMessage === 'string' && apiMessage.length > 0) {
+                await interaction.editReply(`Linking failed: ${apiMessage}`);
+                return;
+            }
         }
 
-        console.error(error);
+        console.error('amowlink failed', error);
         await interaction.editReply('Linking failed due to a server error.');
     }
 }
@@ -62,12 +75,25 @@ async function handleProfile(interaction) {
             embeds: [buildProfileEmbed(response.data)],
         });
     } catch (error) {
-        if (error instanceof AxiosError && error.response?.status === 404) {
-            await interaction.editReply(`No linked AMOW account was found. ${buildLinkHelpText(config.linkUrl)}`);
-            return;
+        if (isAxiosError(error)) {
+            if (error.response?.status === 404) {
+                await interaction.editReply(`No linked AMOW account was found. ${buildLinkHelpText(config.linkUrl)}`);
+                return;
+            }
+
+            if (error.response?.status === 403) {
+                await interaction.editReply('The bot could not authenticate with the AMOW website API.');
+                return;
+            }
+
+            const apiMessage = error.response?.data?.message;
+            if (typeof apiMessage === 'string' && apiMessage.length > 0) {
+                await interaction.editReply(`Profile lookup failed: ${apiMessage}`);
+                return;
+            }
         }
 
-        console.error(error);
+        console.error('amowprofile failed', error);
         await interaction.editReply('Profile lookup failed due to a server error.');
     }
 }
