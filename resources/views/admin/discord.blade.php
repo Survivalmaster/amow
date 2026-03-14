@@ -13,8 +13,8 @@
             @csrf
             <div class="flex items-start justify-between gap-4">
                 <div>
-                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Webhook</p>
-                    <p class="text-sm uppercase tracking-[0.18em] text-white/40">Channel-bound Discord delivery</p>
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Webhook Command</p>
+                    <p class="mt-2 text-sm text-white/60">Creates a Discord slash command tied to one webhook, one target channel, and one access rule.</p>
                 </div>
                 <div class="w-40 rounded-xl border border-white/10 bg-[#313338] p-3 text-xs text-[#dbdee1]">
                     <p class="font-semibold text-white" x-text="name || 'Webhook Name'"></p>

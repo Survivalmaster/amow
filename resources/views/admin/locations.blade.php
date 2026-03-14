@@ -7,6 +7,7 @@
         <form method="POST" action="{{ route('admin.locations.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             @csrf
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Location</p>
+            <p class="mt-2 text-sm text-white/60">Adds a visitable place inside a city, with optional rank or licence restrictions for access.</p>
             <div class="mt-5 grid gap-4 lg:grid-cols-2">
                 <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="city_id" required>
                     @foreach ($cities as $city)

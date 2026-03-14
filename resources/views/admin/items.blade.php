@@ -7,6 +7,7 @@
         <form method="POST" action="{{ route('admin.items.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             @csrf
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Item</p>
+            <p class="mt-2 text-sm text-white/60">Creates an inventory or shop item, including cost, stock, and any role, rank, or licence requirements.</p>
             <div class="mt-5 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Name" required>
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="Slug" required>

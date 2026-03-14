@@ -53,6 +53,8 @@
         <div class="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
             <form method="POST" action="{{ route('admin.map-markers.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 @csrf
+                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Map Marker</p>
+                <p class="mt-2 text-sm text-white/60">Places a visual marker on the world map for all factions or a faction-specific audience.</p>
                 <div class="grid gap-4">
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Marker name" required>
                     <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">

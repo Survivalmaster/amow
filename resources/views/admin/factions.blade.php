@@ -7,6 +7,7 @@
         <form method="POST" action="{{ route('admin.factions.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             @csrf
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Faction</p>
+            <p class="mt-2 text-sm text-white/60">Adds a new major army or civilian bloc that players can belong to across the world map.</p>
             <div class="mt-5 grid gap-4 lg:grid-cols-2">
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Name" required>
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="Slug" required>
