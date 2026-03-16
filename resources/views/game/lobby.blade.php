@@ -16,67 +16,23 @@
             font: inherit;
         }
 
-        .lobby-city-marker {
-            min-width: 6rem;
-            padding: 0.55rem 0.8rem;
-            border: 1px solid rgba(126, 173, 89, 0.45);
-            border-radius: 9999px;
-            background: rgba(7, 16, 12, 0.88);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-            text-align: center;
-            transition: transform 0.15s ease, border-color 0.15s ease;
-        }
-
-        .lobby-city-marker:hover {
-            transform: scale(1.04);
-            border-color: rgba(126, 173, 89, 0.95);
-        }
-
-        .lobby-city-marker__name {
-            display: block;
-            color: #f4ecd0;
-            font-family: Teko, sans-serif;
-            font-size: 1.25rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            line-height: 1;
-        }
-
-        .lobby-city-marker__cta {
-            display: block;
-            margin-top: 0.15rem;
-            color: #c2a84f;
-            font-size: 10px;
-            letter-spacing: 0.24em;
-            text-transform: uppercase;
-        }
-
         .lobby-map-marker {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 2.75rem;
-            height: 2.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 9999px;
             background: rgba(4, 8, 6, 0.92);
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+            font-size: 0.85rem;
         }
     </style>
 @endpush
 
 @php
     $mapMaxZoom = 8;
-    $cityPayload = $cities->map(function ($city) {
-        return [
-            'name' => $city->name,
-            'slug' => $city->slug,
-            'map_x' => (int) $city->map_x,
-            'map_y' => (int) $city->map_y,
-            'description' => $city->description,
-            'url' => route('cities.show', $city->slug),
-        ];
-    })->values();
     $markerPayload = $mapMarkers->map(function ($marker) {
         return [
             'name' => $marker->name,
@@ -104,7 +60,6 @@
                 return;
             }
 
-            const cities = @json($cityPayload);
             const markers = @json($markerPayload);
             const mapExtent = [0, -8192, 8192, 0];
             const mapMinZoom = 0;
@@ -143,7 +98,8 @@
                 crs.unproject(L.point(mapExtent[0], mapExtent[1])),
             ]);
 
-            map.fitBounds(bounds);
+            map.fitBounds(bounds, { padding: [0, 0] });
+            map.setMinZoom(map.getZoom());
             map.setMaxBounds(bounds.pad(0.05));
 
             const pointFromPercent = (xPercent, yPercent) => {
@@ -152,31 +108,12 @@
                 return crs.unproject(L.point(projectedX, projectedY));
             };
 
-            cities.forEach((city) => {
-                const icon = L.divIcon({
-                    className: '',
-                    html: `
-                        <a href="${city.url}" class="lobby-city-marker">
-                            <span class="lobby-city-marker__name">${city.name}</span>
-                            <span class="lobby-city-marker__cta">Travel</span>
-                        </a>
-                    `,
-                    iconSize: [120, 56],
-                    iconAnchor: [60, 28],
-                });
-
-                const marker = L.marker(pointFromPercent(city.map_x, city.map_y), { icon }).addTo(map);
-                marker.on('click', () => {
-                    window.location.href = city.url;
-                });
-            });
-
             markers.forEach((marker) => {
                 const icon = L.divIcon({
                     className: '',
-                    html: `<div class="lobby-map-marker" style="color: ${marker.color};"><i class="${marker.icon_class} text-lg"></i></div>`,
-                    iconSize: [44, 44],
-                    iconAnchor: [22, 22],
+                    html: `<div class="lobby-map-marker" style="color: ${marker.color};"><i class="${marker.icon_class}" style="font-size: 0.85rem;"></i></div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
                 });
 
                 L.marker(pointFromPercent(marker.map_x, marker.map_y), { icon })

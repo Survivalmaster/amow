@@ -20,12 +20,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 2.5rem;
-            height: 2.5rem;
+            width: 1.75rem;
+            height: 1.75rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 9999px;
             background: rgba(4, 8, 6, 0.92);
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+            font-size: 0.8rem;
         }
 
         .world-marker.is-preview {
@@ -106,7 +107,8 @@
                 crs.unproject(L.point(mapExtent[0], mapExtent[1])),
             ]);
 
-            map.fitBounds(bounds);
+            map.fitBounds(bounds, { padding: [0, 0] });
+            map.setMinZoom(map.getZoom());
             map.setMaxBounds(bounds.pad(0.05));
 
             const pointFromPercent = (xPercent, yPercent) => {
@@ -123,15 +125,20 @@
                 };
             };
 
-            const previewIcon = L.divIcon({
-                className: '',
-                html: '<div class="world-marker is-preview"><i class="fa-solid fa-crosshairs text-[10px]"></i></div>',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20],
-            });
+            const buildPreviewIcon = () => {
+                const iconClass = alpineData?.iconClass?.trim() || 'fa-solid fa-crosshairs';
+                const color = alpineData?.color?.trim() || '#7ead59';
+
+                return L.divIcon({
+                    className: '',
+                    html: `<div class="world-marker is-preview" style="color: ${color};"><i class="${iconClass}" style="font-size: 0.72rem;"></i></div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
+                });
+            };
 
             const previewMarker = L.marker(pointFromPercent(alpineData?.x ?? 50, alpineData?.y ?? 50), {
-                icon: previewIcon,
+                icon: buildPreviewIcon(),
                 interactive: false,
                 keyboard: false,
             }).addTo(map);
@@ -142,6 +149,7 @@
                 }
 
                 previewMarker.setLatLng(pointFromPercent(Number(alpineData.x), Number(alpineData.y)));
+                previewMarker.setIcon(buildPreviewIcon());
             };
 
             map.on('click', (event) => {
@@ -158,9 +166,9 @@
             markers.forEach((marker) => {
                 const icon = L.divIcon({
                     className: '',
-                    html: `<div class="world-marker" style="color: ${marker.color};"><i class="${marker.icon_class} text-sm"></i></div>`,
-                    iconSize: [40, 40],
-                    iconAnchor: [20, 20],
+                    html: `<div class="world-marker" style="color: ${marker.color};"><i class="${marker.icon_class}" style="font-size: 0.8rem;"></i></div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
                 });
 
                 const leafletMarker = L.marker(pointFromPercent(marker.map_x, marker.map_y), { icon }).addTo(map);
@@ -180,12 +188,17 @@
 
                     alpineData.x = marker.map_x;
                     alpineData.y = marker.map_y;
+                    alpineData.iconClass = marker.icon_class;
+                    alpineData.color = marker.color;
                     syncPreview();
                 });
             });
 
             ['x', 'y'].forEach((key) => {
                 alpineRoot?.querySelector(`[name="map_${key}"]`)?.addEventListener('input', syncPreview);
+            });
+            ['icon_class', 'color'].forEach((name) => {
+                alpineRoot?.querySelector(`[name="${name}"]`)?.addEventListener('input', syncPreview);
             });
         });
     </script>
@@ -199,7 +212,9 @@
     <div
         x-data="{
             x: 50,
-            y: 50
+            y: 50,
+            iconClass: 'fa-solid fa-flag',
+            color: '#c2a84f'
         }"
         class="space-y-6"
     >
@@ -229,7 +244,7 @@
                             <option value="{{ $faction->id }}">{{ $faction->name }}</option>
                         @endforeach
                     </select>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class, e.g. fa-solid fa-tower-observation" required>
+                    <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class, e.g. fa-solid fa-tower-observation" required>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-white/50">Map X %</label>
@@ -240,7 +255,7 @@
                             <input x-model="y" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" required>
                         </div>
                     </div>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" placeholder="Hex color, e.g. #d94a3a">
+                    <input x-model="color" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" placeholder="Hex color, e.g. #d94a3a">
                     <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Marker description"></textarea>
                     <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-sm text-white/65">
                         Click the map above to fill X/Y. Suggested icons: `fa-solid fa-flag`, `fa-solid fa-industry`, `fa-solid fa-coins`, `fa-solid fa-skull-crossbones`, `fa-solid fa-landmark`.
