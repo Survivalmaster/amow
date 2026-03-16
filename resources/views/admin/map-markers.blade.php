@@ -33,6 +33,21 @@
             color: #7ead59;
             border-color: rgba(126, 173, 89, 0.4);
         }
+
+        .polygon-point-handle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 1px solid rgba(244, 236, 208, 0.45);
+            border-radius: 9999px;
+            background: rgba(12, 20, 15, 0.94);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            color: #f4ecd0;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
     </style>
 @endpush
 
@@ -85,6 +100,7 @@
             polygonFillColor: config.polygonFillColor ?? '#7ead59',
             polygonFillOpacity: config.polygonFillOpacity ?? 0.25,
             polygonStrokeWeight: config.polygonStrokeWeight ?? 2,
+            selectedPolygonPointIndex: null,
             polygonPoints: Array.isArray(config.polygonPoints) ? config.polygonPoints.map((point) => ({
                 x: Number(point.x ?? 0),
                 y: Number(point.y ?? 0),
@@ -127,14 +143,17 @@
             },
             removePolygonPoint(index) {
                 this.polygonPoints.splice(index, 1);
+                this.selectedPolygonPointIndex = this.polygonPoints.length ? Math.min(index, this.polygonPoints.length - 1) : null;
                 this.syncPolygonJson();
             },
             clearPolygonPoints() {
                 this.polygonPoints = [];
+                this.selectedPolygonPointIndex = null;
                 this.syncPolygonJson();
             },
             setPolygonPoints(points) {
                 this.polygonPoints = Array.isArray(points) ? points.map((point) => this.normalizePoint(point)) : [];
+                this.selectedPolygonPointIndex = null;
                 this.syncPolygonJson();
             },
         });
@@ -239,6 +258,14 @@
                 fillOpacity: Number(alpineData?.polygonFillOpacity ?? 0.25),
                 weight: Number(alpineData?.polygonStrokeWeight ?? 2),
             }).addTo(map);
+            const polygonPointHandles = L.layerGroup().addTo(map);
+
+            const buildPointHandleIcon = (index) => L.divIcon({
+                className: '',
+                html: `<div class="polygon-point-handle">${index + 1}</div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+            });
 
             const syncPreview = () => {
                 if (!alpineData) {
@@ -254,6 +281,32 @@
                     weight: Number(alpineData.polygonStrokeWeight || 2),
                 });
                 previewPolygon.setLatLngs((alpineData.polygonPoints || []).map((point) => pointFromPercent(point.x, point.y)));
+                polygonPointHandles.clearLayers();
+
+                if (alpineData.mapMode !== 'polygon') {
+                    return;
+                }
+
+                (alpineData.polygonPoints || []).forEach((point, index) => {
+                    const handle = L.marker(pointFromPercent(point.x, point.y), {
+                        pane: 'markerPaneTop',
+                        draggable: true,
+                        icon: buildPointHandleIcon(index),
+                    });
+
+                    handle.on('drag', (dragEvent) => {
+                        const coords = percentFromLatLng(dragEvent.target.getLatLng());
+                        alpineData.polygonPoints[index] = coords;
+                        alpineData.selectedPolygonPointIndex = index;
+                        alpineData.syncPolygonJson();
+                    });
+
+                    handle.on('click', () => {
+                        alpineData.selectedPolygonPointIndex = index;
+                    });
+
+                    polygonPointHandles.addLayer(handle);
+                });
             };
 
             map.on('click', (event) => {
@@ -265,6 +318,7 @@
 
                 if (alpineData.mapMode === 'polygon') {
                     alpineData.polygonPoints.push(coords);
+                    alpineData.selectedPolygonPointIndex = alpineData.polygonPoints.length - 1;
                     alpineData.syncPolygonJson();
                 } else {
                     alpineData.x = coords.x;
@@ -305,6 +359,7 @@
                     alpineData.polygonFillColor = polygon.fill_color;
                     alpineData.polygonFillOpacity = polygon.fill_opacity;
                     alpineData.polygonStrokeWeight = polygon.stroke_weight;
+                    alpineData.selectedPolygonPointIndex = null;
                     alpineData.syncPolygonJson();
                     syncPreview();
                 });
@@ -338,6 +393,7 @@
                     alpineData.y = marker.map_y;
                     alpineData.iconClass = marker.icon_class;
                     alpineData.color = marker.color;
+                    alpineData.selectedPolygonPointIndex = null;
                     syncPreview();
                 });
             });
@@ -386,23 +442,51 @@
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Map Marker</p>
                 <p class="mt-2 text-sm text-white/60">Markers stay above the polygon layers so players can still click them.</p>
                 <div class="mt-4 grid gap-4">
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Marker name" required>
-                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
-                        <option value="">Visible to all factions</option>
-                        @foreach ($factions as $faction)
-                            <option value="{{ $faction->id }}">{{ $faction->name }}</option>
-                        @endforeach
-                    </select>
-                    <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class" required>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Marker Name</span>
+                        <span class="text-xs text-white/45">The label shown to players in the popup.</span>
+                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Marker name" required>
+                    </label>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Faction Visibility</span>
+                        <span class="text-xs text-white/45">Leave shared if every faction should see this marker.</span>
+                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
+                            <option value="">Visible to all factions</option>
+                            @foreach ($factions as $faction)
+                                <option value="{{ $faction->id }}">{{ $faction->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Marker Icon</span>
+                        <span class="text-xs text-white/45">Use a Font Awesome class for the marker symbol.</span>
+                        <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class" required>
+                    </label>
                     <div class="grid grid-cols-2 gap-4">
-                        <input x-model="x" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" placeholder="Map X %" required>
-                        <input x-model="y" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" placeholder="Map Y %" required>
+                        <label class="grid gap-2 text-sm text-white/70">
+                            <span class="uppercase tracking-[0.18em] text-white/45">Map X</span>
+                            <span class="text-xs text-white/45">Horizontal percentage position.</span>
+                            <input x-model="x" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" placeholder="Map X %" required>
+                        </label>
+                        <label class="grid gap-2 text-sm text-white/70">
+                            <span class="uppercase tracking-[0.18em] text-white/45">Map Y</span>
+                            <span class="text-xs text-white/45">Vertical percentage position.</span>
+                            <input x-model="y" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" placeholder="Map Y %" required>
+                        </label>
                     </div>
-                    <div class="grid grid-cols-[84px_1fr] gap-3">
-                        <input x-model="color" class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" name="color_picker" type="color" aria-label="Marker color picker">
-                        <input x-model="color" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" placeholder="Hex color">
-                    </div>
-                    <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Marker description"></textarea>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Marker Color</span>
+                        <span class="text-xs text-white/45">Pick the icon color for this marker.</span>
+                        <div class="grid grid-cols-[84px_1fr] gap-3">
+                            <input x-model="color" class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" name="color_picker" type="color" aria-label="Marker color picker">
+                            <input x-model="color" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" placeholder="Hex color">
+                        </div>
+                    </label>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Description</span>
+                        <span class="text-xs text-white/45">Optional popup text for extra context.</span>
+                        <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Marker description"></textarea>
+                    </label>
                     <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Marker</button>
                 </div>
             </form>
@@ -412,13 +496,21 @@
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Territory Polygon</p>
                 <p class="mt-2 text-sm text-white/60">Click the map in polygon mode to add territory points. At least 3 are required.</p>
                 <div class="mt-4 grid gap-4">
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Polygon name" required>
-                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
-                        <option value="">Shared / unclaimed</option>
-                        @foreach ($factions as $faction)
-                            <option value="{{ $faction->id }}">{{ $faction->name }}</option>
-                        @endforeach
-                    </select>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Polygon Name</span>
+                        <span class="text-xs text-white/45">Use the territory or district name shown to players.</span>
+                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Polygon name" required>
+                    </label>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Owning Faction</span>
+                        <span class="text-xs text-white/45">Assign ownership or leave it shared.</span>
+                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
+                            <option value="">Shared / unclaimed</option>
+                            @foreach ($factions as $faction)
+                                <option value="{{ $faction->id }}">{{ $faction->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="grid grid-cols-[84px_1fr] gap-3">
                             <input x-model="polygonStrokeColor" class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" type="color" aria-label="Polygon stroke color picker">
@@ -449,9 +541,14 @@
                                 </div>
                             </template>
                             <p x-show="polygonPoints.length === 0" class="text-sm text-white/45">No points yet. Click on the map in polygon mode to add them.</p>
+                            <p class="text-xs text-white/45">Each point also appears as a draggable marker on the map preview.</p>
                         </div>
                     </div>
-                    <textarea x-model="polygonJson" @input="syncPolygonPointsFromJson()" class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" placeholder='[{"x":10.125,"y":10.875},{"x":20.25,"y":20.5},{"x":30.375,"y":10.125}]' required></textarea>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Raw Point JSON</span>
+                        <span class="text-xs text-white/45">Advanced editing field. Changes here update the list and map preview too.</span>
+                        <textarea x-model="polygonJson" @input="syncPolygonPointsFromJson()" class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" placeholder='[{"x":10.125,"y":10.875},{"x":20.25,"y":20.5},{"x":30.375,"y":10.125}]' required></textarea>
+                    </label>
                     <div class="flex flex-wrap gap-2">
                         <button type="button" data-polygon-clear class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Clear Points</button>
                     </div>
