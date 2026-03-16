@@ -35,6 +35,22 @@
     </style>
 @endpush
 
+@php
+    $mapMaxZoom = 8;
+    $markerPayload = $markers->map(function ($marker) {
+        return [
+            'id' => $marker->id,
+            'name' => $marker->name,
+            'description' => $marker->description,
+            'icon_class' => $marker->icon_class,
+            'map_x' => (int) $marker->map_x,
+            'map_y' => (int) $marker->map_y,
+            'color' => $marker->color ?: '#c2a84f',
+            'faction' => $marker->faction?->name,
+        ];
+    })->values();
+@endphp
+
 <x-app-layout>
     <x-slot name="header"><p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">Admin: Map Markers</p></x-slot>
 
@@ -43,12 +59,7 @@
     <div
         x-data="{
             x: 50,
-            y: 50,
-            setCoords(event) {
-                const rect = event.currentTarget.getBoundingClientRect();
-                this.x = Math.max(0, Math.min(100, Math.round(((event.clientX - rect.left) / rect.width) * 100)));
-                this.y = Math.max(0, Math.min(100, Math.round(((event.clientY - rect.top) / rect.height) * 100)));
-            }
+            y: 50
         }"
         class="space-y-6"
     >
@@ -184,22 +195,11 @@
 
             const alpineRoot = mapElement.closest('[x-data]');
             const alpineData = alpineRoot ? Alpine.$data(alpineRoot) : null;
-            const markers = @json(
-                $markers->map(fn ($marker) => [
-                    'id' => $marker->id,
-                    'name' => $marker->name,
-                    'description' => $marker->description,
-                    'icon_class' => $marker->icon_class,
-                    'map_x' => (int) $marker->map_x,
-                    'map_y' => (int) $marker->map_y,
-                    'color' => $marker->color ?: '#c2a84f',
-                    'faction' => $marker->faction?->name,
-                ])->values()
-            );
+            const markers = @json($markerPayload);
 
             const mapExtent = [0, -8192, 8192, 0];
             const mapMinZoom = 0;
-            const mapMaxZoom = 9;
+            const mapMaxZoom = {{ $mapMaxZoom }};
             const mapMaxResolution = 0.03125;
             const mapMinResolution = Math.pow(2, mapMaxZoom) * mapMaxResolution;
             const tileExtent = [0, -8192, 8192, 0];
