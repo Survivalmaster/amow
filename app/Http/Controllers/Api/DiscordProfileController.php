@@ -52,6 +52,7 @@ class DiscordProfileController extends Controller
                 'occupation' => $character->starting_occupation,
                 'credits' => $character->plastic_credits,
                 'health_points' => $character->health_points,
+                'stamina_points' => $character->stamina_points,
                 'armor_points' => $character->armor_points,
                 'business_owner' => $character->is_business_owner,
                 'licences' => $character->licences->pluck('name')->values()->all(),

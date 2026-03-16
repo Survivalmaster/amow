@@ -22,6 +22,7 @@ class Character extends Model
         'military_score',
         'economic_score',
         'health_points',
+        'stamina_points',
         'armor_points',
         'role_type',
         'is_business_owner',

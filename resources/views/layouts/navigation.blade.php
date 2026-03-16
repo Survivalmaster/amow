@@ -1,7 +1,9 @@
 @php($navCharacter = auth()->user()->character)
 @php($creditAmount = $navCharacter?->plastic_credits ?? 0)
 @php($healthPoints = $navCharacter?->health_points ?? 100)
+@php($staminaPoints = $navCharacter?->stamina_points ?? 100)
 @php($armorPoints = $navCharacter?->armor_points ?? 0)
+@php($staminaPercent = max(0, min(100, (int) $staminaPoints)))
 @php(
     $formattedCredits = match (true) {
         $creditAmount >= 1000000 => rtrim(rtrim(number_format($creditAmount / 1000000, 1), '0'), '.') . 'M',
@@ -64,6 +66,18 @@
                                     <i class="fa-solid fa-coins text-[#c2a84f]"></i>
                                     <span class="min-w-[3.5rem]">{{ $formattedCredits }}</span>
                                 </span>
+                            </div>
+                            <div class="mt-3">
+                                <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
+                                    <span class="inline-flex items-center gap-1.5 text-[#d7edc7]">
+                                        <i class="fa-solid fa-bolt text-[#7ead59]"></i>
+                                        Stamina
+                                    </span>
+                                    <span>{{ $staminaPoints }}/100</span>
+                                </div>
+                                <div class="mt-1.5 h-2.5 overflow-hidden rounded-full bg-white/10">
+                                    <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#b7d680_100%)]" style="width: {{ $staminaPercent }}%;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -133,6 +147,18 @@
                                     <i class="fa-solid fa-coins text-[#c2a84f]"></i>
                                     <span class="min-w-[3.5rem]">{{ $formattedCredits }}</span>
                                 </span>
+                            </div>
+                            <div class="mt-3">
+                                <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
+                                    <span class="inline-flex items-center gap-1.5 text-[#d7edc7]">
+                                        <i class="fa-solid fa-bolt text-[#7ead59]"></i>
+                                        Stamina
+                                    </span>
+                                    <span>{{ $staminaPoints }}/100</span>
+                                </div>
+                                <div class="mt-1.5 h-2.5 overflow-hidden rounded-full bg-white/10">
+                                    <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#b7d680_100%)]" style="width: {{ $staminaPercent }}%;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -68,6 +68,7 @@
                                             Business owner
                                         </label>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="health_points" type="number" min="0" max="100" value="{{ $character->health_points ?? 100 }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stamina_points" type="number" min="0" max="100" value="{{ $character->stamina_points ?? 100 }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="armor_points" type="number" min="0" max="100" value="{{ $character->armor_points ?? 0 }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="influence_score" type="number" min="0" value="{{ $character->influence_score }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="military_score" type="number" min="0" value="{{ $character->military_score }}" required>
