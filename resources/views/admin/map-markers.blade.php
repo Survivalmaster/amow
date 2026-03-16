@@ -101,6 +101,8 @@
             polygonFillOpacity: config.polygonFillOpacity ?? 0.25,
             polygonStrokeWeight: config.polygonStrokeWeight ?? 2,
             selectedPolygonPointIndex: null,
+            draggingPolygonPointIndex: null,
+            suppressNextMapClick: false,
             polygonPoints: Array.isArray(config.polygonPoints) ? config.polygonPoints.map((point) => ({
                 x: Number(point.x ?? 0),
                 y: Number(point.y ?? 0),
@@ -155,6 +157,10 @@
                 this.polygonPoints = Array.isArray(points) ? points.map((point) => this.normalizePoint(point)) : [];
                 this.selectedPolygonPointIndex = null;
                 this.syncPolygonJson();
+            },
+            syncPolygonJsonSilently() {
+                this.polygonPoints = this.polygonPoints.map((point) => this.normalizePoint(point));
+                this.polygonJson = JSON.stringify(this.polygonPoints);
             },
         });
 
@@ -294,9 +300,24 @@
                         icon: buildPointHandleIcon(index),
                     });
 
+                    handle.on('dragstart', () => {
+                        alpineData.draggingPolygonPointIndex = index;
+                        alpineData.selectedPolygonPointIndex = index;
+                        alpineData.suppressNextMapClick = true;
+                    });
+
                     handle.on('drag', (dragEvent) => {
                         const coords = percentFromLatLng(dragEvent.target.getLatLng());
                         alpineData.polygonPoints[index] = coords;
+                        alpineData.selectedPolygonPointIndex = index;
+                        alpineData.syncPolygonJsonSilently();
+                        previewPolygon.setLatLngs((alpineData.polygonPoints || []).map((previewPoint) => pointFromPercent(previewPoint.x, previewPoint.y)));
+                    });
+
+                    handle.on('dragend', (dragEvent) => {
+                        const coords = percentFromLatLng(dragEvent.target.getLatLng());
+                        alpineData.polygonPoints[index] = coords;
+                        alpineData.draggingPolygonPointIndex = null;
                         alpineData.selectedPolygonPointIndex = index;
                         alpineData.syncPolygonJson();
                     });
@@ -310,6 +331,11 @@
             };
 
             map.on('click', (event) => {
+                if (alpineData?.suppressNextMapClick) {
+                    alpineData.suppressNextMapClick = false;
+                    return;
+                }
+
                 const coords = percentFromLatLng(event.latlng);
 
                 if (!alpineData) {
