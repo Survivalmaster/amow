@@ -60,10 +60,6 @@ class GameController extends Controller
             'mapPolygons' => Schema::hasTable('map_polygons')
                 ? MapPolygon::query()
                     ->with('faction')
-                    ->where(function ($query) use ($character) {
-                        $query->whereNull('faction_id')
-                            ->orWhere('faction_id', $character->faction_id);
-                    })
                     ->orderBy('name')
                     ->get()
                 : collect(),
