@@ -90,32 +90,6 @@
     })->values();
 @endphp
 
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-col gap-2">
-            <div>
-                <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">{{ $character->faction->name }} Lobby</p>
-                <p class="text-sm uppercase tracking-[0.22em] text-white/55">Welcome, {{ $character->name }}. Plastica is active.</p>
-            </div>
-        </div>
-    </x-slot>
-
-    <div class="space-y-6">
-        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
-            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Map of Plastica</p>
-                    <p class="mt-2 text-sm leading-7 text-white/70">Travel by clicking a city or a managed marker on the map below.</p>
-                </div>
-                <div class="text-xs uppercase tracking-[0.24em] text-white/45">Interactive travel map</div>
-            </div>
-            <div class="relative mt-5 overflow-hidden rounded-[2rem] border border-white/10 bg-black/20">
-                <div id="lobby-world-map"></div>
-            </div>
-        </section>
-    </div>
-</x-app-layout>
-
 @push('scripts')
     <script
         src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -218,3 +192,29 @@
         });
     </script>
 @endpush
+
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col gap-2">
+            <div>
+                <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">{{ $character->faction->name }} Lobby</p>
+                <p class="text-sm uppercase tracking-[0.22em] text-white/55">Welcome, {{ $character->name }}. Plastica is active.</p>
+            </div>
+        </div>
+    </x-slot>
+
+    <div class="space-y-6">
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Map of Plastica</p>
+                    <p class="mt-2 text-sm leading-7 text-white/70">Travel by clicking a city or a managed marker on the map below.</p>
+                </div>
+                <div class="text-xs uppercase tracking-[0.24em] text-white/45">Interactive travel map</div>
+            </div>
+            <div class="relative mt-5 overflow-hidden rounded-[2rem] border border-white/10 bg-black/20">
+                <div id="lobby-world-map"></div>
+            </div>
+        </section>
+    </div>
+</x-app-layout>
