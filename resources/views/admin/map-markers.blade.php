@@ -75,6 +75,70 @@
         crossorigin=""
     ></script>
     <script>
+        window.mapPolygonForm = (config = {}) => ({
+            mapMode: config.mapMode ?? 'marker',
+            x: config.x ?? 50,
+            y: config.y ?? 50,
+            iconClass: config.iconClass ?? 'fa-solid fa-flag',
+            color: config.color ?? '#c2a84f',
+            polygonStrokeColor: config.polygonStrokeColor ?? '#c2a84f',
+            polygonFillColor: config.polygonFillColor ?? '#7ead59',
+            polygonFillOpacity: config.polygonFillOpacity ?? 0.25,
+            polygonStrokeWeight: config.polygonStrokeWeight ?? 2,
+            polygonPoints: Array.isArray(config.polygonPoints) ? config.polygonPoints.map((point) => ({
+                x: Number(point.x ?? 0),
+                y: Number(point.y ?? 0),
+            })) : [],
+            polygonJson: config.polygonJson ?? '[]',
+            interactivePreview: config.interactivePreview ?? false,
+            init() {
+                this.syncPolygonJson();
+            },
+            normalizePoint(point) {
+                return {
+                    x: Math.max(0, Math.min(100, Number(point.x ?? 0))),
+                    y: Math.max(0, Math.min(100, Number(point.y ?? 0))),
+                };
+            },
+            syncPolygonJson() {
+                this.polygonPoints = this.polygonPoints.map((point) => this.normalizePoint(point));
+                this.polygonJson = JSON.stringify(this.polygonPoints);
+
+                if (this.interactivePreview) {
+                    window.dispatchEvent(new CustomEvent('admin-map-preview-sync'));
+                }
+            },
+            syncPolygonPointsFromJson() {
+                try {
+                    const parsed = JSON.parse(this.polygonJson);
+
+                    if (!Array.isArray(parsed)) {
+                        return;
+                    }
+
+                    this.polygonPoints = parsed
+                        .filter((point) => point && typeof point === 'object' && 'x' in point && 'y' in point)
+                        .map((point) => this.normalizePoint(point));
+
+                    this.syncPolygonJson();
+                } catch (error) {
+                    // Keep the raw JSON in place until the user finishes editing it.
+                }
+            },
+            removePolygonPoint(index) {
+                this.polygonPoints.splice(index, 1);
+                this.syncPolygonJson();
+            },
+            clearPolygonPoints() {
+                this.polygonPoints = [];
+                this.syncPolygonJson();
+            },
+            setPolygonPoints(points) {
+                this.polygonPoints = Array.isArray(points) ? points.map((point) => this.normalizePoint(point)) : [];
+                this.syncPolygonJson();
+            },
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
             const mapElement = document.getElementById('admin-world-map');
 
@@ -285,10 +349,9 @@
                 alpineRoot?.querySelectorAll(`[name="${name}"]`)?.forEach((element) => element.addEventListener('input', syncPreview));
             });
             alpineRoot?.querySelector('[data-polygon-clear]')?.addEventListener('click', () => {
-                alpineData.polygonPoints = [];
-                alpineData.syncPolygonJson();
-                syncPreview();
+                alpineData.clearPolygonPoints();
             });
+            window.addEventListener('admin-map-preview-sync', syncPreview);
 
             syncPreview();
         });
@@ -300,25 +363,7 @@
 
     @include('admin.partials.nav')
 
-    <div
-        x-data="{
-            mapMode: 'marker',
-            x: 50,
-            y: 50,
-            iconClass: 'fa-solid fa-flag',
-            color: '#c2a84f',
-            polygonStrokeColor: '#c2a84f',
-            polygonFillColor: '#7ead59',
-            polygonFillOpacity: 0.25,
-            polygonStrokeWeight: 2,
-            polygonPoints: [],
-            polygonJson: '[]',
-            syncPolygonJson() {
-                this.polygonJson = JSON.stringify(this.polygonPoints);
-            }
-        }"
-        class="space-y-6"
-    >
+    <div x-data="mapPolygonForm({ interactivePreview: true })" class="space-y-6">
         <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
@@ -353,7 +398,10 @@
                         <input x-model="x" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" placeholder="Map X %" required>
                         <input x-model="y" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" placeholder="Map Y %" required>
                     </div>
-                    <input x-model="color" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" placeholder="Hex color">
+                    <div class="grid grid-cols-[84px_1fr] gap-3">
+                        <input x-model="color" class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" name="color_picker" type="color" aria-label="Marker color picker">
+                        <input x-model="color" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" placeholder="Hex color">
+                    </div>
                     <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Marker description"></textarea>
                     <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Marker</button>
                 </div>
@@ -372,19 +420,40 @@
                         @endforeach
                     </select>
                     <div class="grid grid-cols-2 gap-4">
-                        <input x-model="polygonStrokeColor" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_color" placeholder="Stroke color">
-                        <input x-model="polygonFillColor" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_color" placeholder="Fill color">
+                        <div class="grid grid-cols-[84px_1fr] gap-3">
+                            <input x-model="polygonStrokeColor" class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" type="color" aria-label="Polygon stroke color picker">
+                            <input x-model="polygonStrokeColor" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_color" placeholder="Stroke color">
+                        </div>
+                        <div class="grid grid-cols-[84px_1fr] gap-3">
+                            <input x-model="polygonFillColor" class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" type="color" aria-label="Polygon fill color picker">
+                            <input x-model="polygonFillColor" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_color" placeholder="Fill color">
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <input x-model="polygonFillOpacity" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_opacity" type="number" min="0" max="1" step="0.05" value="0.25" required>
                         <input x-model="polygonStrokeWeight" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_weight" type="number" min="1" max="10" value="2" required>
                     </div>
-                    <textarea x-model="polygonJson" class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" placeholder='[{"x":10.125,"y":10.875},{"x":20.25,"y":20.5},{"x":30.375,"y":10.125}]' required></textarea>
+                    <div class="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-xs uppercase tracking-[0.18em] text-white/45">Polygon Points</p>
+                            <div class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/55">
+                                Points: <span x-text="polygonPoints.length"></span>
+                            </div>
+                        </div>
+                        <div class="mt-4 space-y-3">
+                            <template x-for="(point, index) in polygonPoints" :key="index">
+                                <div class="grid grid-cols-[1fr_1fr_auto] gap-3">
+                                    <input x-model.number="point.x" @input="syncPolygonJson()" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" min="0" max="100" step="0.0001" placeholder="X %">
+                                    <input x-model.number="point.y" @input="syncPolygonJson()" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" min="0" max="100" step="0.0001" placeholder="Y %">
+                                    <button type="button" @click="removePolygonPoint(index)" class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Remove</button>
+                                </div>
+                            </template>
+                            <p x-show="polygonPoints.length === 0" class="text-sm text-white/45">No points yet. Click on the map in polygon mode to add them.</p>
+                        </div>
+                    </div>
+                    <textarea x-model="polygonJson" @input="syncPolygonPointsFromJson()" class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" placeholder='[{"x":10.125,"y":10.875},{"x":20.25,"y":20.5},{"x":30.375,"y":10.125}]' required></textarea>
                     <div class="flex flex-wrap gap-2">
                         <button type="button" data-polygon-clear class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Clear Points</button>
-                        <div class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/55">
-                            Points: <span x-text="polygonPoints.length"></span>
-                        </div>
                     </div>
                     <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Polygon description"></textarea>
                     <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Polygon</button>
@@ -431,7 +500,10 @@
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" value="{{ $marker->icon_class }}" required>
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" value="{{ $marker->map_x }}" required>
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" value="{{ $marker->map_y }}" required>
-                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" value="{{ $marker->color }}" placeholder="#7ead59">
+                                                <div class="grid grid-cols-[84px_1fr] gap-3 xl:col-span-1">
+                                                    <input class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" type="color" value="{{ $marker->color ?: '#c2a84f' }}" oninput="this.nextElementSibling.value = this.value" aria-label="Marker color picker">
+                                                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" value="{{ $marker->color }}" placeholder="#7ead59">
+                                                </div>
                                             </div>
                                             <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description">{{ $marker->description }}</textarea>
                                             <div class="flex justify-end">
@@ -470,9 +542,27 @@
                                 </tr>
                                 <tr x-show="openId === {{ $polygon->id }}" x-cloak>
                                     <td colspan="3" class="px-5 pb-5">
-                                        <form method="POST" action="{{ route('admin.map-polygons.update', $polygon) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+                                        <form
+                                            method="POST"
+                                            action="{{ route('admin.map-polygons.update', $polygon) }}"
+                                            x-data="mapPolygonForm({
+                                                polygonStrokeColor: @js($polygon->stroke_color ?: '#c2a84f'),
+                                                polygonFillColor: @js($polygon->fill_color ?: '#7ead59'),
+                                                polygonFillOpacity: {{ (float) $polygon->fill_opacity }},
+                                                polygonStrokeWeight: {{ (int) $polygon->stroke_weight }},
+                                                polygonPoints: @js($polygon->coordinates ?? []),
+                                                interactivePreview: false
+                                            })"
+                                            class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5"
+                                        >
                                             @csrf
                                             @method('PATCH')
+                                            <div class="flex items-center justify-between gap-3">
+                                                <p class="text-xs uppercase tracking-[0.18em] text-white/45">Edit Polygon Points</p>
+                                                <div class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/55">
+                                                    Points: <span x-text="polygonPoints.length"></span>
+                                                </div>
+                                            </div>
                                             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $polygon->name }}" required>
                                             <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
                                                 <option value="">Shared / unclaimed</option>
@@ -480,13 +570,36 @@
                                                     <option value="{{ $faction->id }}" @selected($polygon->faction_id === $faction->id)>{{ $faction->name }}</option>
                                                 @endforeach
                                             </select>
-                                            <div class="grid gap-4 xl:grid-cols-4">
-                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_color" value="{{ $polygon->stroke_color }}">
-                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_color" value="{{ $polygon->fill_color }}">
+                                            <div class="grid gap-4 xl:grid-cols-2">
+                                                <div class="grid grid-cols-[84px_1fr] gap-3">
+                                                    <input x-model="polygonStrokeColor" class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" type="color" aria-label="Polygon stroke color picker">
+                                                    <input x-model="polygonStrokeColor" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_color">
+                                                </div>
+                                                <div class="grid grid-cols-[84px_1fr] gap-3">
+                                                    <input x-model="polygonFillColor" class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" type="color" aria-label="Polygon fill color picker">
+                                                    <input x-model="polygonFillColor" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_color">
+                                                </div>
+                                            </div>
+                                            <div class="grid gap-4 xl:grid-cols-2">
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_opacity" type="number" min="0" max="1" step="0.05" value="{{ $polygon->fill_opacity }}" required>
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_weight" type="number" min="1" max="10" value="{{ $polygon->stroke_weight }}" required>
                                             </div>
-                                            <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" required>{{ json_encode($polygon->coordinates) }}</textarea>
+                                            <div class="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
+                                                <div class="space-y-3">
+                                                    <template x-for="(point, index) in polygonPoints" :key="index">
+                                                        <div class="grid grid-cols-[1fr_1fr_auto] gap-3">
+                                                            <input x-model.number="point.x" @input="syncPolygonJson()" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" min="0" max="100" step="0.0001" placeholder="X %">
+                                                            <input x-model.number="point.y" @input="syncPolygonJson()" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" min="0" max="100" step="0.0001" placeholder="Y %">
+                                                            <button type="button" @click="removePolygonPoint(index)" class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Remove</button>
+                                                        </div>
+                                                    </template>
+                                                    <p x-show="polygonPoints.length === 0" class="text-sm text-white/45">No points remain. Add new ones in the JSON field or recreate from the map above.</p>
+                                                </div>
+                                            </div>
+                                            <textarea x-model="polygonJson" @input="syncPolygonPointsFromJson()" class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" required></textarea>
+                                            <div class="flex flex-wrap gap-2">
+                                                <button type="button" @click="clearPolygonPoints()" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Clear Points</button>
+                                            </div>
                                             <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description">{{ $polygon->description }}</textarea>
                                             <div class="flex justify-end">
                                                 <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
