@@ -200,7 +200,7 @@
             const mapExtent = [0, -8192, 8192, 0];
             const mapMinZoom = 0;
             const mapMaxZoom = {{ $mapMaxZoom }};
-            const mapMaxResolution = 0.03125;
+            const mapMaxResolution = 0.0625;
             const mapMinResolution = Math.pow(2, mapMaxZoom) * mapMaxResolution;
             const tileExtent = [0, -8192, 8192, 0];
             const crs = L.extend({}, L.CRS.Simple);
