@@ -53,8 +53,8 @@
             'fill_opacity' => (float) $polygon->fill_opacity,
             'stroke_weight' => (int) $polygon->stroke_weight,
             'coordinates' => collect($polygon->coordinates)->map(fn ($point) => [
-                'x' => (int) ($point['x'] ?? 0),
-                'y' => (int) ($point['y'] ?? 0),
+                'x' => (float) ($point['x'] ?? 0),
+                'y' => (float) ($point['y'] ?? 0),
             ])->values(),
             'faction' => $polygon->faction?->name,
         ];

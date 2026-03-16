@@ -41,11 +41,13 @@
             @if ($navCharacter)
                 <div class="rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 shadow-xl shadow-black/25">
                     <div class="flex items-center gap-3">
-                        <div class="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
-                            <span class="absolute -top-2 rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[#c2a84f]">
-                                Lvl <span data-character-field="level">{{ $navCharacter->level }}</span>
-                            </span>
-                            ?
+                        <div class="flex shrink-0 flex-col items-center gap-2">
+                            <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">
+                                Lvl <span class="ml-1" data-character-field="level">{{ $navCharacter->level }}</span>
+                            </div>
+                            <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
+                                <span class="leading-none">?</span>
+                            </div>
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]" data-character-field="name">{{ $navCharacter->name }}</p>
@@ -134,11 +136,13 @@
             @if ($navCharacter)
                 <div class="mb-2 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3">
                     <div class="flex items-center gap-3">
-                        <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
-                            <span class="absolute -top-2 rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-[#c2a84f]">
-                                Lvl <span data-character-field="level">{{ $navCharacter->level }}</span>
-                            </span>
-                            ?
+                        <div class="flex shrink-0 flex-col items-center gap-2">
+                            <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">
+                                Lvl <span class="ml-1" data-character-field="level">{{ $navCharacter->level }}</span>
+                            </div>
+                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
+                                <span class="leading-none">?</span>
+                            </div>
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]" data-character-field="name">{{ $navCharacter->name }}</p>

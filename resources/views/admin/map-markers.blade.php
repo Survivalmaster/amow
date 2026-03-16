@@ -60,8 +60,8 @@
             'fill_opacity' => (float) $polygon->fill_opacity,
             'stroke_weight' => (int) $polygon->stroke_weight,
             'coordinates' => collect($polygon->coordinates)->map(fn ($point) => [
-                'x' => (int) ($point['x'] ?? 0),
-                'y' => (int) ($point['y'] ?? 0),
+                'x' => (float) ($point['x'] ?? 0),
+                'y' => (float) ($point['y'] ?? 0),
             ])->values(),
             'faction' => $polygon->faction?->name,
         ];
@@ -141,9 +141,11 @@
 
             const percentFromLatLng = (latlng) => {
                 const point = crs.project(latlng);
+                const toPercent = (value, maxExtent) => Math.round(((value / maxExtent) * 100) * 10000) / 10000;
+
                 return {
-                    x: Math.max(0, Math.min(100, Math.round((point.x / mapExtent[2]) * 100))),
-                    y: Math.max(0, Math.min(100, Math.round((point.y / mapExtent[1]) * 100))),
+                    x: Math.max(0, Math.min(100, toPercent(point.x, mapExtent[2]))),
+                    y: Math.max(0, Math.min(100, toPercent(point.y, mapExtent[1]))),
                 };
             };
 
@@ -377,7 +379,7 @@
                         <input x-model="polygonFillOpacity" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_opacity" type="number" min="0" max="1" step="0.05" value="0.25" required>
                         <input x-model="polygonStrokeWeight" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_weight" type="number" min="1" max="10" value="2" required>
                     </div>
-                    <textarea x-model="polygonJson" class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" placeholder='[{"x":10,"y":10},{"x":20,"y":20},{"x":30,"y":10}]' required></textarea>
+                    <textarea x-model="polygonJson" class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" placeholder='[{"x":10.125,"y":10.875},{"x":20.25,"y":20.5},{"x":30.375,"y":10.125}]' required></textarea>
                     <div class="flex flex-wrap gap-2">
                         <button type="button" data-polygon-clear class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Clear Points</button>
                         <div class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/55">

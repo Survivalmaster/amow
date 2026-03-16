@@ -111,6 +111,12 @@ class MapMarkerAdminController extends Controller
                     'coordinates_json' => 'Each polygon point must include x and y values.',
                 ]);
             }
+
+            if (! is_numeric($point['x']) || ! is_numeric($point['y'])) {
+                throw ValidationException::withMessages([
+                    'coordinates_json' => 'Each polygon point must use numeric x and y values.',
+                ]);
+            }
         }
 
         return [
@@ -121,8 +127,8 @@ class MapMarkerAdminController extends Controller
             'fill_opacity' => $validated['fill_opacity'],
             'stroke_weight' => $validated['stroke_weight'],
             'coordinates' => array_map(fn ($point) => [
-                'x' => max(0, min(100, (int) $point['x'])),
-                'y' => max(0, min(100, (int) $point['y'])),
+                'x' => round(max(0, min(100, (float) $point['x'])), 4),
+                'y' => round(max(0, min(100, (float) $point['y'])), 4),
             ], $coordinates),
             'description' => $validated['description'],
         ];
