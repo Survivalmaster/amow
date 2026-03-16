@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 class Character extends Model
 {
@@ -16,17 +17,21 @@ class Character extends Model
         'age',
         'biography',
         'starting_occupation',
+        'current_job_id',
         'plastic_credits',
         'rank_id',
         'influence_score',
         'military_score',
         'economic_score',
+        'level',
+        'experience_points',
         'health_points',
         'stamina_points',
         'armor_points',
         'role_type',
         'is_business_owner',
         'last_worked_at',
+        'job_changed_at',
         'last_business_payout_at',
     ];
 
@@ -35,6 +40,7 @@ class Character extends Model
         return [
             'is_business_owner' => 'boolean',
             'last_worked_at' => 'datetime',
+            'job_changed_at' => 'datetime',
             'last_business_payout_at' => 'datetime',
         ];
     }
@@ -47,6 +53,11 @@ class Character extends Model
     public function faction(): BelongsTo
     {
         return $this->belongsTo(Faction::class);
+    }
+
+    public function currentJob(): BelongsTo
+    {
+        return $this->belongsTo(GameJob::class, 'current_job_id');
     }
 
     public function rank(): BelongsTo
@@ -77,6 +88,58 @@ class Character extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
+    }
+
+    public function getDisplayedJobNameAttribute(): string
+    {
+        return $this->currentJob?->name ?? $this->starting_occupation;
+    }
+
+    public function experienceRequiredForNextLevel(): int
+    {
+        return 100 + ($this->level * 50);
+    }
+
+    public function gainExperience(int $amount): int
+    {
+        if ($amount <= 0) {
+            return 0;
+        }
+
+        $leveledUp = 0;
+        $experiencePoints = $this->experience_points + $amount;
+        $level = $this->level;
+
+        while ($experiencePoints >= (100 + ($level * 50))) {
+            $experiencePoints -= 100 + ($level * 50);
+            $level++;
+            $leveledUp++;
+        }
+
+        $this->forceFill([
+            'level' => $level,
+            'experience_points' => $experiencePoints,
+        ])->save();
+
+        return $leveledUp;
+    }
+
+    public function workCooldownEndsAt(): ?Carbon
+    {
+        if (! $this->last_worked_at) {
+            return null;
+        }
+
+        return $this->last_worked_at->copy()->addMinutes($this->currentJob?->work_cooldown_minutes ?? 5);
+    }
+
+    public function canChangeJob(): bool
+    {
+        if (! $this->job_changed_at) {
+            return true;
+        }
+
+        return $this->job_changed_at->lte(now()->subDay());
     }
 
     public function hasLicence(string $slug): bool

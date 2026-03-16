@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             RankSeeder::class,
             LicenceSeeder::class,
             ItemSeeder::class,
+            GameJobSeeder::class,
             WorldSeeder::class,
             CompanySeeder::class,
             AdminUserSeeder::class,

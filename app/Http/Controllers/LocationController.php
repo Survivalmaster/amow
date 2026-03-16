@@ -10,7 +10,7 @@ class LocationController extends Controller
 {
     public function show(Request $request, Location $location): View
     {
-        $character = $request->user()->character()->with(['rank', 'licences'])->firstOrFail();
+        $character = $request->user()->character()->with(['rank', 'licences', 'currentJob'])->firstOrFail();
         $location->load([
             'city.faction',
             'requiredRank',

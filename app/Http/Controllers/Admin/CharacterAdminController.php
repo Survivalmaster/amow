@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Character;
 use App\Models\Faction;
+use App\Models\GameJob;
 use App\Models\Rank;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,8 +16,9 @@ class CharacterAdminController extends Controller
     public function index(): View
     {
         return view('admin.characters', [
-            'characters' => Character::query()->with(['user', 'faction', 'rank'])->orderBy('name')->get(),
+            'characters' => Character::query()->with(['user', 'faction', 'rank', 'currentJob'])->orderBy('name')->get(),
             'factions' => Faction::query()->orderBy('name')->get(),
+            'jobs' => GameJob::query()->orderBy('required_level')->orderBy('name')->get(),
             'ranks' => Rank::query()->orderBy('order_index')->get(),
         ]);
     }
@@ -29,15 +31,19 @@ class CharacterAdminController extends Controller
             'faction_id' => ['required', 'exists:factions,id'],
             'rank_id' => ['required', 'exists:ranks,id'],
             'starting_occupation' => ['required', 'in:Laborer,Merchant,Mechanic'],
+            'current_job_id' => ['nullable', 'exists:game_jobs,id'],
             'role_type' => ['required', 'in:civilian,military'],
             'plastic_credits' => ['required', 'integer', 'min:0'],
             'influence_score' => ['required', 'integer', 'min:0'],
             'military_score' => ['required', 'integer', 'min:0'],
             'economic_score' => ['required', 'integer', 'min:0'],
+            'level' => ['required', 'integer', 'min:0'],
+            'experience_points' => ['required', 'integer', 'min:0'],
             'health_points' => ['required', 'integer', 'min:0', 'max:100'],
             'stamina_points' => ['required', 'integer', 'min:0', 'max:100'],
             'armor_points' => ['required', 'integer', 'min:0', 'max:100'],
             'is_business_owner' => ['nullable', 'boolean'],
+            'job_changed_at' => ['nullable', 'date'],
             'biography' => ['required', 'string', 'max:2000'],
         ]);
 

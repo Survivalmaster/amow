@@ -44,6 +44,21 @@
             'faction' => $marker->faction?->name,
         ];
     })->values();
+    $polygonPayload = $mapPolygons->map(function ($polygon) {
+        return [
+            'name' => $polygon->name,
+            'description' => $polygon->description,
+            'stroke_color' => $polygon->stroke_color,
+            'fill_color' => $polygon->fill_color,
+            'fill_opacity' => (float) $polygon->fill_opacity,
+            'stroke_weight' => (int) $polygon->stroke_weight,
+            'coordinates' => collect($polygon->coordinates)->map(fn ($point) => [
+                'x' => (int) ($point['x'] ?? 0),
+                'y' => (int) ($point['y'] ?? 0),
+            ])->values(),
+            'faction' => $polygon->faction?->name,
+        ];
+    })->values();
 @endphp
 
 @push('scripts')
@@ -61,6 +76,7 @@
             }
 
             const markers = @json($markerPayload);
+            const polygons = @json($polygonPayload);
             const mapExtent = [0, -8192, 8192, 0];
             const mapMinZoom = 0;
             const mapMaxZoom = {{ $mapMaxZoom }};
@@ -83,6 +99,11 @@
                 maxZoom: mapMaxZoom,
                 zoomControl: true,
             });
+
+            map.createPane('polygonPane');
+            map.getPane('polygonPane').style.zIndex = 410;
+            map.createPane('markerPaneTop');
+            map.getPane('markerPaneTop').style.zIndex = 650;
 
             L.tileLayer('{{ asset('mapstyles/stylePlastica') }}/{z}/{x}/{y}.png', {
                 minZoom: mapMinZoom,
@@ -108,6 +129,27 @@
                 return crs.unproject(L.point(projectedX, projectedY));
             };
 
+            polygons.forEach((polygon) => {
+                L.polygon(
+                    polygon.coordinates.map((point) => pointFromPercent(point.x, point.y)),
+                    {
+                        pane: 'polygonPane',
+                        color: polygon.stroke_color,
+                        fillColor: polygon.fill_color,
+                        fillOpacity: polygon.fill_opacity,
+                        weight: polygon.stroke_weight,
+                    }
+                )
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="min-width: 200px">
+                            <strong>${polygon.name}</strong><br>
+                            <span>${polygon.faction ?? 'Unclaimed / Shared'}</span>
+                            ${polygon.description ? `<p style="margin: 8px 0 0;">${polygon.description}</p>` : ''}
+                        </div>
+                    `);
+            });
+
             markers.forEach((marker) => {
                 const icon = L.divIcon({
                     className: '',
@@ -116,7 +158,7 @@
                     iconAnchor: [14, 14],
                 });
 
-                L.marker(pointFromPercent(marker.map_x, marker.map_y), { icon })
+                L.marker(pointFromPercent(marker.map_x, marker.map_y), { icon, pane: 'markerPaneTop' })
                     .addTo(map)
                     .bindPopup(`
                         <div style="min-width: 180px">
@@ -145,7 +187,7 @@
             <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Map of Plastica</p>
-                    <p class="mt-2 text-sm leading-7 text-white/70">Travel by clicking a city or a managed marker on the map below.</p>
+                    <p class="mt-2 text-sm leading-7 text-white/70">Travel by clicking a city or a managed marker on the map below. Territory polygons now show claimed areas while markers stay clickable above them.</p>
                 </div>
                 <div class="text-xs uppercase tracking-[0.24em] text-white/45">Interactive travel map</div>
             </div>

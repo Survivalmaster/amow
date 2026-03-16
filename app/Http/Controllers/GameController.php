@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Character;
 use App\Models\Faction;
 use App\Models\MapMarker;
+use App\Models\MapPolygon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -38,6 +39,7 @@ class GameController extends Controller
         $character = $request->user()->character()->with([
             'faction.cities.locations',
             'rank',
+            'currentJob',
             'licences',
             'holdings.company',
         ])->firstOrFail();
@@ -47,6 +49,16 @@ class GameController extends Controller
             'cities' => $character->faction->cities->sortBy('name')->values(),
             'mapMarkers' => Schema::hasTable('map_markers')
                 ? MapMarker::query()
+                    ->with('faction')
+                    ->where(function ($query) use ($character) {
+                        $query->whereNull('faction_id')
+                            ->orWhere('faction_id', $character->faction_id);
+                    })
+                    ->orderBy('name')
+                    ->get()
+                : collect(),
+            'mapPolygons' => Schema::hasTable('map_polygons')
+                ? MapPolygon::query()
                     ->with('faction')
                     ->where(function ($query) use ($character) {
                         $query->whereNull('faction_id')

@@ -13,6 +13,7 @@
                             <th class="px-5 py-4 text-left">User</th>
                             <th class="px-5 py-4 text-left">Faction</th>
                             <th class="px-5 py-4 text-left">Rank</th>
+                            <th class="px-5 py-4 text-left">Job</th>
                             <th class="px-5 py-4 text-left">Credits</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
@@ -24,6 +25,7 @@
                                 <td class="px-5 py-4">{{ $character->user->email }}</td>
                                 <td class="px-5 py-4">{{ $character->faction->name }}</td>
                                 <td class="px-5 py-4">{{ $character->rank->name }}</td>
+                                <td class="px-5 py-4">{{ $character->displayed_job_name }}</td>
                                 <td class="px-5 py-4">{{ number_format($character->plastic_credits) }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
@@ -37,103 +39,52 @@
                                 </td>
                             </tr>
                             <tr x-show="openId === {{ $character->id }}" x-cloak>
-                                <td colspan="6" class="px-5 pb-5">
+                                <td colspan="7" class="px-5 pb-5">
                                     <form method="POST" action="{{ route('admin.characters.update', $character) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2 xl:grid-cols-4">
                                         @csrf
                                         @method('PATCH')
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Character Name</span>
-                                            <span class="text-xs text-white/45">The in-game identity shown across the app.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $character->name }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $character->name }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="age" type="number" min="16" max="80" value="{{ $character->age }}" required>
+                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id" required>
+                                            @foreach ($factions as $faction)
+                                                <option value="{{ $faction->id }}" @selected($character->faction_id === $faction->id)>{{ $faction->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="rank_id" required>
+                                            @foreach ($ranks as $rank)
+                                                <option value="{{ $rank->id }}" @selected($character->rank_id === $rank->id)>{{ $rank->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="starting_occupation" required>
+                                            @foreach (['Laborer', 'Merchant', 'Mechanic'] as $occupation)
+                                                <option value="{{ $occupation }}" @selected($character->starting_occupation === $occupation)>{{ $occupation }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="current_job_id">
+                                            <option value="">No active job</option>
+                                            @foreach ($jobs as $job)
+                                                <option value="{{ $job->id }}" @selected($character->current_job_id === $job->id)>{{ $job->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="role_type" required>
+                                            <option value="civilian" @selected($character->role_type === 'civilian')>Civilian</option>
+                                            <option value="military" @selected($character->role_type === 'military')>Military</option>
+                                        </select>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="plastic_credits" type="number" min="0" value="{{ $character->plastic_credits }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="level" type="number" min="0" value="{{ $character->level }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="experience_points" type="number" min="0" value="{{ $character->experience_points }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="health_points" type="number" min="0" max="100" value="{{ $character->health_points ?? 100 }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stamina_points" type="number" min="0" max="100" value="{{ $character->stamina_points ?? 100 }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="armor_points" type="number" min="0" max="100" value="{{ $character->armor_points ?? 0 }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="influence_score" type="number" min="0" value="{{ $character->influence_score }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="military_score" type="number" min="0" value="{{ $character->military_score }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="economic_score" type="number" min="0" value="{{ $character->economic_score }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="job_changed_at" type="datetime-local" value="{{ $character->job_changed_at?->format('Y-m-d\\TH:i') }}">
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                                            <input type="checkbox" name="is_business_owner" value="1" @checked($character->is_business_owner)>
+                                            Business owner
                                         </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Age</span>
-                                            <span class="text-xs text-white/45">Used for the character file and roleplay profile.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="age" type="number" min="16" max="80" value="{{ $character->age }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Faction</span>
-                                            <span class="text-xs text-white/45">Determines which nation and city set this character belongs to.</span>
-                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id" required>
-                                                @foreach ($factions as $faction)
-                                                    <option value="{{ $faction->id }}" @selected($character->faction_id === $faction->id)>{{ $faction->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Rank</span>
-                                            <span class="text-xs text-white/45">Controls the current military or civilian standing.</span>
-                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="rank_id" required>
-                                                @foreach ($ranks as $rank)
-                                                    <option value="{{ $rank->id }}" @selected($character->rank_id === $rank->id)>{{ $rank->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Occupation</span>
-                                            <span class="text-xs text-white/45">The starting trade or civilian job shown on the profile.</span>
-                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="starting_occupation" required>
-                                                @foreach (['Laborer', 'Merchant', 'Mechanic'] as $occupation)
-                                                    <option value="{{ $occupation }}" @selected($character->starting_occupation === $occupation)>{{ $occupation }}</option>
-                                                @endforeach
-                                            </select>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Role Type</span>
-                                            <span class="text-xs text-white/45">Sets whether the character is treated as military or civilian.</span>
-                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="role_type" required>
-                                                <option value="civilian" @selected($character->role_type === 'civilian')>Civilian</option>
-                                                <option value="military" @selected($character->role_type === 'military')>Military</option>
-                                            </select>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Plastic Credits</span>
-                                            <span class="text-xs text-white/45">The current cash available for stores, licences, and trading.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="plastic_credits" type="number" min="0" value="{{ $character->plastic_credits }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Business Owner</span>
-                                            <span class="text-xs text-white/45">Toggle this if the character should receive business income.</span>
-                                            <span class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
-                                                <input type="checkbox" name="is_business_owner" value="1" @checked($character->is_business_owner)>
-                                                Business owner
-                                            </span>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Health Points</span>
-                                            <span class="text-xs text-white/45">The current HP value shown in the character card.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="health_points" type="number" min="0" max="100" value="{{ $character->health_points ?? 100 }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Stamina Points</span>
-                                            <span class="text-xs text-white/45">Controls the stamina bar and current stamina readout.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stamina_points" type="number" min="0" max="100" value="{{ $character->stamina_points ?? 100 }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Armor Points</span>
-                                            <span class="text-xs text-white/45">The current armor protection value.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="armor_points" type="number" min="0" max="100" value="{{ $character->armor_points ?? 0 }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Influence Score</span>
-                                            <span class="text-xs text-white/45">Used for reputation or political progression systems.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="influence_score" type="number" min="0" value="{{ $character->influence_score }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Military Score</span>
-                                            <span class="text-xs text-white/45">Tracks combat or service progression.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="military_score" type="number" min="0" value="{{ $character->military_score }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70 xl:col-start-2">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Economic Score</span>
-                                            <span class="text-xs text-white/45">Tracks wealth-building and economy-related progression.</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="economic_score" type="number" min="0" value="{{ $character->economic_score }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70 xl:col-span-3">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Biography</span>
-                                            <span class="text-xs text-white/45">The longer backstory and profile text for the character sheet.</span>
-                                            <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="biography" required>{{ $character->biography }}</textarea>
-                                        </label>
+                                        <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 xl:col-span-4" name="biography" required>{{ $character->biography }}</textarea>
                                         <div class="xl:col-span-4 flex justify-end">
                                             <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
                                         </div>

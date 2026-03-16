@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\GameJob;
 use App\Models\Location;
 use App\Support\CharacterActivity;
 use Illuminate\Http\RedirectResponse;
@@ -14,22 +15,30 @@ class WorkController extends Controller
     {
         abort_unless($location->slug === 'go-to-work', 403);
 
-        $character = $request->user()->character()->firstOrFail();
+        $character = $request->user()->character()->with('currentJob')->firstOrFail();
+        $job = $character->currentJob ?? GameJob::query()->where('is_starter', true)->firstOrFail();
+        $cooldownEndsAt = $character->workCooldownEndsAt();
 
-        if ($character->last_worked_at && $character->last_worked_at->gt(now()->subMinutes(5))) {
+        if ($cooldownEndsAt?->isFuture()) {
             return back()->withErrors([
-                'work' => 'Work cooldown active. You can work again at '.$character->last_worked_at->copy()->addMinutes(5)->format('H:i'),
+                'work' => 'Work cooldown active. You can work again at '.$cooldownEndsAt->format('H:i'),
             ]);
         }
 
-        $earnings = random_int(10, 30);
+        $earnings = random_int($job->min_pay, $job->max_pay);
+        $experienceEarned = 5;
+        $levelsGained = 0;
 
-        DB::transaction(function () use ($character, $earnings) {
+        DB::transaction(function () use ($character, $earnings, $experienceEarned, &$levelsGained) {
             $character->increment('plastic_credits', $earnings);
             $character->forceFill(['last_worked_at' => now()])->save();
+            $levelsGained = $character->gainExperience($experienceEarned);
             CharacterActivity::recordTransaction($character, 'work', $earnings, 'Completed a work shift.');
         });
 
-        return back()->with('status', "Shift complete. You earned {$earnings} Plastic Credits.");
+        $currentLevel = $character->fresh()->level;
+        $levelMessage = $levelsGained > 0 ? " Level up! You reached level {$currentLevel}." : '';
+
+        return back()->with('status', "Shift complete. You earned {$earnings} Plastic Credits and {$experienceEarned} XP.".$levelMessage);
     }
 }

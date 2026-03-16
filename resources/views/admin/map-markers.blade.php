@@ -50,6 +50,22 @@
             'faction' => $marker->faction?->name,
         ];
     })->values();
+    $polygonPayload = $polygons->map(function ($polygon) {
+        return [
+            'id' => $polygon->id,
+            'name' => $polygon->name,
+            'description' => $polygon->description,
+            'stroke_color' => $polygon->stroke_color,
+            'fill_color' => $polygon->fill_color,
+            'fill_opacity' => (float) $polygon->fill_opacity,
+            'stroke_weight' => (int) $polygon->stroke_weight,
+            'coordinates' => collect($polygon->coordinates)->map(fn ($point) => [
+                'x' => (int) ($point['x'] ?? 0),
+                'y' => (int) ($point['y'] ?? 0),
+            ])->values(),
+            'faction' => $polygon->faction?->name,
+        ];
+    })->values();
 @endphp
 
 @push('scripts')
@@ -69,6 +85,7 @@
             const alpineRoot = mapElement.closest('[x-data]');
             const alpineData = alpineRoot ? Alpine.$data(alpineRoot) : null;
             const markers = @json($markerPayload);
+            const polygons = @json($polygonPayload);
 
             const mapExtent = [0, -8192, 8192, 0];
             const mapMinZoom = 0;
@@ -92,6 +109,11 @@
                 maxZoom: mapMaxZoom,
                 zoomControl: true,
             });
+
+            map.createPane('polygonPane');
+            map.getPane('polygonPane').style.zIndex = 410;
+            map.createPane('markerPaneTop');
+            map.getPane('markerPaneTop').style.zIndex = 650;
 
             L.tileLayer('{{ asset('mapstyles/stylePlastica') }}/{z}/{x}/{y}.png', {
                 minZoom: mapMinZoom,
@@ -141,6 +163,15 @@
                 icon: buildPreviewIcon(),
                 interactive: false,
                 keyboard: false,
+                pane: 'markerPaneTop',
+            }).addTo(map);
+
+            const previewPolygon = L.polygon([], {
+                pane: 'polygonPane',
+                color: alpineData?.polygonStrokeColor ?? '#c2a84f',
+                fillColor: alpineData?.polygonFillColor ?? '#7ead59',
+                fillOpacity: Number(alpineData?.polygonFillOpacity ?? 0.25),
+                weight: Number(alpineData?.polygonStrokeWeight ?? 2),
             }).addTo(map);
 
             const syncPreview = () => {
@@ -150,17 +181,67 @@
 
                 previewMarker.setLatLng(pointFromPercent(Number(alpineData.x), Number(alpineData.y)));
                 previewMarker.setIcon(buildPreviewIcon());
+                previewPolygon.setStyle({
+                    color: alpineData.polygonStrokeColor || '#c2a84f',
+                    fillColor: alpineData.polygonFillColor || '#7ead59',
+                    fillOpacity: Number(alpineData.polygonFillOpacity || 0.25),
+                    weight: Number(alpineData.polygonStrokeWeight || 2),
+                });
+                previewPolygon.setLatLngs((alpineData.polygonPoints || []).map((point) => pointFromPercent(point.x, point.y)));
             };
 
             map.on('click', (event) => {
                 const coords = percentFromLatLng(event.latlng);
 
-                if (alpineData) {
+                if (!alpineData) {
+                    return;
+                }
+
+                if (alpineData.mapMode === 'polygon') {
+                    alpineData.polygonPoints.push(coords);
+                    alpineData.syncPolygonJson();
+                } else {
                     alpineData.x = coords.x;
                     alpineData.y = coords.y;
                 }
 
                 syncPreview();
+            });
+
+            polygons.forEach((polygon) => {
+                const layer = L.polygon(
+                    polygon.coordinates.map((point) => pointFromPercent(point.x, point.y)),
+                    {
+                        pane: 'polygonPane',
+                        color: polygon.stroke_color,
+                        fillColor: polygon.fill_color,
+                        fillOpacity: polygon.fill_opacity,
+                        weight: polygon.stroke_weight,
+                    }
+                ).addTo(map);
+
+                layer.bindPopup(`
+                    <div style="min-width: 200px">
+                        <strong>${polygon.name}</strong><br>
+                        <span>${polygon.faction ?? 'Unclaimed / Shared'}</span>
+                        ${polygon.description ? `<p style="margin: 8px 0 0;">${polygon.description}</p>` : ''}
+                    </div>
+                `);
+
+                layer.on('click', () => {
+                    if (!alpineData) {
+                        return;
+                    }
+
+                    alpineData.mapMode = 'polygon';
+                    alpineData.polygonPoints = polygon.coordinates;
+                    alpineData.polygonStrokeColor = polygon.stroke_color;
+                    alpineData.polygonFillColor = polygon.fill_color;
+                    alpineData.polygonFillOpacity = polygon.fill_opacity;
+                    alpineData.polygonStrokeWeight = polygon.stroke_weight;
+                    alpineData.syncPolygonJson();
+                    syncPreview();
+                });
             });
 
             markers.forEach((marker) => {
@@ -171,7 +252,7 @@
                     iconAnchor: [14, 14],
                 });
 
-                const leafletMarker = L.marker(pointFromPercent(marker.map_x, marker.map_y), { icon }).addTo(map);
+                const leafletMarker = L.marker(pointFromPercent(marker.map_x, marker.map_y), { icon, pane: 'markerPaneTop' }).addTo(map);
                 leafletMarker.bindPopup(`
                     <div style="min-width: 180px">
                         <strong>${marker.name}</strong><br>
@@ -186,6 +267,7 @@
                         return;
                     }
 
+                    alpineData.mapMode = 'marker';
                     alpineData.x = marker.map_x;
                     alpineData.y = marker.map_y;
                     alpineData.iconClass = marker.icon_class;
@@ -197,9 +279,16 @@
             ['x', 'y'].forEach((key) => {
                 alpineRoot?.querySelector(`[name="map_${key}"]`)?.addEventListener('input', syncPreview);
             });
-            ['icon_class', 'color'].forEach((name) => {
-                alpineRoot?.querySelector(`[name="${name}"]`)?.addEventListener('input', syncPreview);
+            ['icon_class', 'color', 'stroke_color', 'fill_color', 'fill_opacity', 'stroke_weight'].forEach((name) => {
+                alpineRoot?.querySelectorAll(`[name="${name}"]`)?.forEach((element) => element.addEventListener('input', syncPreview));
             });
+            alpineRoot?.querySelector('[data-polygon-clear]')?.addEventListener('click', () => {
+                alpineData.polygonPoints = [];
+                alpineData.syncPolygonJson();
+                syncPreview();
+            });
+
+            syncPreview();
         });
     </script>
 @endpush
@@ -211,32 +300,45 @@
 
     <div
         x-data="{
+            mapMode: 'marker',
             x: 50,
             y: 50,
             iconClass: 'fa-solid fa-flag',
-            color: '#c2a84f'
+            color: '#c2a84f',
+            polygonStrokeColor: '#c2a84f',
+            polygonFillColor: '#7ead59',
+            polygonFillOpacity: 0.25,
+            polygonStrokeWeight: 2,
+            polygonPoints: [],
+            polygonJson: '[]',
+            syncPolygonJson() {
+                this.polygonJson = JSON.stringify(this.polygonPoints);
+            }
         }"
         class="space-y-6"
     >
         <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Place Markers on the Map</p>
-                    <p class="mt-2 text-sm leading-7 text-white/70">Click anywhere on the map to set the coordinates for the marker form below. The new Leaflet map uses the tiles in <code>/public/mapstyles/stylePlastica</code>.</p>
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Place Markers and Territories</p>
+                    <p class="mt-2 text-sm leading-7 text-white/70">Switch between marker mode and polygon mode below. In polygon mode, each map click adds another point to the territory path.</p>
                 </div>
-                <div class="text-xs uppercase tracking-[0.24em] text-white/45">Click to capture X/Y</div>
+                <div class="flex gap-2 text-xs uppercase tracking-[0.24em] text-white/45">
+                    <button type="button" @click="mapMode = 'marker'" class="rounded-full border px-4 py-2" :class="mapMode === 'marker' ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5'">Marker Mode</button>
+                    <button type="button" @click="mapMode = 'polygon'" class="rounded-full border px-4 py-2" :class="mapMode === 'polygon' ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5'">Polygon Mode</button>
+                </div>
             </div>
             <div class="relative mt-5 overflow-hidden rounded-[2rem] border border-white/10 bg-black/20">
                 <div id="admin-world-map"></div>
             </div>
         </section>
 
-        <div class="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+        <div class="grid gap-6 xl:grid-cols-2">
             <form method="POST" action="{{ route('admin.map-markers.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 @csrf
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Map Marker</p>
-                <p class="mt-2 text-sm text-white/60">Places a visual marker on the world map for all factions or a faction-specific audience.</p>
-                <div class="grid gap-4">
+                <p class="mt-2 text-sm text-white/60">Markers stay above the polygon layers so players can still click them.</p>
+                <div class="mt-4 grid gap-4">
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Marker name" required>
                     <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
                         <option value="">Visible to all factions</option>
@@ -244,49 +346,62 @@
                             <option value="{{ $faction->id }}">{{ $faction->name }}</option>
                         @endforeach
                     </select>
-                    <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class, e.g. fa-solid fa-tower-observation" required>
+                    <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class" required>
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-white/50">Map X %</label>
-                            <input x-model="x" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" required>
-                        </div>
-                        <div>
-                            <label class="mb-2 block text-xs uppercase tracking-[0.2em] text-white/50">Map Y %</label>
-                            <input x-model="y" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" required>
-                        </div>
+                        <input x-model="x" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" placeholder="Map X %" required>
+                        <input x-model="y" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" placeholder="Map Y %" required>
                     </div>
-                    <input x-model="color" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" placeholder="Hex color, e.g. #d94a3a">
+                    <input x-model="color" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" placeholder="Hex color">
                     <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Marker description"></textarea>
-                    <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-sm text-white/65">
-                        Click the map above to fill X/Y. Suggested icons: `fa-solid fa-flag`, `fa-solid fa-industry`, `fa-solid fa-coins`, `fa-solid fa-skull-crossbones`, `fa-solid fa-landmark`.
-                    </div>
                     <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Marker</button>
                 </div>
             </form>
 
+            <form method="POST" action="{{ route('admin.map-polygons.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+                @csrf
+                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Territory Polygon</p>
+                <p class="mt-2 text-sm text-white/60">Click the map in polygon mode to add territory points. At least 3 are required.</p>
+                <div class="mt-4 grid gap-4">
+                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Polygon name" required>
+                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
+                        <option value="">Shared / unclaimed</option>
+                        @foreach ($factions as $faction)
+                            <option value="{{ $faction->id }}">{{ $faction->name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input x-model="polygonStrokeColor" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_color" placeholder="Stroke color">
+                        <input x-model="polygonFillColor" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_color" placeholder="Fill color">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input x-model="polygonFillOpacity" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_opacity" type="number" min="0" max="1" step="0.05" value="0.25" required>
+                        <input x-model="polygonStrokeWeight" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_weight" type="number" min="1" max="10" value="2" required>
+                    </div>
+                    <textarea x-model="polygonJson" class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" placeholder='[{"x":10,"y":10},{"x":20,"y":20},{"x":30,"y":10}]' required></textarea>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" data-polygon-clear class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Clear Points</button>
+                        <div class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs uppercase tracking-[0.18em] text-white/55">
+                            Points: <span x-text="polygonPoints.length"></span>
+                        </div>
+                    </div>
+                    <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Polygon description"></textarea>
+                    <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Polygon</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="grid gap-6 xl:grid-cols-2">
             <div x-data="{ openId: null }" class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
+                <div class="border-b border-white/10 px-5 py-4">
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Markers</p>
+                </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm text-white/75">
-                        <thead class="bg-black/30 text-xs uppercase tracking-[0.2em] text-white/40">
-                            <tr>
-                                <th class="px-5 py-4 text-left">Name</th>
-                                <th class="px-5 py-4 text-left">Faction</th>
-                                <th class="px-5 py-4 text-left">Coords</th>
-                                <th class="px-5 py-4 text-left">Icon</th>
-                                <th class="px-5 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
                         <tbody class="divide-y divide-white/10">
                             @foreach ($markers as $marker)
                                 <tr>
                                     <td class="px-5 py-4 font-semibold text-white">{{ $marker->name }}</td>
-                                    <td class="px-5 py-4">{{ $marker->faction?->name ?? 'All factions' }}</td>
                                     <td class="px-5 py-4">{{ $marker->map_x }}%, {{ $marker->map_y }}%</td>
-                                    <td class="px-5 py-4">
-                                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/20" style="color: {{ $marker->color ?: '#c2a84f' }};">
-                                            <i class="{{ $marker->icon_class }}"></i>
-                                        </span>
-                                    </td>
                                     <td class="px-5 py-4 text-right">
                                         <div class="flex justify-end gap-2">
                                             <button type="button" @click="openId = openId === {{ $marker->id }} ? null : {{ $marker->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
@@ -299,26 +414,78 @@
                                     </td>
                                 </tr>
                                 <tr x-show="openId === {{ $marker->id }}" x-cloak>
-                                    <td colspan="5" class="px-5 pb-5">
+                                    <td colspan="3" class="px-5 pb-5">
                                         <form method="POST" action="{{ route('admin.map-markers.update', $marker) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
                                             @csrf
                                             @method('PATCH')
-                                            <div class="grid gap-4 xl:grid-cols-[1fr_220px]">
-                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $marker->name }}" required>
-                                                <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
-                                                    <option value="">Visible to all factions</option>
-                                                    @foreach ($factions as $faction)
-                                                        <option value="{{ $faction->id }}" @selected($marker->faction_id === $faction->id)>{{ $faction->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="grid gap-4 xl:grid-cols-[1fr_120px_120px_160px]">
+                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $marker->name }}" required>
+                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
+                                                <option value="">Visible to all factions</option>
+                                                @foreach ($factions as $faction)
+                                                    <option value="{{ $faction->id }}" @selected($marker->faction_id === $faction->id)>{{ $faction->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <div class="grid gap-4 xl:grid-cols-4">
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" value="{{ $marker->icon_class }}" required>
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" value="{{ $marker->map_x }}" required>
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" value="{{ $marker->map_y }}" required>
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" value="{{ $marker->color }}" placeholder="#7ead59">
                                             </div>
                                             <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description">{{ $marker->description }}</textarea>
+                                            <div class="flex justify-end">
+                                                <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div x-data="{ openId: null }" class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
+                <div class="border-b border-white/10 px-5 py-4">
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Polygons</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-white/75">
+                        <tbody class="divide-y divide-white/10">
+                            @foreach ($polygons as $polygon)
+                                <tr>
+                                    <td class="px-5 py-4 font-semibold text-white">{{ $polygon->name }}</td>
+                                    <td class="px-5 py-4">{{ count($polygon->coordinates ?? []) }} pts</td>
+                                    <td class="px-5 py-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button type="button" @click="openId = openId === {{ $polygon->id }} ? null : {{ $polygon->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                            <form method="POST" action="{{ route('admin.map-polygons.destroy', $polygon) }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr x-show="openId === {{ $polygon->id }}" x-cloak>
+                                    <td colspan="3" class="px-5 pb-5">
+                                        <form method="POST" action="{{ route('admin.map-polygons.update', $polygon) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $polygon->name }}" required>
+                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="faction_id">
+                                                <option value="">Shared / unclaimed</option>
+                                                @foreach ($factions as $faction)
+                                                    <option value="{{ $faction->id }}" @selected($polygon->faction_id === $faction->id)>{{ $faction->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <div class="grid gap-4 xl:grid-cols-4">
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_color" value="{{ $polygon->stroke_color }}">
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_color" value="{{ $polygon->fill_color }}">
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="fill_opacity" type="number" min="0" max="1" step="0.05" value="{{ $polygon->fill_opacity }}" required>
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stroke_weight" type="number" min="1" max="10" value="{{ $polygon->stroke_weight }}" required>
+                                            </div>
+                                            <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 font-mono text-xs" name="coordinates_json" required>{{ json_encode($polygon->coordinates) }}</textarea>
+                                            <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description">{{ $polygon->description }}</textarea>
                                             <div class="flex justify-end">
                                                 <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
                                             </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Faction;
+use App\Models\GameJob;
 use App\Models\Rank;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
@@ -53,7 +54,10 @@ class CharacterController extends Controller
             ...$validated,
             'faction_id' => $faction->id,
             'rank_id' => $rank->id,
+            'current_job_id' => GameJob::query()->where('is_starter', true)->value('id'),
             'plastic_credits' => 100,
+            'level' => 0,
+            'experience_points' => 0,
             'health_points' => 100,
             'stamina_points' => 100,
             'armor_points' => 0,
@@ -72,6 +76,7 @@ class CharacterController extends Controller
         $character = $request->user()->character()->with([
             'faction',
             'rank',
+            'currentJob',
             'licences.requiredRank',
             'inventory',
             'transactions' => fn ($query) => $query->latest()->limit(12),

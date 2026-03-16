@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div>
             <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">{{ $character->name }}</p>
-            <p class="text-sm uppercase tracking-[0.22em] text-white/55">{{ $character->faction->name }} • {{ $character->rank->name }}</p>
+            <p class="text-sm uppercase tracking-[0.22em] text-white/55">{{ $character->faction->name }} | {{ $character->rank->name }}</p>
         </div>
     </x-slot>
 
@@ -10,12 +10,30 @@
         <section class="space-y-6">
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Character File</p>
+                <div class="mt-4 grid gap-4 md:grid-cols-2">
+                    <div class="rounded-2xl border border-[#c2a84f]/20 bg-black/20 px-4 py-4">
+                        <p class="text-xs uppercase tracking-[0.2em] text-[#c2a84f]">Level</p>
+                        <p class="mt-2 font-['Teko'] text-4xl uppercase">Lv. <span data-character-field="level">{{ $character->level }}</span></p>
+                        <div class="mt-3 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-white/55">
+                            <span>Experience</span>
+                            <span data-character-field="experience_label">{{ $character->experience_points }}/{{ $character->experienceRequiredForNextLevel() }}</span>
+                        </div>
+                        <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-white/10">
+                            <div class="h-full rounded-full bg-[linear-gradient(90deg,#c2a84f_0%,#f4d77a_100%)]" data-character-width="experience_progress_percent" style="width: {{ min(100, (int) round(($character->experience_points / max(1, $character->experienceRequiredForNextLevel())) * 100)) }}%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4 text-sm text-white/70">
+                        <p><span class="text-white/45">Age:</span> {{ $character->age }}</p>
+                        <p class="mt-2"><span class="text-white/45">Role:</span> {{ ucfirst($character->role_type) }}</p>
+                        <p class="mt-2"><span class="text-white/45">Job:</span> <span data-character-field="displayed_job_name">{{ $character->displayed_job_name }}</span></p>
+                        <p class="mt-2"><span class="text-white/45">Credits:</span> <span data-character-field="formatted_credits">{{ number_format($character->plastic_credits) }}</span></p>
+                        <p class="mt-2"><span class="text-white/45">Business owner:</span> {{ $character->is_business_owner ? 'Yes' : 'No' }}</p>
+                    </div>
+                </div>
+
                 <div class="mt-4 space-y-3 text-sm text-white/70">
-                    <p><span class="text-white/45">Age:</span> {{ $character->age }}</p>
-                    <p><span class="text-white/45">Role:</span> {{ ucfirst($character->role_type) }}</p>
-                    <p><span class="text-white/45">Occupation:</span> {{ $character->starting_occupation }}</p>
-                    <p><span class="text-white/45">Credits:</span> {{ number_format($character->plastic_credits) }}</p>
-                    <p><span class="text-white/45">Business owner:</span> {{ $character->is_business_owner ? 'Yes' : 'No' }}</p>
+                    <p><span class="text-white/45">Starting occupation:</span> {{ $character->starting_occupation }}</p>
                 </div>
                 <p class="mt-5 text-sm leading-7 text-white/70">{{ $character->biography }}</p>
             </div>

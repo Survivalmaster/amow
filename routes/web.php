@@ -4,16 +4,19 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\CharacterAdminController;
 use App\Http\Controllers\Admin\CityAdminController;
 use App\Http\Controllers\Admin\FactionAdminController;
+use App\Http\Controllers\Admin\GameJobAdminController;
 use App\Http\Controllers\Admin\ItemAdminController;
 use App\Http\Controllers\Admin\LocationAdminController;
 use App\Http\Controllers\Admin\MapMarkerAdminController;
-use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\DiscordWebhookAdminController;
+use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\CharacterController;
+use App\Http\Controllers\CharacterStateController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\DiscordLinkController;
 use App\Http\Controllers\FactionController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MarketController;
@@ -36,6 +39,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('character')->group(function () {
         Route::get('/lobby', [GameController::class, 'lobby'])->name('lobby');
+        Route::get('/character/state', [CharacterStateController::class, 'show'])->name('characters.state');
         Route::get('/cities/{city:slug}', [CityController::class, 'show'])->name('cities.show');
         Route::get('/locations/{location}', [LocationController::class, 'show'])->name('locations.show');
         Route::post('/locations/{location}/messages', [MessageController::class, 'store'])->name('messages.store');
@@ -43,6 +47,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/store', [StoreController::class, 'index'])->name('store.index');
         Route::post('/store/purchase', [StoreController::class, 'purchase'])->name('store.purchase');
         Route::get('/profile/game', [CharacterController::class, 'show'])->name('characters.show');
+        Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
+        Route::post('/jobs/{gameJob}', [JobController::class, 'store'])->name('jobs.store');
         Route::get('/leaderboards', [LeaderboardController::class, 'index'])->name('leaderboards.index');
         Route::get('/stocks', [MarketController::class, 'index'])->name('market.index');
         Route::post('/stocks/{company}/buy', [MarketController::class, 'buy'])->name('market.buy');
@@ -79,10 +85,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/items', [ItemAdminController::class, 'store'])->name('items.store');
         Route::patch('/items/{item}', [ItemAdminController::class, 'update'])->name('items.update');
         Route::delete('/items/{item}', [ItemAdminController::class, 'destroy'])->name('items.destroy');
+        Route::get('/jobs', [GameJobAdminController::class, 'index'])->name('jobs.index');
+        Route::post('/jobs', [GameJobAdminController::class, 'store'])->name('jobs.store');
+        Route::patch('/jobs/{gameJob}', [GameJobAdminController::class, 'update'])->name('jobs.update');
+        Route::delete('/jobs/{gameJob}', [GameJobAdminController::class, 'destroy'])->name('jobs.destroy');
         Route::get('/map-markers', [MapMarkerAdminController::class, 'index'])->name('map-markers.index');
         Route::post('/map-markers', [MapMarkerAdminController::class, 'store'])->name('map-markers.store');
         Route::patch('/map-markers/{mapMarker}', [MapMarkerAdminController::class, 'update'])->name('map-markers.update');
         Route::delete('/map-markers/{mapMarker}', [MapMarkerAdminController::class, 'destroy'])->name('map-markers.destroy');
+        Route::post('/map-polygons', [MapMarkerAdminController::class, 'storePolygon'])->name('map-polygons.store');
+        Route::patch('/map-polygons/{mapPolygon}', [MapMarkerAdminController::class, 'updatePolygon'])->name('map-polygons.update');
+        Route::delete('/map-polygons/{mapPolygon}', [MapMarkerAdminController::class, 'destroyPolygon'])->name('map-polygons.destroy');
         Route::get('/discord', [DiscordWebhookAdminController::class, 'index'])->name('discord.index');
         Route::post('/discord', [DiscordWebhookAdminController::class, 'store'])->name('discord.store');
         Route::patch('/discord/{discordWebhook}', [DiscordWebhookAdminController::class, 'update'])->name('discord.update');
