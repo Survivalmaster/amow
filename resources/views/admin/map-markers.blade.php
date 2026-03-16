@@ -100,6 +100,7 @@
             polygonFillColor: config.polygonFillColor ?? '#7ead59',
             polygonFillOpacity: config.polygonFillOpacity ?? 0.25,
             polygonStrokeWeight: config.polygonStrokeWeight ?? 2,
+            activePolygonId: null,
             selectedPolygonPointIndex: null,
             draggingPolygonPointIndex: null,
             suppressNextMapClick: false,
@@ -150,11 +151,13 @@
             },
             clearPolygonPoints() {
                 this.polygonPoints = [];
+                this.activePolygonId = null;
                 this.selectedPolygonPointIndex = null;
                 this.syncPolygonJson();
             },
             setPolygonPoints(points) {
                 this.polygonPoints = Array.isArray(points) ? points.map((point) => this.normalizePoint(point)) : [];
+                this.activePolygonId = null;
                 this.selectedPolygonPointIndex = null;
                 this.syncPolygonJson();
             },
@@ -175,6 +178,7 @@
             const alpineData = alpineRoot ? Alpine.$data(alpineRoot) : null;
             const markers = @json($markerPayload);
             const polygons = @json($polygonPayload);
+            const polygonLayers = new Map();
 
             const mapExtent = [0, -8192, 8192, 0];
             const mapMinZoom = 0;
@@ -289,6 +293,17 @@
                 previewPolygon.setLatLngs((alpineData.polygonPoints || []).map((point) => pointFromPercent(point.x, point.y)));
                 polygonPointHandles.clearLayers();
 
+                polygonLayers.forEach((layer, polygonId) => {
+                    if (polygonId === alpineData.activePolygonId && alpineData.mapMode === 'polygon') {
+                        layer.setStyle({ opacity: 0, fillOpacity: 0 });
+                    } else {
+                        layer.setStyle({
+                            opacity: 1,
+                            fillOpacity: Number(layer.options.originalFillOpacity ?? layer.options.fillOpacity ?? 0.25),
+                        });
+                    }
+                });
+
                 if (alpineData.mapMode !== 'polygon') {
                     return;
                 }
@@ -363,8 +378,10 @@
                         fillColor: polygon.fill_color,
                         fillOpacity: polygon.fill_opacity,
                         weight: polygon.stroke_weight,
+                        originalFillOpacity: polygon.fill_opacity,
                     }
                 ).addTo(map);
+                polygonLayers.set(polygon.id, layer);
 
                 layer.bindPopup(`
                     <div style="min-width: 200px">
@@ -380,6 +397,7 @@
                     }
 
                     alpineData.mapMode = 'polygon';
+                    alpineData.activePolygonId = polygon.id;
                     alpineData.polygonPoints = polygon.coordinates;
                     alpineData.polygonStrokeColor = polygon.stroke_color;
                     alpineData.polygonFillColor = polygon.fill_color;
@@ -415,6 +433,7 @@
                     }
 
                     alpineData.mapMode = 'marker';
+                    alpineData.activePolygonId = null;
                     alpineData.x = marker.map_x;
                     alpineData.y = marker.map_y;
                     alpineData.iconClass = marker.icon_class;
