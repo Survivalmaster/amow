@@ -10,7 +10,7 @@ class CharacterStateController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
-        $request->user()->touchPresence($request->path(), 'Character State');
+        $request->user()->touchPresence();
 
         /** @var Character $character */
         $character = $request->user()->character()->with(['rank', 'currentJob'])->firstOrFail();

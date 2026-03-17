@@ -41,31 +41,31 @@
                 </p>
             </div>
 
-            <form method="POST" action="{{ route('register') }}" class="mt-8 space-y-5">
+            <form method="POST" action="{{ route('register') }}" class="mt-8 space-y-5" autocomplete="off">
                 @csrf
 
                 <label class="grid gap-2 text-sm text-white/72">
                     <span class="uppercase tracking-[0.18em] text-white/45">Display Name</span>
-                    <input id="name" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-base text-[#f4ecd0] outline-none transition placeholder:text-white/28 focus:border-[#7ead59]/60 focus:ring-0" type="text" name="name" value="{{ old('name') }}" placeholder="Survivalmaster" required autofocus autocomplete="name" />
+                    <input id="name" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-base text-[#f4ecd0] outline-none transition placeholder:text-white/28 focus:border-[#7ead59]/60 focus:ring-0" type="text" name="name" value="{{ old('name') }}" placeholder="Survivalmaster" required autofocus autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
                     <x-input-error :messages="$errors->get('name')" class="mt-1" />
                 </label>
 
                 <label class="grid gap-2 text-sm text-white/72">
                     <span class="uppercase tracking-[0.18em] text-white/45">Email Address</span>
-                    <input id="email" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-base text-[#f4ecd0] outline-none transition placeholder:text-white/28 focus:border-[#7ead59]/60 focus:ring-0" type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" required autocomplete="username" />
+                    <input id="email" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-base text-[#f4ecd0] outline-none transition placeholder:text-white/28 focus:border-[#7ead59]/60 focus:ring-0" type="email" name="email" value="{{ old('email') }}" placeholder="you@example.com" required autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" />
                     <x-input-error :messages="$errors->get('email')" class="mt-1" />
                 </label>
 
                 <div class="grid gap-5 lg:grid-cols-2">
                     <label class="grid gap-2 text-sm text-white/72">
                         <span class="uppercase tracking-[0.18em] text-white/45">Password</span>
-                        <input id="password" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-base text-[#f4ecd0] outline-none transition placeholder:text-white/28 focus:border-[#7ead59]/60 focus:ring-0" type="password" name="password" placeholder="Create a secure password" required autocomplete="new-password" />
+                        <input id="password" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-base text-[#f4ecd0] outline-none transition placeholder:text-white/28 focus:border-[#7ead59]/60 focus:ring-0" type="password" name="password" placeholder="Create a secure password" required autocomplete="off" />
                         <x-input-error :messages="$errors->get('password')" class="mt-1" />
                     </label>
 
                     <label class="grid gap-2 text-sm text-white/72">
                         <span class="uppercase tracking-[0.18em] text-white/45">Confirm Password</span>
-                        <input id="password_confirmation" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-base text-[#f4ecd0] outline-none transition placeholder:text-white/28 focus:border-[#7ead59]/60 focus:ring-0" type="password" name="password_confirmation" placeholder="Repeat your password" required autocomplete="new-password" />
+                        <input id="password_confirmation" class="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-base text-[#f4ecd0] outline-none transition placeholder:text-white/28 focus:border-[#7ead59]/60 focus:ring-0" type="password" name="password_confirmation" placeholder="Repeat your password" required autocomplete="off" />
                         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1" />
                     </label>
                 </div>

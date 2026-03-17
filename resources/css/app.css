@@ -9,4 +9,25 @@
             linear-gradient(180deg, #102017 0%, #07100c 55%, #040806 100%);
         color: #f4ecd0;
     }
+
+    select,
+    option,
+    optgroup {
+        background-color: #07100c;
+        color: #f4ecd0;
+    }
+
+    select {
+        color-scheme: dark;
+    }
+
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #07100c inset;
+        -webkit-text-fill-color: #f4ecd0;
+        caret-color: #f4ecd0;
+        transition: background-color 9999s ease-out 0s;
+    }
 }
