@@ -1,5 +1,5 @@
 @php($navUser = auth()->user()->loadMissing('permissions.accountIcon'))
-@php($navCharacter = $navUser->character?->loadMissing(['rank', 'currentJob']))
+@php($navCharacter = $navUser->character?->loadMissing(['rank', 'currentJob', 'faction']))
 @php($creditAmount = $navCharacter?->plastic_credits ?? 0)
 @php($healthPoints = $navCharacter?->health_points ?? 100)
 @php($staminaPoints = $navCharacter?->stamina_points ?? 100)
@@ -8,6 +8,7 @@
 @php($experienceRequired = $navCharacter?->experienceRequiredForNextLevel() ?? 100)
 @php($experiencePercent = $navCharacter ? min(100, (int) round(($navCharacter->experience_points / max(1, $experienceRequired)) * 100)) : 0)
 @php($accountIcons = $navUser->permissionIcons())
+@php($factionColor = $navCharacter?->faction?->color ?: '#44594e')
 @php(
     $formattedCredits = match (true) {
         $creditAmount >= 1000000 => rtrim(rtrim(number_format($creditAmount / 1000000, 1), '0'), '.') . 'M',
@@ -41,7 +42,12 @@
     <div class="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:justify-between lg:px-6 lg:py-8">
         <div class="flex h-full flex-col">
             @if ($navCharacter)
-                <div class="rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 shadow-xl shadow-black/25">
+                <div class="relative overflow-hidden rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 pl-5 shadow-xl shadow-black/25">
+                    <div class="absolute inset-y-0 left-0 w-2.5 opacity-95" style="background:
+                        linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.04) 22%, rgba(0,0,0,0.22) 100%),
+                        repeating-linear-gradient(135deg, rgba(255,255,255,0.16) 0 4px, rgba(255,255,255,0) 4px 8px),
+                        repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0 2px, rgba(0,0,0,0) 2px 6px),
+                        {{ $factionColor }};"></div>
                     <div class="flex items-center gap-3">
                         <div class="flex shrink-0 flex-col items-center gap-2">
                             <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">
@@ -145,7 +151,12 @@
     <div x-show="open" x-cloak class="border-t border-white/10 px-4 py-4 lg:hidden">
         <div class="grid gap-2">
             @if ($navCharacter)
-                <div class="mb-2 rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3">
+                <div class="relative mb-2 overflow-hidden rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 pl-5">
+                    <div class="absolute inset-y-0 left-0 w-2.5 opacity-95" style="background:
+                        linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.04) 22%, rgba(0,0,0,0.22) 100%),
+                        repeating-linear-gradient(135deg, rgba(255,255,255,0.16) 0 4px, rgba(255,255,255,0) 4px 8px),
+                        repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0 2px, rgba(0,0,0,0) 2px 6px),
+                        {{ $factionColor }};"></div>
                     <div class="flex items-center gap-3">
                         <div class="flex shrink-0 flex-col items-center gap-2">
                             <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">

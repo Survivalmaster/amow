@@ -12,6 +12,7 @@ class Faction extends Model
         'slug',
         'short_description',
         'flag_image',
+        'color',
         'lore',
     ];
 

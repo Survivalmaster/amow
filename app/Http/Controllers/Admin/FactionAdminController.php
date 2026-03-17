@@ -23,9 +23,11 @@ class FactionAdminController extends Controller
             'slug' => ['required', 'string', 'max:255', 'unique:factions,slug'],
             'short_description' => ['required', 'string', 'max:255'],
             'flag_image' => ['nullable', 'string', 'max:255'],
+            'color' => ['nullable', 'regex:/^#?[0-9A-Fa-f]{6}$/'],
             'lore' => ['nullable', 'string'],
         ]);
 
+        $validated['color'] = isset($validated['color']) ? '#'.ltrim($validated['color'], '#') : null;
         Faction::query()->create($validated);
 
         return back()->with('status', 'Faction created.');
@@ -38,9 +40,11 @@ class FactionAdminController extends Controller
             'slug' => ['required', 'string', 'max:255', 'unique:factions,slug,'.$faction->id],
             'short_description' => ['required', 'string', 'max:255'],
             'flag_image' => ['nullable', 'string', 'max:255'],
+            'color' => ['nullable', 'regex:/^#?[0-9A-Fa-f]{6}$/'],
             'lore' => ['nullable', 'string'],
         ]);
 
+        $validated['color'] = isset($validated['color']) ? '#'.ltrim($validated['color'], '#') : null;
         $faction->update($validated);
 
         return back()->with('status', 'Faction updated.');

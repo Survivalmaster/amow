@@ -9,13 +9,13 @@
     @include('admin.partials.nav')
 
     <div x-data="{ openWebhookId: null, openCommandId: null }" class="space-y-6">
-        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30" x-data="{ color: '#C65B3F' }">
             <div class="flex items-start justify-between gap-4">
                 <div>
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Webhook</p>
                     <p class="mt-2 text-sm text-white/60">A webhook is the actual Discord delivery endpoint. It stores the channel target, webhook URL, and default embed color.</p>
                 </div>
-                <div class="w-40 rounded-xl border border-white/10 bg-[#313338] p-3 text-xs text-[#dbdee1]" x-data="{ color: '#C65B3F' }">
+                <div class="w-40 rounded-xl border border-white/10 bg-[#313338] p-3 text-xs text-[#dbdee1]">
                     <p class="font-semibold text-white">Webhook Preview</p>
                     <div class="mt-3 rounded-lg border-l-4 bg-[#2b2d31] p-3" :style="`border-left-color: ${color}`">
                         <p>Embed color sample</p>
@@ -23,7 +23,7 @@
                 </div>
             </div>
 
-            <form method="POST" action="{{ route('admin.discord.store') }}" class="mt-5 grid gap-4 lg:grid-cols-2" x-data="{ color: '#C65B3F' }">
+            <form method="POST" action="{{ route('admin.discord.store') }}" class="mt-5 grid gap-4 lg:grid-cols-2">
                 @csrf
                 <label class="grid gap-2 text-sm text-white/70">
                     <span class="uppercase tracking-[0.18em] text-white/45">Webhook Name</span>
@@ -44,7 +44,7 @@
                     <span class="uppercase tracking-[0.18em] text-white/45">Embed Color</span>
                     <span class="text-xs text-white/45">Default side color used for posts sent through this webhook.</span>
                     <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
-                        <input class="h-11 w-14 cursor-pointer rounded-lg border border-white/10 bg-transparent p-0" type="color" name="embed_color" x-model="color" value="#C65B3F" required>
+                        <input class="h-11 w-14 cursor-pointer rounded-lg border border-white/10 bg-transparent p-0" type="color" name="embed_color" x-model="color" required>
                         <input class="min-w-0 flex-1 bg-transparent text-sm uppercase tracking-[0.18em] text-white/70 outline-none" x-model="color" readonly>
                     </div>
                 </label>
