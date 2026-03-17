@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\GameJobAdminController;
 use App\Http\Controllers\Admin\ItemAdminController;
 use App\Http\Controllers\Admin\LocationAdminController;
 use App\Http\Controllers\Admin\MapMarkerAdminController;
+use App\Http\Controllers\Admin\PermissionAdminController;
 use App\Http\Controllers\Admin\DiscordWebhookAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\CharacterController;
@@ -90,6 +91,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/account-icons', [AccountIconAdminController::class, 'store'])->name('account-icons.store');
         Route::patch('/account-icons/{accountIcon}', [AccountIconAdminController::class, 'update'])->name('account-icons.update');
         Route::delete('/account-icons/{accountIcon}', [AccountIconAdminController::class, 'destroy'])->name('account-icons.destroy');
+        Route::get('/permissions', [PermissionAdminController::class, 'index'])->name('permissions.index');
+        Route::post('/permissions', [PermissionAdminController::class, 'store'])->name('permissions.store');
+        Route::patch('/permissions/{permission}', [PermissionAdminController::class, 'update'])->name('permissions.update');
+        Route::delete('/permissions/{permission}', [PermissionAdminController::class, 'destroy'])->name('permissions.destroy');
         Route::get('/jobs', [GameJobAdminController::class, 'index'])->name('jobs.index');
         Route::post('/jobs', [GameJobAdminController::class, 'store'])->name('jobs.store');
         Route::patch('/jobs/{gameJob}', [GameJobAdminController::class, 'update'])->name('jobs.update');

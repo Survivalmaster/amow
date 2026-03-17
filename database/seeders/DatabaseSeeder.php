@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ItemSeeder::class,
             GameJobSeeder::class,
             AccountIconSeeder::class,
+            PermissionSeeder::class,
             WorldSeeder::class,
             CompanySeeder::class,
             AdminUserSeeder::class,

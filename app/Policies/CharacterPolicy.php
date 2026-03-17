@@ -9,7 +9,7 @@ class CharacterPolicy
 {
     public function view(User $user, Character $character): bool
     {
-        return $user->id === $character->user_id || $user->is_admin;
+        return $user->id === $character->user_id || $user->loadMissing('permissions')->canAccessAdmin();
     }
 
     public function create(User $user): bool
@@ -19,6 +19,6 @@ class CharacterPolicy
 
     public function update(User $user, Character $character): bool
     {
-        return $user->id === $character->user_id || $user->is_admin;
+        return $user->id === $character->user_id || $user->loadMissing('permissions')->canAccessAdmin();
     }
 }

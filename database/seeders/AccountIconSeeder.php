@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\AccountIcon;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class AccountIconSeeder extends Seeder
@@ -22,9 +21,5 @@ class AccountIconSeeder extends Seeder
             ]
         );
 
-        User::query()
-            ->where('is_admin', true)
-            ->get()
-            ->each(fn (User $user) => $user->accountIcons()->syncWithoutDetaching([$adminCrown->id]));
     }
 }

@@ -23,6 +23,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Character::class, CharacterPolicy::class);
-        Gate::define('access-admin', fn ($user) => $user->is_admin);
+        Gate::define('access-admin', fn ($user) => $user->loadMissing('permissions')->canAccessAdmin());
     }
 }

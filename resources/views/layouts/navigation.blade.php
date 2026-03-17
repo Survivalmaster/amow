@@ -1,4 +1,5 @@
-@php($navCharacter = auth()->user()->character?->loadMissing(['rank', 'currentJob']))
+@php($navUser = auth()->user()->loadMissing('permissions.accountIcon'))
+@php($navCharacter = $navUser->character?->loadMissing(['rank', 'currentJob']))
 @php($creditAmount = $navCharacter?->plastic_credits ?? 0)
 @php($healthPoints = $navCharacter?->health_points ?? 100)
 @php($staminaPoints = $navCharacter?->stamina_points ?? 100)
@@ -6,6 +7,7 @@
 @php($staminaPercent = max(0, min(100, (int) $staminaPoints)))
 @php($experienceRequired = $navCharacter?->experienceRequiredForNextLevel() ?? 100)
 @php($experiencePercent = $navCharacter ? min(100, (int) round(($navCharacter->experience_points / max(1, $experienceRequired)) * 100)) : 0)
+@php($accountIcons = $navUser->permissionIcons())
 @php(
     $formattedCredits = match (true) {
         $creditAmount >= 1000000 => rtrim(rtrim(number_format($creditAmount / 1000000, 1), '0'), '.') . 'M',
@@ -26,7 +28,7 @@
     $operationsNav = array_values(array_filter([
         ['label' => 'Character', 'route' => 'characters.show', 'match' => ['characters.show'], 'icon' => 'fa-solid fa-id-badge'],
         ['label' => 'Account', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
-        auth()->user()->is_admin ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
+        $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
     ]))
 )
 
@@ -56,6 +58,15 @@
                                 |
                                 <span data-character-field="displayed_job_name">{{ $navCharacter->displayed_job_name }}</span>
                             </p>
+                            @if ($accountIcons->isNotEmpty())
+                                <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                                    @foreach ($accountIcons as $accountIcon)
+                                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-black/25 text-sm shadow-inner shadow-black/30" title="{{ $accountIcon->tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->color ?: '#f4ecd0' }};">
+                                            <i class="{{ $accountIcon->icon_value }}"></i>
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
                             <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
@@ -151,6 +162,15 @@
                                 |
                                 <span data-character-field="displayed_job_name">{{ $navCharacter->displayed_job_name }}</span>
                             </p>
+                            @if ($accountIcons->isNotEmpty())
+                                <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                                    @foreach ($accountIcons as $accountIcon)
+                                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-black/25 text-sm shadow-inner shadow-black/30" title="{{ $accountIcon->tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->color ?: '#f4ecd0' }};">
+                                            <i class="{{ $accountIcon->icon_value }}"></i>
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
                             <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>

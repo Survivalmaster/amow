@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +14,7 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->updateOrCreate(
+        $user = User::query()->updateOrCreate(
             ['email' => 'admin@amow.local'],
             [
                 'name' => 'AMOW Admin',
@@ -21,5 +22,11 @@ class AdminUserSeeder extends Seeder
                 'is_admin' => true,
             ]
         );
+
+        $adminPermissionId = Permission::query()->where('slug', 'admin')->value('id');
+
+        if ($adminPermissionId) {
+            $user->permissions()->syncWithoutDetaching([$adminPermissionId]);
+        }
     }
 }

@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Collection;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -67,5 +68,29 @@ class User extends Authenticatable
     public function accountIcons(): BelongsToMany
     {
         return $this->belongsToMany(AccountIcon::class)->withTimestamps();
+    }
+
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class)->withTimestamps();
+    }
+
+    public function hasPermission(string $slug): bool
+    {
+        return $this->permissions->contains(fn (Permission $permission) => $permission->slug === $slug);
+    }
+
+    public function canAccessAdmin(): bool
+    {
+        return $this->permissions->contains(fn (Permission $permission) => $permission->grants_admin_access);
+    }
+
+    public function permissionIcons(): Collection
+    {
+        return $this->permissions
+            ->sortBy(fn (Permission $permission) => sprintf('%05d-%s', $permission->sort_order, $permission->name))
+            ->map(fn (Permission $permission) => $permission->accountIcon)
+            ->filter()
+            ->values();
     }
 }
