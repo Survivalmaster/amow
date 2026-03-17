@@ -44,15 +44,15 @@
                 }
 
                 listElement.innerHTML = onlineUsers.map((user) => `
-                    <div class="grid gap-2 border-b border-white/10 py-3 text-sm last:border-b-0 lg:grid-cols-[140px_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1.2fr)] lg:items-center lg:gap-6">
-                        <p class="text-white/55">${escapeHtml(user.last_seen_label)}</p>
-                        <div class="min-w-0">
+                    <tr class="border-b border-white/10 last:border-b-0">
+                        <td class="px-3 py-3 text-white/55">${escapeHtml(user.last_seen_label)}</td>
+                        <td class="px-3 py-3">
                             <p class="truncate font-semibold text-[#f4ecd0]">${escapeHtml(user.character_name || user.account_name)}</p>
                             <p class="truncate text-[13px] text-white/45">${escapeHtml(user.account_name)}</p>
-                        </div>
-                        <p class="truncate font-mono text-[13px] text-white/70">${escapeHtml(user.current_path || user.current_page_name)}</p>
-                        <p class="truncate text-[#d7edc7]">${escapeHtml(user.current_activity_text || '-')}</p>
-                    </div>
+                        </td>
+                        <td class="px-3 py-3 font-mono text-[13px] text-white/70">${escapeHtml(user.current_path || user.current_page_name)}</td>
+                        <td class="px-3 py-3 text-[#d7edc7]">${escapeHtml(user.current_activity_text || '-')}</td>
+                    </tr>
                 `).join('');
             };
 
@@ -120,28 +120,38 @@
                 </div>
             </div>
 
-            <div class="mt-5 rounded-[1.5rem] border border-white/10 bg-black/10 px-5 py-3" data-online-list>
-                <div class="hidden border-b border-white/10 pb-3 text-[11px] uppercase tracking-[0.18em] text-white/40 lg:grid lg:grid-cols-[140px_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1.2fr)] lg:gap-6">
-                    <p>Last Seen</p>
-                    <p>Character / User</p>
-                    <p>Page</p>
-                    <p>Activity</p>
-                </div>
+            <div class="mt-5 overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/10">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-fixed" data-online-list>
+                        <thead class="border-b border-white/10 bg-black/20 text-left text-[11px] uppercase tracking-[0.18em] text-white/40">
+                            <tr>
+                                <th class="w-[140px] px-3 py-3 font-medium">Last Seen</th>
+                                <th class="w-[32%] px-3 py-3 font-medium">Character / User</th>
+                                <th class="w-[28%] px-3 py-3 font-medium">Page</th>
+                                <th class="px-3 py-3 font-medium">Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 @forelse ($onlineUsers as $user)
-                    <div class="grid gap-2 border-b border-white/10 py-3 text-sm last:border-b-0 lg:grid-cols-[140px_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1.2fr)] lg:items-center lg:gap-6">
-                        <p class="text-white/55">{{ optional($user->last_seen_at)->timezone(config('app.timezone'))->format('H:i:s') ?? 'Unknown' }}</p>
-                        <div class="min-w-0">
-                            <p class="truncate font-semibold text-[#f4ecd0]">{{ $user->character?->name ?? $user->name }}</p>
-                            <p class="truncate text-[13px] text-white/45">{{ $user->name }}</p>
-                        </div>
-                        <p class="truncate font-mono text-[13px] text-white/70">{{ $user->current_path ?: ($user->current_page_name ?: 'Unknown Page') }}</p>
-                        <p class="truncate text-[#d7edc7]">{{ $user->current_activity_text ?: '-' }}</p>
-                    </div>
+                            <tr class="border-b border-white/10 last:border-b-0">
+                                <td class="px-3 py-3 text-white/55">{{ optional($user->last_seen_at)->timezone(config('app.timezone'))->format('H:i:s') ?? 'Unknown' }}</td>
+                                <td class="px-3 py-3">
+                                    <p class="truncate font-semibold text-[#f4ecd0]">{{ $user->character?->name ?? $user->name }}</p>
+                                    <p class="truncate text-[13px] text-white/45">{{ $user->name }}</p>
+                                </td>
+                                <td class="px-3 py-3 font-mono text-[13px] text-white/70">{{ $user->current_path ?: ($user->current_page_name ?: 'Unknown Page') }}</td>
+                                <td class="px-3 py-3 text-[#d7edc7]">{{ $user->current_activity_text ?: '-' }}</td>
+                            </tr>
                 @empty
-                    <div class="px-4 py-10 text-center text-sm uppercase tracking-[0.2em] text-white/45">
-                        Nobody is currently online.
-                    </div>
+                            <tr>
+                                <td colspan="4" class="px-4 py-10 text-center text-sm uppercase tracking-[0.2em] text-white/45">
+                                    Nobody is currently online.
+                                </td>
+                            </tr>
                 @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
     </div>
