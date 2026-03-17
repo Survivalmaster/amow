@@ -14,6 +14,7 @@ class GlobalChatController extends Controller
         $messages = GlobalChatMessage::query()
             ->with([
                 'character.rank',
+                'character.faction',
                 'character.user.permissions.accountIcon',
             ])
             ->latest()
@@ -42,7 +43,7 @@ class GlobalChatController extends Controller
             'message' => trim($validated['message']),
         ]);
 
-        $message->load(['character.rank', 'character.user.permissions.accountIcon']);
+        $message->load(['character.rank', 'character.faction', 'character.user.permissions.accountIcon']);
 
         return response()->json([
             'message' => $this->formatMessage($message),
@@ -63,6 +64,7 @@ class GlobalChatController extends Controller
             'created_at' => $message->created_at?->timezone(config('app.timezone'))->format('H:i') ?? now()->format('H:i'),
             'character_name' => $character->name,
             'rank_name' => $character->rank?->name ?? 'Unranked',
+            'faction_color' => $character->faction?->color ?: '#f4ecd0',
             'account_icons' => $user->permissionIcons()->map(fn ($icon) => [
                 'name' => $icon->name,
                 'tooltip' => $icon->tooltip ?: $icon->name,
