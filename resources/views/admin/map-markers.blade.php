@@ -221,6 +221,7 @@
 
             map.createPane('polygonPane');
             map.getPane('polygonPane').style.zIndex = 410;
+            map.getPane('polygonPane').style.pointerEvents = 'none';
             map.createPane('markerPaneTop');
             map.getPane('markerPaneTop').style.zIndex = 650;
 
