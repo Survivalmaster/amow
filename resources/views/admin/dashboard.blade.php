@@ -44,19 +44,20 @@
                 }
 
                 listElement.innerHTML = onlineUsers.map((user) => `
-                    <article class="rounded-3xl border border-white/10 bg-black/20 p-4">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em] text-[#f4ecd0]">${escapeHtml(user.character_name || user.account_name)}</p>
-                                <p class="text-xs uppercase tracking-[0.2em] text-white/45">${escapeHtml(user.account_name)}</p>
-                            </div>
-                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#7ead59]">Seen ${escapeHtml(user.last_seen_label)}</p>
+                    <article class="grid gap-3 rounded-[1.75rem] border border-white/10 bg-black/20 px-4 py-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.2fr)_auto] lg:items-center">
+                        <div class="min-w-0">
+                            <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em] text-[#f4ecd0]">${escapeHtml(user.character_name || user.account_name)}</p>
+                            <p class="text-[11px] uppercase tracking-[0.18em] text-white/45">${escapeHtml(user.account_name)}</p>
                         </div>
-                        <div class="mt-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                        <div class="min-w-0 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                             <p class="text-[10px] uppercase tracking-[0.2em] text-white/38">Current Page</p>
                             <p class="mt-1 font-['Teko'] text-2xl uppercase tracking-[0.06em] text-white">${escapeHtml(user.current_page_name)}</p>
                             ${user.current_activity_text ? `<p class="mt-1 text-sm text-[#d7edc7]">${escapeHtml(user.current_activity_text)}</p>` : ''}
-                            <p class="mt-1 text-xs text-white/45">${escapeHtml(user.current_path)}</p>
+                            <p class="mt-1 truncate text-xs text-white/45">${escapeHtml(user.current_path)}</p>
+                        </div>
+                        <div class="rounded-[1.2rem] border border-[#7ead59]/20 bg-[#7ead59]/10 px-4 py-3 text-right">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-white/45">Seen</p>
+                            <p class="mt-1 font-['Teko'] text-2xl uppercase text-[#d7edc7]">${escapeHtml(user.last_seen_label)}</p>
                         </div>
                     </article>
                 `).join('');
@@ -126,27 +127,28 @@
                 </div>
             </div>
 
-            <div class="mt-5 grid gap-4 lg:grid-cols-2" data-online-list>
+            <div class="mt-5 space-y-3" data-online-list>
                 @forelse ($onlineUsers as $user)
-                    <article class="rounded-3xl border border-white/10 bg-black/20 p-4">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em] text-[#f4ecd0]">{{ $user->character?->name ?? $user->name }}</p>
-                                <p class="text-xs uppercase tracking-[0.2em] text-white/45">{{ $user->name }}</p>
-                            </div>
-                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#7ead59]">Seen {{ optional($user->last_seen_at)->timezone(config('app.timezone'))->format('H:i:s') ?? 'Unknown' }}</p>
+                    <article class="grid gap-3 rounded-[1.75rem] border border-white/10 bg-black/20 px-4 py-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.2fr)_auto] lg:items-center">
+                        <div class="min-w-0">
+                            <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em] text-[#f4ecd0]">{{ $user->character?->name ?? $user->name }}</p>
+                            <p class="text-[11px] uppercase tracking-[0.18em] text-white/45">{{ $user->name }}</p>
                         </div>
-                        <div class="mt-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                        <div class="min-w-0 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                             <p class="text-[10px] uppercase tracking-[0.2em] text-white/38">Current Page</p>
                             <p class="mt-1 font-['Teko'] text-2xl uppercase tracking-[0.06em] text-white">{{ $user->current_page_name ?: 'Unknown Page' }}</p>
                             @if ($user->current_activity_text)
                                 <p class="mt-1 text-sm text-[#d7edc7]">{{ $user->current_activity_text }}</p>
                             @endif
-                            <p class="mt-1 text-xs text-white/45">{{ $user->current_path ?: '/' }}</p>
+                            <p class="mt-1 truncate text-xs text-white/45">{{ $user->current_path ?: '/' }}</p>
+                        </div>
+                        <div class="rounded-[1.2rem] border border-[#7ead59]/20 bg-[#7ead59]/10 px-4 py-3 text-right">
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-white/45">Seen</p>
+                            <p class="mt-1 font-['Teko'] text-2xl uppercase text-[#d7edc7]">{{ optional($user->last_seen_at)->timezone(config('app.timezone'))->format('H:i:s') ?? 'Unknown' }}</p>
                         </div>
                     </article>
                 @empty
-                    <div class="rounded-3xl border border-dashed border-white/10 px-4 py-10 text-center text-sm uppercase tracking-[0.2em] text-white/45 lg:col-span-2">
+                    <div class="rounded-3xl border border-dashed border-white/10 px-4 py-10 text-center text-sm uppercase tracking-[0.2em] text-white/45">
                         Nobody is currently online.
                     </div>
                 @endforelse
