@@ -524,12 +524,12 @@
                     <label class="grid gap-2 text-sm text-white/70" x-show="iconType === 'fontawesome'">
                         <span class="uppercase tracking-[0.18em] text-white/45">Marker Icon</span>
                         <span class="text-xs text-white/45">Use a Font Awesome class for the marker symbol.</span>
-                        <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class">
+                        <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class_fontawesome" placeholder="Font Awesome class">
                     </label>
                     <label class="grid gap-2 text-sm text-white/70" x-show="iconType === 'image'">
                         <span class="uppercase tracking-[0.18em] text-white/45">PNG Marker</span>
                         <span class="text-xs text-white/45">Choose a PNG from `public/images/mapicons`.</span>
-                        <select x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class">
+                        <select x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_image">
                             <option value="">Select a PNG</option>
                             @foreach ($mapIconImages as $mapIconImage)
                                 <option value="{{ $mapIconImage['file'] }}">{{ $mapIconImage['label'] }}</option>
@@ -683,12 +683,12 @@
                                                     <label class="grid gap-2 text-sm text-white/70" x-show="iconType === 'fontawesome'">
                                                         <span class="uppercase tracking-[0.18em] text-white/45">Icon</span>
                                                         <span class="text-xs text-white/45">Font Awesome class.</span>
-                                                        <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" value="{{ $marker->icon_class }}">
+                                                        <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class_fontawesome" value="{{ $marker->icon_class }}">
                                                     </label>
                                                     <label class="grid gap-2 text-sm text-white/70" x-show="iconType === 'image'">
                                                         <span class="uppercase tracking-[0.18em] text-white/45">PNG Marker</span>
                                                         <span class="text-xs text-white/45">Choose a PNG from `public/images/mapicons`.</span>
-                                                        <select x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class">
+                                                        <select x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_image">
                                                             <option value="">Select a PNG</option>
                                                             @foreach ($mapIconImages as $mapIconImage)
                                                                 <option value="{{ $mapIconImage['file'] }}" @selected($marker->icon_class === $mapIconImage['file'])>{{ $mapIconImage['label'] }}</option>

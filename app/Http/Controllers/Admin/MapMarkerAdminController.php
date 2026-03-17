@@ -126,33 +126,43 @@ class MapMarkerAdminController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'faction_id' => ['nullable', 'exists:factions,id'],
             'icon_type' => ['required', 'in:fontawesome,image'],
-            'icon_class' => ['nullable', 'string', 'max:255'],
+            'icon_class_fontawesome' => ['nullable', 'string', 'max:255'],
+            'icon_image' => ['nullable', 'string', 'max:255'],
             'map_x' => ['required', 'numeric', 'between:0,100'],
             'map_y' => ['required', 'numeric', 'between:0,100'],
             'color' => ['nullable', 'string', 'max:20'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        if ($validated['icon_type'] === 'fontawesome' && blank($validated['icon_class'])) {
+        $iconClass = $validated['icon_type'] === 'fontawesome'
+            ? ($validated['icon_class_fontawesome'] ?? null)
+            : ($validated['icon_image'] ?? null);
+
+        if ($validated['icon_type'] === 'fontawesome' && blank($iconClass)) {
             throw ValidationException::withMessages([
-                'icon_class' => 'A Font Awesome class is required when using an icon font marker.',
+                'icon_class_fontawesome' => 'A Font Awesome class is required when using an icon font marker.',
             ]);
         }
 
         if ($validated['icon_type'] === 'image') {
             $allowedImages = $this->mapIconImages()->pluck('file')->all();
 
-            if (blank($validated['icon_class']) || ! in_array($validated['icon_class'], $allowedImages, true)) {
+            if (blank($iconClass) || ! in_array($iconClass, $allowedImages, true)) {
                 throw ValidationException::withMessages([
-                    'icon_class' => 'Select a valid PNG from the mapicons folder.',
+                    'icon_image' => 'Select a valid PNG from the mapicons folder.',
                 ]);
             }
         }
 
         return [
-            ...$validated,
+            'name' => $validated['name'],
+            'faction_id' => $validated['faction_id'],
+            'icon_type' => $validated['icon_type'],
+            'icon_class' => $iconClass,
             'map_x' => round((float) $validated['map_x'], 4),
             'map_y' => round((float) $validated['map_y'], 4),
+            'color' => $validated['color'],
+            'description' => $validated['description'],
         ];
     }
 
