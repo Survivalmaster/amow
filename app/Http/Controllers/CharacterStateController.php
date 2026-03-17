@@ -44,7 +44,7 @@ class CharacterStateController extends Controller
             'work_remaining_seconds' => $workRemainingSeconds,
             'work_cooldown_minutes' => $workCooldownMinutes,
             'work_status_label' => $workRemainingSeconds > 0
-                ? gmdate('i:s', $workRemainingSeconds)
+                ? $this->formatDuration($workRemainingSeconds)
                 : 'Ready now',
             'work_cooldown_progress_percent' => $workCooldownProgressPercent,
             'can_work' => $workRemainingSeconds === 0,
@@ -60,5 +60,19 @@ class CharacterStateController extends Controller
             $amount >= 100000 => rtrim(rtrim(number_format($amount / 1000, 1), '0'), '.').'K',
             default => number_format($amount),
         };
+    }
+
+    private function formatDuration(int $totalSeconds): string
+    {
+        $totalSeconds = max(0, (int) floor($totalSeconds));
+        $hours = intdiv($totalSeconds, 3600);
+        $minutes = intdiv($totalSeconds % 3600, 60);
+        $seconds = $totalSeconds % 60;
+
+        if ($hours > 0) {
+            return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+        }
+
+        return sprintf('%02d:%02d', $minutes, $seconds);
     }
 }

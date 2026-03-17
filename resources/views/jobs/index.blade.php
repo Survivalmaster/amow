@@ -37,7 +37,7 @@
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <p class="text-xs uppercase tracking-[0.2em] text-white/45">Work Cooldown</p>
-                            <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]" data-work-countdown-label>{{ $canWork ? 'Ready now' : gmdate('i:s', $workRemainingSeconds) }}</p>
+                            <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]" data-work-countdown-label>{{ $canWork ? 'Ready now' : ($workRemainingSeconds >= 3600 ? gmdate('H:i:s', $workRemainingSeconds) : gmdate('i:s', $workRemainingSeconds)) }}</p>
                         </div>
                         @if ($workLocation)
                             <form method="POST" action="{{ route('work.store', $workLocation) }}">
@@ -135,8 +135,15 @@
                 let cooldownMinutes = {{ $workCooldownMinutes }};
 
                 const formatSeconds = (seconds) => {
-                    const minutes = Math.floor(seconds / 60);
-                    const secs = seconds % 60;
+                    const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+                    const hours = Math.floor(safeSeconds / 3600);
+                    const minutes = Math.floor((safeSeconds % 3600) / 60);
+                    const secs = safeSeconds % 60;
+
+                    if (hours > 0) {
+                        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                    }
+
                     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
                 };
 

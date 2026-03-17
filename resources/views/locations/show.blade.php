@@ -10,11 +10,18 @@
             const button = workPanel.querySelector('[data-work-button]');
             const status = workPanel.querySelector('[data-work-status]');
             const formatDuration = (totalSeconds) => {
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
+                const safeSeconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+                const hours = Math.floor(safeSeconds / 3600);
+                const minutes = Math.floor((safeSeconds % 3600) / 60);
+                const seconds = safeSeconds % 60;
 
-                return [hours, minutes, seconds]
+                if (hours > 0) {
+                    return [hours, minutes, seconds]
+                        .map((value) => String(value).padStart(2, '0'))
+                        .join(':');
+                }
+
+                return [minutes, seconds]
                     .map((value) => String(value).padStart(2, '0'))
                     .join(':');
             };
