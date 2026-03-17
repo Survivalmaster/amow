@@ -50,6 +50,15 @@
                             <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
                                 <span class="leading-none">?</span>
                             </div>
+                            @if ($accountIcons->isNotEmpty())
+                                <div class="grid w-14 grid-cols-3 justify-items-center gap-1">
+                                    @foreach ($accountIcons as $accountIcon)
+                                        <span class="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[9px] shadow-inner shadow-black/30" title="{{ $accountIcon->tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->color ?: '#f4ecd0' }};">
+                                            <i class="{{ $accountIcon->icon_value }}"></i>
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]" data-character-field="name">{{ $navCharacter->name }}</p>
@@ -58,15 +67,6 @@
                                 |
                                 <span data-character-field="displayed_job_name">{{ $navCharacter->displayed_job_name }}</span>
                             </p>
-                            @if ($accountIcons->isNotEmpty())
-                                <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                                    @foreach ($accountIcons as $accountIcon)
-                                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-black/25 text-sm shadow-inner shadow-black/30" title="{{ $accountIcon->tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->color ?: '#f4ecd0' }};">
-                                            <i class="{{ $accountIcon->icon_value }}"></i>
-                                        </span>
-                                    @endforeach
-                                </div>
-                            @endif
                             <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
@@ -154,6 +154,15 @@
                             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
                                 <span class="leading-none">?</span>
                             </div>
+                            @if ($accountIcons->isNotEmpty())
+                                <div class="grid w-12 grid-cols-3 justify-items-center gap-1">
+                                    @foreach ($accountIcons as $accountIcon)
+                                        <span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[8px] shadow-inner shadow-black/30" title="{{ $accountIcon->tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->color ?: '#f4ecd0' }};">
+                                            <i class="{{ $accountIcon->icon_value }}"></i>
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
                         <div class="min-w-0 flex-1">
                             <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]" data-character-field="name">{{ $navCharacter->name }}</p>
@@ -162,15 +171,6 @@
                                 |
                                 <span data-character-field="displayed_job_name">{{ $navCharacter->displayed_job_name }}</span>
                             </p>
-                            @if ($accountIcons->isNotEmpty())
-                                <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                                    @foreach ($accountIcons as $accountIcon)
-                                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-black/25 text-sm shadow-inner shadow-black/30" title="{{ $accountIcon->tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->color ?: '#f4ecd0' }};">
-                                            <i class="{{ $accountIcon->icon_value }}"></i>
-                                        </span>
-                                    @endforeach
-                                </div>
-                            @endif
                             <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
                                 <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
                                     <i class="fa-solid fa-heart text-[#d75b5b]"></i>
