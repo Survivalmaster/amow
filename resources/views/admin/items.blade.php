@@ -7,11 +7,15 @@
         <form method="POST" action="{{ route('admin.items.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             @csrf
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Item</p>
-            <p class="mt-2 text-sm text-white/60">Creates an inventory or shop item, including cost, stock, and any role, rank, or licence requirements.</p>
+            <p class="mt-2 text-sm text-white/60">Creates an inventory or shop item, including cost, stock, any role, rank, or licence requirements, and whether the item unlocks the Home area.</p>
             <div class="mt-5 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Name" required>
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="Slug" required>
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="type" placeholder="Type" required>
+                <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                    <input type="checkbox" name="is_home" value="1">
+                    Home item
+                </label>
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="price" placeholder="Price" required>
                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="stock" placeholder="Stock">
                 <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
@@ -45,6 +49,7 @@
                         <tr>
                             <th class="px-5 py-4 text-left">Name</th>
                             <th class="px-5 py-4 text-left">Type</th>
+                            <th class="px-5 py-4 text-left">Home</th>
                             <th class="px-5 py-4 text-left">Price</th>
                             <th class="px-5 py-4 text-left">Restrictions</th>
                             <th class="px-5 py-4 text-right">Actions</th>
@@ -55,6 +60,7 @@
                             <tr>
                                 <td class="px-5 py-4 font-semibold text-white">{{ $item->name }}</td>
                                 <td class="px-5 py-4">{{ $item->type }}</td>
+                                <td class="px-5 py-4">{{ $item->is_home ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ number_format($item->price) }}</td>
                                 <td class="px-5 py-4">{{ $item->requiredRank?->name ?? 'Any rank' }} | {{ $item->required_role_type ?: 'Any role' }} | {{ $item->requiredLicence?->name ?? 'No licence' }}</td>
                                 <td class="px-5 py-4 text-right">
@@ -69,13 +75,17 @@
                                 </td>
                             </tr>
                             <tr x-show="openId === {{ $item->id }}" x-cloak>
-                                <td colspan="5" class="px-5 pb-5">
+                                <td colspan="6" class="px-5 pb-5">
                                     <form method="POST" action="{{ route('admin.items.update', $item) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2 xl:grid-cols-3">
                                         @csrf
                                         @method('PATCH')
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $item->name }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" value="{{ $item->slug }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="type" value="{{ $item->type }}" required>
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                                            <input type="checkbox" name="is_home" value="1" @checked($item->is_home)>
+                                            Home item
+                                        </label>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="price" value="{{ $item->price }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="stock" value="{{ $item->stock }}" placeholder="Stock">
                                         <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">

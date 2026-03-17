@@ -1,5 +1,5 @@
 @php($navUser = auth()->user()->loadMissing('permissions.accountIcon'))
-@php($navCharacter = $navUser->character?->loadMissing(['rank', 'currentJob', 'faction']))
+@php($navCharacter = $navUser->character?->loadMissing(['rank', 'currentJob', 'faction', 'inventory']))
 @php($creditAmount = $navCharacter?->plastic_credits ?? 0)
 @php($healthPoints = $navCharacter?->health_points ?? 100)
 @php($staminaPoints = $navCharacter?->stamina_points ?? 100)
@@ -29,6 +29,7 @@
 @php(
     $operationsNav = array_values(array_filter([
         ['label' => 'Character', 'route' => 'characters.show', 'match' => ['characters.show'], 'icon' => 'fa-solid fa-id-badge'],
+        $navCharacter?->hasHomeItem() ? ['label' => 'Home', 'route' => 'home.index', 'match' => ['home.*'], 'icon' => 'fa-solid fa-house'] : null,
         ['label' => 'Account', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
         $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
     ]))

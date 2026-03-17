@@ -18,6 +18,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\DiscordLinkController;
 use App\Http\Controllers\FactionController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LocationController;
@@ -49,6 +50,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/store', [StoreController::class, 'index'])->name('store.index');
         Route::post('/store/purchase', [StoreController::class, 'purchase'])->name('store.purchase');
         Route::get('/profile/game', [CharacterController::class, 'show'])->name('characters.show');
+        Route::get('/home', [HomeController::class, 'index'])->name('home.index');
         Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
         Route::post('/jobs/{gameJob}', [JobController::class, 'store'])->name('jobs.store');
         Route::get('/leaderboards', [LeaderboardController::class, 'index'])->name('leaderboards.index');

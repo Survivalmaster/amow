@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Carbon;
 
 class Character extends Model
@@ -179,5 +180,15 @@ class Character extends Model
         }
 
         return $item->stock === null || $item->stock > 0;
+    }
+
+    public function homeItems(): Collection
+    {
+        return $this->inventory->filter(fn (Item $item) => $item->is_home)->values();
+    }
+
+    public function hasHomeItem(): bool
+    {
+        return $this->homeItems()->isNotEmpty();
     }
 }

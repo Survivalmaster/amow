@@ -13,6 +13,7 @@ class Item extends Model
         'slug',
         'description',
         'type',
+        'is_home',
         'price',
         'required_rank_id',
         'required_role_type',
@@ -33,5 +34,12 @@ class Item extends Model
     public function characters(): BelongsToMany
     {
         return $this->belongsToMany(Character::class, 'character_items')->withPivot('quantity')->withTimestamps();
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'is_home' => 'boolean',
+        ];
     }
 }

@@ -29,12 +29,15 @@ class ItemAdminController extends Controller
             'slug' => ['required', 'string', 'max:255', 'unique:items,slug'],
             'description' => ['required', 'string'],
             'type' => ['required', 'string', 'max:255'],
+            'is_home' => ['nullable', 'boolean'],
             'price' => ['required', 'integer', 'min:1'],
             'required_rank_id' => ['nullable', 'exists:ranks,id'],
             'required_role_type' => ['nullable', 'in:civilian,military'],
             'required_licence_id' => ['nullable', 'exists:licences,id'],
             'stock' => ['nullable', 'integer', 'min:0'],
-        ]);
+        ]) + [
+            'is_home' => $request->boolean('is_home'),
+        ];
 
         Item::query()->create($validated);
 
@@ -48,12 +51,15 @@ class ItemAdminController extends Controller
             'slug' => ['required', 'string', 'max:255', 'unique:items,slug,'.$item->id],
             'description' => ['required', 'string'],
             'type' => ['required', 'string', 'max:255'],
+            'is_home' => ['nullable', 'boolean'],
             'price' => ['required', 'integer', 'min:1'],
             'required_rank_id' => ['nullable', 'exists:ranks,id'],
             'required_role_type' => ['nullable', 'in:civilian,military'],
             'required_licence_id' => ['nullable', 'exists:licences,id'],
             'stock' => ['nullable', 'integer', 'min:0'],
-        ]);
+        ]) + [
+            'is_home' => $request->boolean('is_home'),
+        ];
 
         $item->update($validated);
 
