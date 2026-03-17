@@ -61,8 +61,8 @@
             'icon_type' => $marker->icon_type ?? 'fontawesome',
             'icon_class' => $marker->icon_class,
             'icon_asset_url' => $marker->icon_asset_url,
-            'map_x' => (int) $marker->map_x,
-            'map_y' => (int) $marker->map_y,
+            'map_x' => (float) $marker->map_x,
+            'map_y' => (float) $marker->map_y,
             'color' => $marker->color ?: '#c2a84f',
             'faction' => $marker->faction?->name,
         ];
@@ -543,12 +543,12 @@
                         <label class="grid gap-2 text-sm text-white/70">
                             <span class="uppercase tracking-[0.18em] text-white/45">Map X</span>
                             <span class="text-xs text-white/45">Horizontal percentage position.</span>
-                            <input x-model="x" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" placeholder="Map X %" required>
+                            <input x-model="x" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" step="0.0001" placeholder="Map X %" required>
                         </label>
                         <label class="grid gap-2 text-sm text-white/70">
                             <span class="uppercase tracking-[0.18em] text-white/45">Map Y</span>
                             <span class="text-xs text-white/45">Vertical percentage position.</span>
-                            <input x-model="y" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" placeholder="Map Y %" required>
+                            <input x-model="y" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" step="0.0001" placeholder="Map Y %" required>
                         </label>
                     </div>
                     <label class="grid gap-2 text-sm text-white/70">
@@ -696,8 +696,8 @@
                                                         </select>
                                                     </label>
                                                 </div>
-                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" value="{{ $marker->map_x }}" required>
-                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" value="{{ $marker->map_y }}" required>
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" step="0.0001" value="{{ $marker->map_x }}" required>
+                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" step="0.0001" value="{{ $marker->map_y }}" required>
                                                 <div class="grid grid-cols-[84px_1fr] gap-3 xl:col-span-1">
                                                     <input class="h-12 w-full rounded-2xl border border-white/10 bg-black/25 p-1" type="color" value="{{ $marker->color ?: '#c2a84f' }}" oninput="this.nextElementSibling.value = this.value" aria-label="Marker color picker">
                                                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="color" value="{{ $marker->color }}" placeholder="#7ead59">

@@ -40,8 +40,8 @@
             'icon_type' => $marker->icon_type ?? 'fontawesome',
             'icon_class' => $marker->icon_class,
             'icon_asset_url' => $marker->icon_asset_url,
-            'map_x' => (int) $marker->map_x,
-            'map_y' => (int) $marker->map_y,
+            'map_x' => (float) $marker->map_x,
+            'map_y' => (float) $marker->map_y,
             'color' => $marker->color ?: '#c2a84f',
             'faction' => $marker->faction?->name,
         ];

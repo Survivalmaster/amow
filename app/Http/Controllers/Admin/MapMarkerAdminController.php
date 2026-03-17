@@ -127,8 +127,8 @@ class MapMarkerAdminController extends Controller
             'faction_id' => ['nullable', 'exists:factions,id'],
             'icon_type' => ['required', 'in:fontawesome,image'],
             'icon_class' => ['nullable', 'string', 'max:255'],
-            'map_x' => ['required', 'integer', 'between:0,100'],
-            'map_y' => ['required', 'integer', 'between:0,100'],
+            'map_x' => ['required', 'numeric', 'between:0,100'],
+            'map_y' => ['required', 'numeric', 'between:0,100'],
             'color' => ['nullable', 'string', 'max:20'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -149,7 +149,11 @@ class MapMarkerAdminController extends Controller
             }
         }
 
-        return $validated;
+        return [
+            ...$validated,
+            'map_x' => round((float) $validated['map_x'], 4),
+            'map_y' => round((float) $validated['map_y'], 4),
+        ];
     }
 
     private function mapIconImages()
