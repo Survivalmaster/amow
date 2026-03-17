@@ -78,7 +78,7 @@ test('work awards credits and experience based on the active job', function () {
         $payload = $request->data();
 
         return $request->url() === 'https://discord.com/api/v10/channels/1483329516796379136/messages'
-            && $request->hasHeader('Authorization', 'Bearer test-token')
+            && $request->hasHeader('Authorization', 'Bot test-token')
             && str_contains($payload['content'] ?? '', $character->name.' Is begging in the city.')
             && str_contains($payload['content'] ?? '', 'their total now is '.number_format($character->plastic_credits).'.');
     });

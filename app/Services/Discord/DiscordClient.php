@@ -22,7 +22,9 @@ class DiscordClient
         }
 
         return $this->http
-            ->withToken($token)
+            ->withHeaders([
+                'Authorization' => 'Bot '.$token,
+            ])
             ->baseUrl('https://discord.com/api/v10')
             ->acceptJson()
             ->post("/channels/{$channelId}/messages", [
