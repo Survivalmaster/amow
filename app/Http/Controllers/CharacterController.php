@@ -93,6 +93,9 @@ class CharacterController extends Controller
 
         return view('characters.profile', [
             'character' => $character,
+            'inventorySlotsUsed' => $character->inventorySlotsUsed(),
+            'inventorySlotCapacity' => $character->inventorySlotCapacity(),
+            'homeItemCount' => $character->homeItems()->sum(fn ($item) => (int) $item->pivot->quantity),
         ]);
     }
 }

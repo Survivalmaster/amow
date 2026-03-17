@@ -29,6 +29,7 @@
 @php(
     $operationsNav = array_values(array_filter([
         ['label' => 'Character', 'route' => 'characters.show', 'match' => ['characters.show'], 'icon' => 'fa-solid fa-id-badge'],
+        ['label' => 'Inventory', 'route' => 'inventory.index', 'match' => ['inventory.*'], 'icon' => 'fa-solid fa-box-open'],
         $navCharacter?->hasHomeItem() ? ['label' => 'Home', 'route' => 'home.index', 'match' => ['home.*'], 'icon' => 'fa-solid fa-house'] : null,
         ['label' => 'Account', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
         $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
@@ -134,7 +135,7 @@
             </div>
 
             <div class="mt-7">
-                <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">User Area</p>
+                <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">UCP</p>
                 <div class="mt-3 grid gap-1">
                     @foreach ($operationsNav as $item)
                         @php($isActive = request()->routeIs(...$item['match']))
@@ -242,7 +243,7 @@
                 </a>
             @endforeach
 
-            <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">User Area</p>
+            <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">UCP</p>
             @foreach ($operationsNav as $item)
                 @php($isActive = request()->routeIs(...$item['match']))
                 <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">

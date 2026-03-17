@@ -63,10 +63,13 @@
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 <div class="flex items-center justify-between gap-4">
                     <div>
-                        <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">At Home</p>
-                        <p class="mt-2 text-sm text-white/60">A quick read on the character stats you will eventually manage through shelter systems.</p>
+                        <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Recovery Management</p>
+                        <p class="mt-2 text-sm text-white/60">Use home actions to maintain your character. Sleep currently restores stamina to full.</p>
                     </div>
-                    <span class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Future recovery hub</span>
+                    <form method="POST" action="{{ route('home.sleep') }}">
+                        @csrf
+                        <button class="rounded-full px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] {{ $character->stamina_points >= 100 ? 'cursor-not-allowed border border-white/10 bg-white/5 text-white/35' : 'border border-[#7ead59]/35 bg-[#7ead59]/12 text-[#d7edc7]' }}" @disabled($character->stamina_points >= 100)>Sleep</button>
+                    </form>
                 </div>
                 <div class="mt-4 grid gap-4 sm:grid-cols-2">
                     <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
@@ -76,6 +79,7 @@
                     <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
                         <p class="text-xs uppercase tracking-[0.2em] text-white/45">Stamina</p>
                         <p class="mt-2 font-['Teko'] text-4xl uppercase">{{ $character->stamina_points }}/100</p>
+                        <p class="mt-2 text-xs uppercase tracking-[0.18em] text-[#7ead59]">{{ $character->stamina_points >= 100 ? 'Fully rested' : 'Sleep restores this to full' }}</p>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
                         <p class="text-xs uppercase tracking-[0.2em] text-white/45">Armor</p>
@@ -96,15 +100,20 @@
                         <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Stored Inventory</p>
                         <p class="mt-2 text-sm text-white/60">Everything your character currently owns, including home assets and general supplies.</p>
                     </div>
-                    <span class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">{{ $character->inventory->sum(fn ($item) => (int) $item->pivot->quantity) }} total items</span>
+                    <a href="{{ route('inventory.index') }}" class="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Open Inventory</a>
                 </div>
                 <div class="mt-4 grid gap-3 md:grid-cols-2">
                     @forelse ($character->inventory as $item)
                         <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                             <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ $item->name }}</p>
-                                    <p class="text-sm text-white/70">{{ $item->description }}</p>
+                                <div class="flex items-start gap-3">
+                                    <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-lg text-[#d7edc7]">
+                                        <i class="{{ $item->display_icon_class }}"></i>
+                                    </span>
+                                    <div>
+                                        <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ $item->name }}</p>
+                                        <p class="text-sm text-white/70">{{ $item->description }}</p>
+                                    </div>
                                 </div>
                                 @if ($item->is_home)
                                     <span class="rounded-full border border-[#7ead59]/30 bg-[#7ead59]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#d7edc7]">Home</span>

@@ -10,6 +10,15 @@
         <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Items</p>
             <p class="mt-2 text-sm text-white/60">Buy gear, trade tools, and home kits. Home-marked items unlock the dedicated Home area in your navigation.</p>
+            <div class="mt-4 rounded-[1.5rem] border border-white/10 bg-black/20 px-4 py-4">
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.2em] text-white/45">Inventory Capacity</p>
+                        <p class="mt-1 font-['Teko'] text-3xl uppercase text-[#f4ecd0]">{{ $character->inventorySlotsUsed() }}/{{ $character->inventorySlotCapacity() }}</p>
+                    </div>
+                    <p class="max-w-xs text-right text-sm text-white/60">Base capacity is 12 slots. Backpack items increase that cap for your character.</p>
+                </div>
+            </div>
             <div class="mt-5 space-y-4">
                 @foreach ($items as $item)
                     <form method="POST" action="{{ route('store.purchase') }}" class="rounded-3xl border border-white/10 bg-black/20 p-4">
@@ -23,9 +32,19 @@
                                     @if ($item->is_home)
                                         <span class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Unlocks Home</span>
                                     @endif
+                                    @if ($item->inventory_slot_bonus > 0)
+                                        <span class="rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f4ecd0]">+{{ $item->inventory_slot_bonus }} Slots</span>
+                                    @endif
                                 </div>
-                                <p class="text-sm text-white/70">{{ $item->description }}</p>
-                                <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $item->type }}</p>
+                                <div class="mt-2 flex items-start gap-3">
+                                    <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-lg text-[#d7edc7]">
+                                        <i class="{{ $item->display_icon_class }}"></i>
+                                    </span>
+                                    <div>
+                                        <p class="text-sm text-white/70">{{ $item->description }}</p>
+                                        <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $item->type }}</p>
+                                    </div>
+                                </div>
                             </div>
                             <div class="text-right">
                                 <p class="font-['Teko'] text-3xl uppercase text-[#7ead59]">{{ number_format($item->price) }}</p>

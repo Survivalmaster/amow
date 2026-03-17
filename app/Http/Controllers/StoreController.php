@@ -72,6 +72,10 @@ class StoreController extends Controller
             return back()->withErrors(['purchase' => 'Your rank, role, or licences do not allow this purchase.']);
         }
 
+        if (! $character->canStoreAdditionalItem($item)) {
+            return back()->withErrors(['purchase' => 'Inventory capacity reached. Buy or equip a backpack-style item to unlock more slots.']);
+        }
+
         if ($character->plastic_credits < $item->price) {
             return back()->withErrors(['purchase' => 'Not enough Plastic Credits.']);
         }

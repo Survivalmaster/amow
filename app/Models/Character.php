@@ -191,4 +191,30 @@ class Character extends Model
     {
         return $this->homeItems()->isNotEmpty();
     }
+
+    public function inventorySlotCapacity(): int
+    {
+        return 12 + $this->inventory->sum(function (Item $item) {
+            return max(0, (int) $item->inventory_slot_bonus) * max(1, (int) $item->pivot->quantity);
+        });
+    }
+
+    public function inventorySlotsUsed(): int
+    {
+        return $this->inventory->count();
+    }
+
+    public function inventorySlotsRemaining(): int
+    {
+        return max(0, $this->inventorySlotCapacity() - $this->inventorySlotsUsed());
+    }
+
+    public function canStoreAdditionalItem(Item $item): bool
+    {
+        if ($this->inventory->contains('id', $item->id)) {
+            return true;
+        }
+
+        return ($this->inventorySlotsUsed() + 1) <= ($this->inventorySlotCapacity() + max(0, (int) $item->inventory_slot_bonus));
+    }
 }

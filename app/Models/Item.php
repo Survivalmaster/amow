@@ -13,7 +13,9 @@ class Item extends Model
         'slug',
         'description',
         'type',
+        'icon_class',
         'is_home',
+        'inventory_slot_bonus',
         'price',
         'required_rank_id',
         'required_role_type',
@@ -40,6 +42,24 @@ class Item extends Model
     {
         return [
             'is_home' => 'boolean',
+            'inventory_slot_bonus' => 'integer',
         ];
+    }
+
+    public function getDisplayIconClassAttribute(): string
+    {
+        if (filled($this->icon_class)) {
+            return $this->icon_class;
+        }
+
+        return match ($this->type) {
+            'home' => 'fa-solid fa-house',
+            'backpack' => 'fa-solid fa-backpack',
+            'military' => 'fa-solid fa-shield-halved',
+            'business' => 'fa-solid fa-briefcase',
+            'trade' => 'fa-solid fa-scroll',
+            'utility' => 'fa-solid fa-screwdriver-wrench',
+            default => 'fa-solid fa-cube',
+        };
     }
 }

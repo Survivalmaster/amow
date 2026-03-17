@@ -63,3 +63,35 @@ test('home page is available when character owns a home item', function () {
         ->assertSee('Home Base')
         ->assertSee($homeItem->name);
 });
+
+test('sleeping at home restores stamina to full', function () {
+    $user = User::factory()->create();
+    $character = createHomeCharacter($user);
+    $homeItem = Item::query()->where('is_home', true)->firstOrFail();
+
+    $character->inventory()->attach($homeItem->id, ['quantity' => 1]);
+    $character->update(['stamina_points' => 42]);
+
+    $this->actingAs($user)
+        ->post(route('home.sleep'))
+        ->assertRedirect();
+
+    expect($character->fresh()->stamina_points)->toBe(100);
+});
+
+test('inventory page shows slot based inventory management', function () {
+    $user = User::factory()->create();
+    $character = createHomeCharacter($user);
+    $backpack = Item::query()->where('slug', 'canvas-backpack')->firstOrFail();
+    $homeItem = Item::query()->where('is_home', true)->firstOrFail();
+
+    $character->inventory()->attach($backpack->id, ['quantity' => 1]);
+    $character->inventory()->attach($homeItem->id, ['quantity' => 1]);
+
+    $this->actingAs($user)
+        ->get(route('inventory.index'))
+        ->assertOk()
+        ->assertSee('Inventory Grid')
+        ->assertSee('20')
+        ->assertSee($backpack->name);
+});

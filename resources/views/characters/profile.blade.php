@@ -55,13 +55,40 @@
 
         <section class="space-y-6">
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
-                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Inventory</p>
+                <div class="flex items-center justify-between gap-4">
+                    <div>
+                        <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Inventory Summary</p>
+                        <p class="mt-2 text-sm text-white/60">A quick overview. Full slot management now lives in the dedicated Inventory page.</p>
+                    </div>
+                    <a href="{{ route('inventory.index') }}" class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Open Inventory</a>
+                </div>
+                <div class="mt-4 grid gap-4 md:grid-cols-3">
+                    <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
+                        <p class="text-xs uppercase tracking-[0.2em] text-white/45">Used Slots</p>
+                        <p class="mt-2 font-['Teko'] text-4xl uppercase">{{ $inventorySlotsUsed }}</p>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
+                        <p class="text-xs uppercase tracking-[0.2em] text-white/45">Max Slots</p>
+                        <p class="mt-2 font-['Teko'] text-4xl uppercase">{{ $inventorySlotCapacity }}</p>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
+                        <p class="text-xs uppercase tracking-[0.2em] text-white/45">Home Assets</p>
+                        <p class="mt-2 font-['Teko'] text-4xl uppercase">{{ $homeItemCount }}</p>
+                    </div>
+                </div>
                 <div class="mt-4 grid gap-3 md:grid-cols-2">
-                    @forelse ($character->inventory as $item)
+                    @forelse ($character->inventory->take(4) as $item)
                         <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                            <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ $item->name }}</p>
-                            <p class="text-sm text-white/70">{{ $item->description }}</p>
-                            <p class="mt-2 text-xs uppercase tracking-[0.22em] text-[#c2a84f]">Qty {{ $item->pivot->quantity }}</p>
+                            <div class="flex items-start gap-3">
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/30 text-lg text-[#d7edc7]">
+                                    <i class="{{ $item->display_icon_class }}"></i>
+                                </span>
+                                <div class="min-w-0">
+                                    <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ $item->name }}</p>
+                                    <p class="text-sm text-white/70">{{ $item->description }}</p>
+                                    <p class="mt-2 text-xs uppercase tracking-[0.22em] text-[#c2a84f]">Qty {{ $item->pivot->quantity }}</p>
+                                </div>
+                            </div>
                         </div>
                     @empty
                         <p class="text-sm text-white/45">No items in inventory.</p>
