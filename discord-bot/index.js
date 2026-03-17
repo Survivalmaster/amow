@@ -50,7 +50,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
         const webhookCommand = webhookCommands.find((command) => command.command_name === interaction.commandName);
         if (webhookCommand) {
-            await handleWebhookCommand(interaction, webhookCommand);
+            await handleDynamicCommand(interaction, webhookCommand);
         }
     } catch (error) {
         if (isUnknownInteractionError(error)) {
@@ -182,13 +182,23 @@ async function handleWhoIs(interaction) {
     }
 }
 
-async function handleWebhookCommand(interaction, webhookCommand) {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
+async function handleDynamicCommand(interaction, webhookCommand) {
     if (webhookCommand.access_mode === 'role' && !memberHasRole(interaction, webhookCommand.role_id)) {
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         await interaction.editReply('You do not have permission to use this command.');
         return;
     }
+
+    if (webhookCommand.handler_key === 'pray_to_deity') {
+        await handlePrayerCommand(interaction, webhookCommand);
+        return;
+    }
+
+    await handleWebhookCommand(interaction, webhookCommand);
+}
+
+async function handleWebhookCommand(interaction, webhookCommand) {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const headline = interaction.options.getString('headline', true).trim();
     const announcement = interaction.options.getString('announcement', true).trim();
@@ -221,6 +231,38 @@ async function handleWebhookCommand(interaction, webhookCommand) {
 
         console.error(`webhook command ${webhookCommand.command_name} failed`, error);
         await interaction.editReply('The Discord announcement could not be posted.');
+    }
+}
+
+async function handlePrayerCommand(interaction, webhookCommand) {
+    await interaction.deferReply();
+
+    const deity = interaction.options.getString('deity', true).trim();
+
+    try {
+        const response = await api.post('/api/discord/pray', {
+            command_name: webhookCommand.command_name,
+            deity,
+            user_mention: `<@${interaction.user.id}>`,
+        });
+
+        await interaction.editReply(response.data.message);
+    } catch (error) {
+        if (isAxiosError(error)) {
+            if (error.response?.status === 403) {
+                await interaction.editReply('The bot could not authenticate with the AMOW website API.');
+                return;
+            }
+
+            const apiMessage = error.response?.data?.message;
+            if (typeof apiMessage === 'string' && apiMessage.length > 0) {
+                await interaction.editReply(`The prayer could not be answered: ${apiMessage}`);
+                return;
+            }
+        }
+
+        console.error(`prayer command ${webhookCommand.command_name} failed`, error);
+        await interaction.editReply('The prayer could not be answered.');
     }
 }
 

@@ -26,34 +26,116 @@ export function getBaseCommands() {
     ];
 }
 
-export function buildWebhookCommand(config) {
-    return new SlashCommandBuilder()
+export function buildDynamicCommand(config) {
+    const command = new SlashCommandBuilder()
         .setName(config.command_name)
-        .setDescription(config.command_description)
-        .addStringOption((option) =>
+        .setDescription(config.command_description);
+
+    const options = Array.isArray(config.command_options) && config.command_options.length > 0
+        ? config.command_options
+        : defaultOptionsForHandler(config.handler_key);
+
+    for (const optionConfig of options) {
+        addOption(command, optionConfig);
+    }
+
+    return command;
+}
+
+function defaultOptionsForHandler(handlerKey) {
+    if (handlerKey === 'pray_to_deity') {
+        return [
+            {
+                name: 'deity',
+                description: 'Choose the god you want to pray to.',
+                type: 'string',
+                required: true,
+                choices: [
+                    { name: 'Marble', value: 'Marble' },
+                    { name: 'Obsidian', value: 'Obsidian' },
+                ],
+            },
+        ];
+    }
+
+    return [
+        {
+            name: 'headline',
+            description: 'The announcement headline.',
+            type: 'string',
+            required: true,
+            max_length: 120,
+        },
+        {
+            name: 'announcement',
+            description: 'The announcement body text.',
+            type: 'string',
+            required: true,
+            max_length: 1900,
+        },
+        {
+            name: 'image',
+            description: 'Optional image attachment for the post.',
+            type: 'attachment',
+            required: false,
+        },
+        {
+            name: 'image_url',
+            description: 'Optional image URL if you do not want to upload a file.',
+            type: 'string',
+            required: false,
+        },
+    ];
+}
+
+function addOption(command, optionConfig) {
+    if (!optionConfig?.name || !optionConfig?.description) {
+        return;
+    }
+
+    const type = optionConfig.type ?? 'string';
+
+    if (type === 'attachment') {
+        command.addAttachmentOption((option) =>
             option
-                .setName('headline')
-                .setDescription('The announcement headline.')
-                .setRequired(true)
-                .setMaxLength(120)
-        )
-        .addStringOption((option) =>
-            option
-                .setName('announcement')
-                .setDescription('The announcement body text.')
-                .setRequired(true)
-                .setMaxLength(1900)
-        )
-        .addAttachmentOption((option) =>
-            option
-                .setName('image')
-                .setDescription('Optional image attachment for the post.')
-                .setRequired(false)
-        )
-        .addStringOption((option) =>
-            option
-                .setName('image_url')
-                .setDescription('Optional image URL if you do not want to upload a file.')
-                .setRequired(false)
+                .setName(optionConfig.name)
+                .setDescription(optionConfig.description)
+                .setRequired(Boolean(optionConfig.required))
         );
+
+        return;
+    }
+
+    if (type === 'user') {
+        command.addUserOption((option) =>
+            option
+                .setName(optionConfig.name)
+                .setDescription(optionConfig.description)
+                .setRequired(Boolean(optionConfig.required))
+        );
+
+        return;
+    }
+
+    command.addStringOption((option) => {
+        option
+            .setName(optionConfig.name)
+            .setDescription(optionConfig.description)
+            .setRequired(Boolean(optionConfig.required));
+
+        if (typeof optionConfig.max_length === 'number') {
+            option.setMaxLength(optionConfig.max_length);
+        }
+
+        if (Array.isArray(optionConfig.choices)) {
+            for (const choice of optionConfig.choices) {
+                option.addChoices({
+                    name: choice.name,
+                    value: choice.value,
+                });
+            }
+        }
+
+        return option;
+    });
 }
