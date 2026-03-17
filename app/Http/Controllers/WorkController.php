@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 class WorkController extends Controller
@@ -48,17 +49,29 @@ class WorkController extends Controller
         $updatedCharacter = $character->fresh(['currentJob']);
         $currentLevel = $updatedCharacter->level;
         $workActivityMessage = $job->working_display_message ?: 'Is working.';
+        $discordActivityMessage = $this->normalizeWorkActivityMessage($workActivityMessage);
+        $discordAvatarUrl = $updatedCharacter->user?->discord_avatar_url;
 
         try {
-            $discord->sendMessage(
+            $discord->sendEmbedMessage(
                 self::WORK_ACTIVITY_CHANNEL_ID,
-                sprintf(
-                    '%s %s They have earned %s credits, their total now is %s.',
-                    $updatedCharacter->name,
-                    $workActivityMessage,
-                    number_format($earnings),
-                    number_format($updatedCharacter->plastic_credits)
-                )
+                [
+                    'author' => array_filter([
+                        'name' => $updatedCharacter->name,
+                        'icon_url' => $discordAvatarUrl,
+                    ]),
+                    'title' => sprintf('%s is %s', $updatedCharacter->name, $discordActivityMessage),
+                    'description' => sprintf(
+                        "They have earned **%s** credits.\nTheir total now is **%s**.",
+                        number_format($earnings),
+                        number_format($updatedCharacter->plastic_credits)
+                    ),
+                    'color' => hexdec('7EAD59'),
+                    'footer' => [
+                        'text' => 'AMOW Work Activity',
+                    ],
+                    'timestamp' => now()->toIso8601String(),
+                ]
             );
         } catch (Throwable $exception) {
             Log::warning('Work activity Discord message failed to send.', [
@@ -71,5 +84,18 @@ class WorkController extends Controller
         $levelMessage = $levelsGained > 0 ? " Level up! You reached level {$currentLevel}." : '';
 
         return back()->with('status', "Shift complete. You earned {$earnings} Plastic Credits and {$experienceEarned} XP.".$levelMessage);
+    }
+
+    private function normalizeWorkActivityMessage(string $message): string
+    {
+        $message = trim($message);
+
+        if ($message === '') {
+            return 'working.';
+        }
+
+        $message = preg_replace('/^is\s+/i', '', $message) ?? $message;
+
+        return Str::of($message)->trim()->lower()->toString();
     }
 }

@@ -15,6 +15,26 @@ class DiscordClient
 
     public function sendMessage(string $channelId, string $content): Response
     {
+        return $this->post($channelId, [
+            'content' => $content,
+        ]);
+    }
+
+    public function sendEmbedMessage(string $channelId, array $embed, ?string $content = null): Response
+    {
+        $payload = [
+            'embeds' => [$embed],
+        ];
+
+        if ($content !== null && $content !== '') {
+            $payload['content'] = $content;
+        }
+
+        return $this->post($channelId, $payload);
+    }
+
+    private function post(string $channelId, array $payload): Response
+    {
         $token = (string) config('services.discord.bot_token');
 
         if ($token === '') {
@@ -27,9 +47,7 @@ class DiscordClient
             ])
             ->baseUrl('https://discord.com/api/v10')
             ->acceptJson()
-            ->post("/channels/{$channelId}/messages", [
-                'content' => $content,
-            ])
+            ->post("/channels/{$channelId}/messages", $payload)
             ->throw();
     }
 }

@@ -76,11 +76,15 @@ test('work awards credits and experience based on the active job', function () {
 
     Http::assertSent(function ($request) use ($character) {
         $payload = $request->data();
+        $embed = $payload['embeds'][0] ?? [];
 
         return $request->url() === 'https://discord.com/api/v10/channels/1483329516796379136/messages'
             && $request->hasHeader('Authorization', 'Bot test-token')
-            && str_contains($payload['content'] ?? '', $character->name.' Is begging in the city.')
-            && str_contains($payload['content'] ?? '', 'their total now is '.number_format($character->plastic_credits).'.');
+            && ($embed['author']['name'] ?? null) === $character->name
+            && str_contains($embed['title'] ?? '', $character->name.' is begging in the city.')
+            && str_contains($embed['description'] ?? '', 'They have earned **')
+            && str_contains($embed['description'] ?? '', 'Their total now is **'.number_format($character->plastic_credits).'**.')
+            && ! empty($embed['timestamp']);
     });
 });
 
