@@ -13,13 +13,13 @@ class DiscordLinkController extends Controller
     {
         $linkService->issueToken($request->user());
 
-        return Redirect::route('profile.edit')->with('status', 'discord-link-issued');
+        return redirect()->back(fallback: route('profile.edit'))->with('status', 'discord-link-issued');
     }
 
     public function destroy(Request $request, DiscordLinkService $linkService): RedirectResponse
     {
         $linkService->unlink($request->user());
 
-        return Redirect::route('profile.edit')->with('status', 'discord-unlinked');
+        return redirect()->back(fallback: route('profile.edit'))->with('status', 'discord-unlinked');
     }
 }

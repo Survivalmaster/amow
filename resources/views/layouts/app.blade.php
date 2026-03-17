@@ -27,6 +27,7 @@
         @endauth
         class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]"
     >
+        @php($authUser = auth()->user()?->fresh())
         <div class="min-h-screen bg-[rgba(4,8,6,0.35)]">
             <div class="lg:grid lg:grid-cols-[320px_minmax(0,1fr)]">
                 @include('layouts.navigation')
@@ -58,6 +59,93 @@
                 </div>
             </div>
         </div>
+        @auth
+            @if ($authUser && ! $authUser->discord_user_id)
+                <div
+                    x-data="{ open: !sessionStorage.getItem('amow-discord-link-dismissed'), copied: false }"
+                    x-show="open"
+                    x-cloak
+                    class="fixed inset-0 z-[90] flex items-end justify-center bg-black/55 p-4 sm:items-center"
+                >
+                    <div @click.outside="open = false; sessionStorage.setItem('amow-discord-link-dismissed', '1')" class="w-full max-w-xl overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(16,29,21,0.98),rgba(7,12,9,0.98))] shadow-2xl shadow-black/50">
+                        <div class="border-b border-white/10 px-6 py-5">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="font-['Teko'] text-4xl uppercase tracking-[0.08em] text-[#f4ecd0]">Link Your Discord</p>
+                                    <p class="mt-1 text-sm leading-6 text-white/58">
+                                        Finish linking your Discord so the AMOW bot can recognize your account, pull your Discord ID into your profile, and unlock bot-driven features.
+                                    </p>
+                                </div>
+                                <button @click="open = false; sessionStorage.setItem('amow-discord-link-dismissed', '1')" class="rounded-full border border-white/10 px-3 py-2 text-sm text-white/58 transition hover:text-white">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-5 px-6 py-6">
+                            <div class="grid gap-3 sm:grid-cols-3">
+                                <div class="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">1</p>
+                                    <p class="mt-2 font-['Teko'] text-2xl uppercase tracking-[0.08em] text-white">Generate</p>
+                                    <p class="mt-1 text-xs leading-5 text-white/58">Use the code below or refresh it if needed.</p>
+                                </div>
+                                <div class="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">2</p>
+                                    <p class="mt-2 font-['Teko'] text-2xl uppercase tracking-[0.08em] text-white">Message Bot</p>
+                                    <p class="mt-1 text-xs leading-5 text-white/58">Use `/amowlink code:YOURCODE` in Discord.</p>
+                                </div>
+                                <div class="rounded-[1.4rem] border border-white/10 bg-black/20 p-4">
+                                    <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">3</p>
+                                    <p class="mt-2 font-['Teko'] text-2xl uppercase tracking-[0.08em] text-white">Done</p>
+                                    <p class="mt-1 text-xs leading-5 text-white/58">Your Discord ID and username are stored on your AMOW account.</p>
+                                </div>
+                            </div>
+
+                            <div class="rounded-[1.5rem] border border-[#7ead59]/25 bg-[#7ead59]/10 p-5">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">Link Code</p>
+                                <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p class="font-mono text-2xl font-semibold tracking-[0.28em] text-[#f4ecd0]">
+                                            {{ $authUser->discord_link_token && $authUser->discord_link_token_expires_at?->isFuture() ? $authUser->discord_link_token : 'No active code' }}
+                                        </p>
+                                        <p class="mt-2 text-xs text-white/55">
+                                            @if ($authUser->discord_link_token && $authUser->discord_link_token_expires_at?->isFuture())
+                                                Expires {{ $authUser->discord_link_token_expires_at->timezone(config('app.timezone'))->format('j M Y H:i') }}.
+                                            @else
+                                                Generate a fresh code if you need one.
+                                            @endif
+                                        </p>
+                                    </div>
+                                    @if ($authUser->discord_link_token && $authUser->discord_link_token_expires_at?->isFuture())
+                                        <button
+                                            type="button"
+                                            @click="navigator.clipboard.writeText('{{ $authUser->discord_link_token }}'); copied = true; setTimeout(() => copied = false, 1800)"
+                                            class="rounded-full border border-white/10 bg-black/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80"
+                                        >
+                                            <span x-show="!copied">Copy Code</span>
+                                            <span x-show="copied" x-cloak>Copied</span>
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <form method="POST" action="{{ route('profile.discord-link.store') }}">
+                                    @csrf
+                                    <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">
+                                        {{ $authUser->discord_link_token && $authUser->discord_link_token_expires_at?->isFuture() ? 'Refresh Link Code' : 'Generate Link Code' }}
+                                    </button>
+                                </form>
+
+                                <a href="{{ route('profile.edit') }}" class="text-sm font-semibold text-white/62 transition hover:text-[#f4ecd0]">
+                                    Open account settings
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endauth
         @stack('scripts')
     </body>
 </html>
