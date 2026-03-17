@@ -36,7 +36,7 @@
     ]))
 )
 
-<nav x-data="{ open: false }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
+<nav x-data="{ open: false, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
     <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:hidden">
         <a href="{{ route('dashboard') }}" class="font-['Teko'] text-3xl uppercase tracking-[0.16em] text-[#f4ecd0]">AMOW</a>
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
@@ -135,9 +135,31 @@
             </div>
 
             <div class="mt-7">
-                <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">UCP</p>
+                <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">User Area</p>
                 <div class="mt-3 grid gap-1">
-                    @foreach ($operationsNav as $item)
+                    <button
+                        type="button"
+                        @click="ucpOpen = !ucpOpen"
+                        class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+                    >
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-user-gear w-5 text-center text-[#7ead59]"></i>
+                        <span class="flex-1 text-left">UCP</span>
+                        <i class="fa-solid text-xs text-white/45" :class="ucpOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+
+                    <div x-show="ucpOpen" x-cloak class="grid gap-1 pl-4">
+                        @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Home'], true)) as $item)
+                            @php($isActive = request()->routeIs(...$item['match']))
+                            <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                                <span>{{ $item['label'] }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+
+                    @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Account', 'Admin'], true)) as $item)
                         @php($isActive = request()->routeIs(...$item['match']))
                         <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                             <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
@@ -243,8 +265,30 @@
                 </a>
             @endforeach
 
-            <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">UCP</p>
-            @foreach ($operationsNav as $item)
+            <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">User Area</p>
+            <button
+                type="button"
+                @click="ucpOpen = !ucpOpen"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+            >
+                <span class="h-6 w-1 rounded-full {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                <i class="fa-solid fa-user-gear w-5 text-center text-[#7ead59]"></i>
+                <span class="flex-1 text-left">UCP</span>
+                <i class="fa-solid text-xs text-white/45" :class="ucpOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </button>
+
+            <div x-show="ucpOpen" x-cloak class="grid gap-1 pl-4">
+                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Home'], true)) as $item)
+                    @php($isActive = request()->routeIs(...$item['match']))
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endforeach
+            </div>
+
+            @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Account', 'Admin'], true)) as $item)
                 @php($isActive = request()->routeIs(...$item['match']))
                 <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                     <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>

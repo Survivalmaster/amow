@@ -76,6 +76,7 @@
                     <textarea
                         id="global-chat-message"
                         x-model="draft"
+                        @keydown.enter.prevent="if ($event.shiftKey) { draft += '\n'; return; } sendMessage()"
                         maxlength="400"
                         rows="2"
                         class="w-full resize-none rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-[#f4ecd0] placeholder:text-white/28"
