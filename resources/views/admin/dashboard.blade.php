@@ -9,6 +9,16 @@
 
             const stateUrl = dashboardRoot.dataset.adminOverviewStateUrl;
             let isFetching = false;
+            const escapeHtml = (value) => {
+                const input = String(value ?? '');
+
+                return input
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#039;');
+            };
 
             const renderState = (payload) => {
                 const countElements = dashboardRoot.querySelectorAll('[data-online-count]');
@@ -37,15 +47,16 @@
                     <article class="rounded-3xl border border-white/10 bg-black/20 p-4">
                         <div class="flex items-start justify-between gap-4">
                             <div>
-                                <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em] text-[#f4ecd0]">${user.character_name || user.account_name}</p>
-                                <p class="text-xs uppercase tracking-[0.2em] text-white/45">${user.account_name}</p>
+                                <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em] text-[#f4ecd0]">${escapeHtml(user.character_name || user.account_name)}</p>
+                                <p class="text-xs uppercase tracking-[0.2em] text-white/45">${escapeHtml(user.account_name)}</p>
                             </div>
-                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#7ead59]">Seen ${user.last_seen_label}</p>
+                            <p class="text-[10px] uppercase tracking-[0.18em] text-[#7ead59]">Seen ${escapeHtml(user.last_seen_label)}</p>
                         </div>
                         <div class="mt-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                             <p class="text-[10px] uppercase tracking-[0.2em] text-white/38">Current Page</p>
-                            <p class="mt-1 font-['Teko'] text-2xl uppercase tracking-[0.06em] text-white">${user.current_page_name}</p>
-                            <p class="mt-1 text-xs text-white/45">${user.current_path}</p>
+                            <p class="mt-1 font-['Teko'] text-2xl uppercase tracking-[0.06em] text-white">${escapeHtml(user.current_page_name)}</p>
+                            ${user.current_activity_text ? `<p class="mt-1 text-sm text-[#d7edc7]">${escapeHtml(user.current_activity_text)}</p>` : ''}
+                            <p class="mt-1 text-xs text-white/45">${escapeHtml(user.current_path)}</p>
                         </div>
                     </article>
                 `).join('');
@@ -128,6 +139,9 @@
                         <div class="mt-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                             <p class="text-[10px] uppercase tracking-[0.2em] text-white/38">Current Page</p>
                             <p class="mt-1 font-['Teko'] text-2xl uppercase tracking-[0.06em] text-white">{{ $user->current_page_name ?: 'Unknown Page' }}</p>
+                            @if ($user->current_activity_text)
+                                <p class="mt-1 text-sm text-[#d7edc7]">{{ $user->current_activity_text }}</p>
+                            @endif
                             <p class="mt-1 text-xs text-white/45">{{ $user->current_path ?: '/' }}</p>
                         </div>
                     </article>

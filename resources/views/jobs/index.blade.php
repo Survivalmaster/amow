@@ -12,8 +12,10 @@
     @php($workCooldownMinutes = $character->currentJob?->work_cooldown_minutes ?? 5)
     @php($workProgressPercent = $workRemainingSeconds > 0 ? max(0, min(100, (int) round((1 - ($workRemainingSeconds / max(1, $workCooldownMinutes * 60))) * 100))) : 100)
     @php($canWork = $workRemainingSeconds === 0)
+    @php($currentActivityText = $workRemainingSeconds > 0 ? ($character->currentJob?->working_display_message ?: 'Is working.') : 'Reviewing job assignments.')
 
     <div class="space-y-6">
+        <div class="hidden" data-presence-activity="{{ $currentActivityText }}"></div>
         <section class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Current Job</p>
@@ -133,6 +135,9 @@
 
                 let remainingSeconds = {{ $workRemainingSeconds }};
                 let cooldownMinutes = {{ $workCooldownMinutes }};
+                const presenceActivity = document.querySelector('[data-presence-activity]');
+                const workingMessage = @json($character->currentJob?->working_display_message ?: 'Is working.');
+                const idleMessage = 'Reviewing job assignments.';
 
                 const formatSeconds = (seconds) => {
                     const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
@@ -164,6 +169,10 @@
                     workButton.classList.toggle('border-white/10', !canWork);
                     workButton.classList.toggle('bg-white/5', !canWork);
                     workButton.classList.toggle('text-white/38', !canWork);
+
+                    if (presenceActivity) {
+                        presenceActivity.dataset.presenceActivity = canWork ? idleMessage : workingMessage;
+                    }
                 };
 
                 render();

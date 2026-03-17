@@ -83,6 +83,16 @@ const startPresenceHeartbeat = () => {
 
     let isSending = false;
 
+    const resolveCurrentActivity = () => {
+        const activityElement = document.querySelector('[data-presence-activity]');
+
+        if (activityElement) {
+            return activityElement.dataset.presenceActivity ?? '';
+        }
+
+        return document.body.dataset.currentActivity ?? '';
+    };
+
     const sendHeartbeat = async () => {
         if (isSending) {
             return;
@@ -103,6 +113,7 @@ const startPresenceHeartbeat = () => {
                 body: JSON.stringify({
                     current_path: document.body.dataset.currentPath,
                     current_page_name: document.body.dataset.currentPageName,
+                    current_activity_text: resolveCurrentActivity(),
                 }),
             });
         } finally {

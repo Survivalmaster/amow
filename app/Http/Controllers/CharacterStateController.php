@@ -50,6 +50,9 @@ class CharacterStateController extends Controller
                 : 'Ready now',
             'work_cooldown_progress_percent' => $workCooldownProgressPercent,
             'can_work' => $workRemainingSeconds === 0,
+            'work_activity_message' => $workRemainingSeconds > 0
+                ? ($character->currentJob?->working_display_message ?: 'Is working.')
+                : null,
             'can_change_job' => $character->canChangeJob(),
             'job_change_available_at_iso' => $character->job_changed_at?->copy()->addDay()->toIso8601String(),
         ]);

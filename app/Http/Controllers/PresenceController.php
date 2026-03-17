@@ -13,6 +13,7 @@ class PresenceController extends Controller
         $validated = $request->validate([
             'current_path' => ['nullable', 'string', 'max:255'],
             'current_page_name' => ['nullable', 'string', 'max:255'],
+            'current_activity_text' => ['nullable', 'string', 'max:255'],
         ]);
 
         $currentPath = $validated['current_path'] ?? $request->path();
@@ -20,10 +21,15 @@ class PresenceController extends Controller
             $validated['current_page_name'] ?? null,
             $currentPath
         );
+        $currentActivityText = filled($validated['current_activity_text'] ?? null)
+            ? trim((string) $validated['current_activity_text'])
+            : null;
 
         $request->user()->touchPresence(
             $currentPath,
-            $currentPageName
+            $currentPageName,
+            $currentActivityText,
+            true
         );
 
         return response()->json(['ok' => true]);

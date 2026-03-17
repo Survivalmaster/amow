@@ -11,24 +11,24 @@
     class="pointer-events-none fixed inset-0 z-[85]"
 >
     <section
-        x-ref="panel"
         class="pointer-events-auto fixed bottom-5 right-5 flex w-[min(92vw,21rem)] max-w-[21rem] flex-col overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,14,10,0.72),rgba(6,10,8,0.68))] shadow-2xl shadow-black/45 backdrop-blur-xl"
         :class="{ 'h-[30rem]': !minimized, 'h-auto': minimized }"
-        :style="panelStyle"
     >
         <header
-            @mousedown.prevent="startDrag($event)"
-            class="flex cursor-move items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-3 py-2.5"
+            class="flex items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-3 py-2.5"
         >
             <div>
-                <p class="font-['Teko'] text-[1.75rem] uppercase leading-none tracking-[0.08em] text-[#f4ecd0]">Comms</p>
+                <p class="font-['Teko'] text-[1.75rem] uppercase leading-none tracking-[0.08em] text-[#f4ecd0]">Chat</p>
                 <p class="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-white/45">
                     <span x-text="`${onlineCount} online`"></span>
                 </p>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" @click="minimized = !minimized; persistPosition()" class="rounded-full border border-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                <button type="button" @click="toggleMinimized()" class="relative rounded-full border border-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/60">
                     <span x-text="minimized ? 'Open' : 'Minimize'"></span>
+                    <template x-if="minimized && totalUnreadCount() > 0">
+                        <span class="absolute -right-1.5 -top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c65b3f] px-1 text-[9px] font-bold text-white" x-text="totalUnreadCount()"></span>
+                    </template>
                 </button>
             </div>
         </header>
@@ -36,9 +36,24 @@
         <template x-if="!minimized">
             <div class="flex min-h-0 flex-1 flex-col">
                 <div class="grid grid-cols-3 gap-1 border-b border-white/10 bg-black/10 p-2">
-                    <button type="button" @click="activeTab = 'world'; scrollToBottom()" class="rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]" :class="activeTab === 'world' ? 'bg-[#7ead59] text-[#07100c]' : 'bg-white/5 text-white/60'">World</button>
-                    <button type="button" @click="activeTab = 'nation'; scrollToBottom()" class="rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]" :class="activeTab === 'nation' ? 'bg-[#7ead59] text-[#07100c]' : 'bg-white/5 text-white/60'">Nation</button>
-                    <button type="button" @click="activeTab = 'direct'; scrollToBottom()" class="rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]" :class="activeTab === 'direct' ? 'bg-[#7ead59] text-[#07100c]' : 'bg-white/5 text-white/60'">Direct</button>
+                    <button type="button" @click="setActiveTab('world')" class="relative rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]" :class="activeTab === 'world' ? 'bg-[#7ead59] text-[#07100c]' : 'bg-white/5 text-white/60'">
+                        <span>World</span>
+                        <template x-if="unread.world > 0">
+                            <span class="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c65b3f] px-1 text-[9px] font-bold text-white" x-text="unread.world"></span>
+                        </template>
+                    </button>
+                    <button type="button" @click="setActiveTab('nation')" class="relative rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]" :class="activeTab === 'nation' ? 'bg-[#7ead59] text-[#07100c]' : 'bg-white/5 text-white/60'">
+                        <span>Nation</span>
+                        <template x-if="unread.nation > 0">
+                            <span class="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c65b3f] px-1 text-[9px] font-bold text-white" x-text="unread.nation"></span>
+                        </template>
+                    </button>
+                    <button type="button" @click="setActiveTab('direct')" class="relative rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em]" :class="activeTab === 'direct' ? 'bg-[#7ead59] text-[#07100c]' : 'bg-white/5 text-white/60'">
+                        <span>Direct</span>
+                        <template x-if="unread.direct > 0">
+                            <span class="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c65b3f] px-1 text-[9px] font-bold text-white" x-text="unread.direct"></span>
+                        </template>
+                    </button>
                 </div>
 
                 <div class="border-b border-white/10 bg-black/10 px-2.5 py-2">
@@ -46,7 +61,7 @@
                         <template x-for="onlineCharacter in onlineCharacters" :key="onlineCharacter.id">
                             <button
                                 type="button"
-                                @click="activeTab = 'direct'; selectedDirectCharacterId = onlineCharacter.id; fetchState(true)"
+                                @click="activeTab = 'direct'; selectedDirectCharacterId = onlineCharacter.id; unread.direct = 0; fetchState(true)"
                                 class="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]"
                                 :class="selectedDirectCharacterId === onlineCharacter.id && activeTab === 'direct' ? 'border-[#7ead59]/40 bg-[#7ead59]/12 text-[#d7edc7]' : 'border-white/10 bg-black/20 text-white/60'"
                             >
@@ -132,6 +147,7 @@
                 currentCharacter,
                 currentFaction,
                 activeTab: 'world',
+                unread: { world: 0, nation: 0, direct: 0 },
                 worldMessages: [],
                 nationMessages: [],
                 directMessages: [],
@@ -142,16 +158,11 @@
                 sending: false,
                 minimized: false,
                 isFetching: false,
-                position: { x: null, y: null },
-                dragOffset: { x: 0, y: 0 },
-                panelStyle: '',
                 pollTimer: null,
                 init() {
-                    this.restorePosition();
-                    this.updatePanelStyle();
+                    this.restoreState();
                     this.fetchState(true);
                     this.pollTimer = window.setInterval(() => this.fetchState(false), 2500);
-                    window.addEventListener('resize', () => this.updatePanelStyle());
                 },
                 activeMessages() {
                     if (this.activeTab === 'nation') {
@@ -178,77 +189,50 @@
 
                     return 'World channel';
                 },
-                restorePosition() {
+                restoreState() {
                     try {
-                        const saved = JSON.parse(window.localStorage.getItem('amow-global-chat-position') || 'null');
+                        const saved = JSON.parse(window.localStorage.getItem('amow-global-chat-state') || 'null');
 
                         if (saved) {
-                            this.position = {
-                                x: typeof saved.x === 'number' ? saved.x : null,
-                                y: typeof saved.y === 'number' ? saved.y : null,
-                            };
                             this.minimized = Boolean(saved.minimized);
                         }
                     } catch (error) {
                     }
                 },
-                persistPosition() {
-                    window.localStorage.setItem('amow-global-chat-position', JSON.stringify({
-                        x: this.position.x,
-                        y: this.position.y,
+                persistState() {
+                    window.localStorage.setItem('amow-global-chat-state', JSON.stringify({
                         minimized: this.minimized,
                     }));
-                    this.updatePanelStyle();
                 },
-                updatePanelStyle() {
-                    if (!this.$refs.panel) {
+                toggleMinimized() {
+                    this.minimized = !this.minimized;
+
+                    if (!this.minimized) {
+                        this.clearUnread();
+                        this.scrollToBottom();
+                    }
+
+                    this.persistState();
+                },
+                setActiveTab(tab) {
+                    this.activeTab = tab;
+                    this.unread[tab] = 0;
+                    this.scrollToBottom();
+                },
+                clearUnread() {
+                    this.unread = { world: 0, nation: 0, direct: 0 };
+                },
+                totalUnreadCount() {
+                    return this.unread.world + this.unread.nation + this.unread.direct;
+                },
+                applyUnread(channel, previousLastId, nextLastId) {
+                    if (!previousLastId || previousLastId === nextLastId) {
                         return;
                     }
 
-                    const maxX = Math.max(12, window.innerWidth - this.$refs.panel.offsetWidth - 12);
-                    const maxY = Math.max(12, window.innerHeight - this.$refs.panel.offsetHeight - 12);
-
-                    if (this.position.x !== null) {
-                        this.position.x = Math.min(Math.max(12, this.position.x), maxX);
+                    if (this.minimized || this.activeTab !== channel) {
+                        this.unread[channel] += 1;
                     }
-
-                    if (this.position.y !== null) {
-                        this.position.y = Math.min(Math.max(12, this.position.y), maxY);
-                    }
-
-                    this.panelStyle = this.position.x !== null && this.position.y !== null
-                        ? `left:${this.position.x}px;top:${this.position.y}px;right:auto;bottom:auto;`
-                        : '';
-                },
-                startDrag(event) {
-                    if (window.innerWidth < 768) {
-                        return;
-                    }
-
-                    const rect = this.$refs.panel.getBoundingClientRect();
-
-                    this.position = { x: rect.left, y: rect.top };
-                    this.dragOffset = {
-                        x: event.clientX - rect.left,
-                        y: event.clientY - rect.top,
-                    };
-
-                    const onMove = (moveEvent) => {
-                        this.position = {
-                            x: moveEvent.clientX - this.dragOffset.x,
-                            y: moveEvent.clientY - this.dragOffset.y,
-                        };
-                        this.updatePanelStyle();
-                    };
-
-                    const onUp = () => {
-                        window.removeEventListener('mousemove', onMove);
-                        window.removeEventListener('mouseup', onUp);
-                        this.persistPosition();
-                    };
-
-                    window.addEventListener('mousemove', onMove);
-                    window.addEventListener('mouseup', onUp);
                 },
                 async fetchState(scrollToBottom = false) {
                     if (this.isFetching) {
@@ -277,7 +261,9 @@
                         }
 
                         const payload = await response.json();
-                        const previousLastId = this.activeMessages().length ? this.activeMessages()[this.activeMessages().length - 1].id : null;
+                        const previousWorldLastId = this.worldMessages.length ? this.worldMessages[this.worldMessages.length - 1].id : null;
+                        const previousNationLastId = this.nationMessages.length ? this.nationMessages[this.nationMessages.length - 1].id : null;
+                        const previousDirectLastId = this.directMessages.length ? this.directMessages[this.directMessages.length - 1].id : null;
 
                         this.worldMessages = Array.isArray(payload.world_messages) ? payload.world_messages : [];
                         this.nationMessages = Array.isArray(payload.nation_messages) ? payload.nation_messages : [];
@@ -286,8 +272,23 @@
                         this.onlineCount = Number(payload.online_count || 1);
                         this.selectedDirectCharacterId = payload.selected_direct_character_id || this.selectedDirectCharacterId;
 
+                        const nextWorldLastId = this.worldMessages.length ? this.worldMessages[this.worldMessages.length - 1].id : null;
+                        const nextNationLastId = this.nationMessages.length ? this.nationMessages[this.nationMessages.length - 1].id : null;
+                        const nextDirectLastId = this.directMessages.length ? this.directMessages[this.directMessages.length - 1].id : null;
+
+                        this.applyUnread('world', previousWorldLastId, nextWorldLastId);
+                        this.applyUnread('nation', previousNationLastId, nextNationLastId);
+                        this.applyUnread('direct', previousDirectLastId, nextDirectLastId);
+
+                        if (!this.minimized) {
+                            this.unread[this.activeTab] = 0;
+                        }
+
                         this.$nextTick(() => {
                             const activeMessages = this.activeMessages();
+                            const previousLastId = this.activeTab === 'world'
+                                ? previousWorldLastId
+                                : (this.activeTab === 'nation' ? previousNationLastId : previousDirectLastId);
                             const nextLastId = activeMessages.length ? activeMessages[activeMessages.length - 1].id : null;
 
                             if (scrollToBottom || previousLastId !== nextLastId) {

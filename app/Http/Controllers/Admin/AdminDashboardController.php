@@ -45,6 +45,7 @@ class AdminDashboardController extends Controller
                 'character_name' => $user->character?->name,
                 'current_page_name' => $this->displayPageName($user),
                 'current_path' => $user->current_path ?: '/',
+                'current_activity_text' => $user->current_activity_text,
                 'last_seen_label' => optional($user->last_seen_at)?->timezone(config('app.timezone'))->format('H:i:s') ?? 'Unknown',
             ])->values(),
         ]);

@@ -6,11 +6,13 @@ use App\Models\GameJob;
 use App\Models\Location;
 use App\Models\Rank;
 use App\Models\User;
+use App\Jobs\SendDiscordChannelMessage;
 use Database\Seeders\FactionSeeder;
 use Database\Seeders\GameJobSeeder;
 use Database\Seeders\LicenceSeeder;
 use Database\Seeders\RankSeeder;
 use Database\Seeders\WorldSeeder;
+use Illuminate\Support\Facades\Bus;
 
 beforeEach(function () {
     $this->seed([
@@ -46,9 +48,14 @@ function createCharacterForUser(User $user): Character
 }
 
 test('work awards credits and experience based on the active job', function () {
+    Bus::fake();
+
     $user = User::factory()->create();
     $character = createCharacterForUser($user);
-    $character->currentJob()->update(['stamina_decrease' => 12]);
+    $character->currentJob()->update([
+        'stamina_decrease' => 12,
+        'working_display_message' => 'Is begging in the city.',
+    ]);
     $location = Location::query()->where('slug', 'go-to-work')->firstOrFail();
 
     $response = $this
@@ -64,6 +71,12 @@ test('work awards credits and experience based on the active job', function () {
     expect($character->experience_points)->toBe(5);
     expect($character->stamina_points)->toBe(88);
     expect($character->last_worked_at)->not->toBeNull();
+
+    Bus::assertDispatched(SendDiscordChannelMessage::class, function (SendDiscordChannelMessage $job) use ($character) {
+        return $job->channelId === '1483329516796379136'
+            && str_contains($job->content, $character->name.' Is begging in the city.')
+            && str_contains($job->content, 'their total now is '.number_format($character->plastic_credits).'.');
+    });
 });
 
 test('character state endpoint returns live job and progression data', function () {

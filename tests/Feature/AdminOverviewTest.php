@@ -21,6 +21,7 @@ test('admin overview state shows online users and their current page', function 
         'last_seen_at' => now(),
         'current_path' => 'stocks',
         'current_page_name' => 'Market Index',
+        'current_activity_text' => 'Watching the market.',
     ]);
 
     $this->actingAs($admin)
@@ -29,7 +30,8 @@ test('admin overview state shows online users and their current page', function 
         ->assertJsonPath('online_count', 1)
         ->assertJsonPath('online_users.0.account_name', $viewer->name)
         ->assertJsonPath('online_users.0.current_page_name', 'Market Index')
-        ->assertJsonPath('online_users.0.current_path', 'stocks');
+        ->assertJsonPath('online_users.0.current_path', 'stocks')
+        ->assertJsonPath('online_users.0.current_activity_text', 'Watching the market.');
 });
 
 test('presence ping stores the current page for authenticated users', function () {
@@ -39,6 +41,7 @@ test('presence ping stores the current page for authenticated users', function (
         ->postJson(route('presence.store'), [
             'current_path' => 'leaderboards',
             'current_page_name' => 'Leaderboards Index',
+            'current_activity_text' => 'Reviewing rankings.',
         ])
         ->assertOk()
         ->assertJsonPath('ok', true);
@@ -47,5 +50,6 @@ test('presence ping stores the current page for authenticated users', function (
 
     expect($user->current_path)->toBe('leaderboards');
     expect($user->current_page_name)->toBe('Leaderboards Index');
+    expect($user->current_activity_text)->toBe('Reviewing rankings.');
     expect($user->last_seen_at)->not->toBeNull();
 });
