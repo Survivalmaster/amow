@@ -58,7 +58,9 @@
             'id' => $marker->id,
             'name' => $marker->name,
             'description' => $marker->description,
+            'icon_type' => $marker->icon_type ?? 'fontawesome',
             'icon_class' => $marker->icon_class,
+            'icon_asset_url' => $marker->icon_asset_url,
             'map_x' => (int) $marker->map_x,
             'map_y' => (int) $marker->map_y,
             'color' => $marker->color ?: '#c2a84f',
@@ -94,6 +96,7 @@
             mapMode: config.mapMode ?? 'marker',
             x: config.x ?? 50,
             y: config.y ?? 50,
+            iconType: config.iconType ?? 'fontawesome',
             iconClass: config.iconClass ?? 'fa-solid fa-flag',
             color: config.color ?? '#c2a84f',
             polygonStrokeColor: config.polygonStrokeColor ?? '#c2a84f',
@@ -158,6 +161,19 @@
             setPolygonPoints(points) {
                 this.polygonPoints = Array.isArray(points) ? points.map((point) => this.normalizePoint(point)) : [];
                 this.activePolygonId = null;
+                this.selectedPolygonPointIndex = null;
+                this.syncPolygonJson();
+            },
+            loadPolygonForEditing(polygon) {
+                this.mapMode = 'polygon';
+                this.activePolygonId = Number(polygon.id);
+                this.polygonStrokeColor = polygon.stroke_color || '#c2a84f';
+                this.polygonFillColor = polygon.fill_color || '#7ead59';
+                this.polygonFillOpacity = Number(polygon.fill_opacity ?? 0.25);
+                this.polygonStrokeWeight = Number(polygon.stroke_weight ?? 2);
+                this.polygonPoints = Array.isArray(polygon.coordinates)
+                    ? polygon.coordinates.map((point) => this.normalizePoint(point))
+                    : [];
                 this.selectedPolygonPointIndex = null;
                 this.syncPolygonJson();
             },
@@ -243,8 +259,18 @@
             };
 
             const buildPreviewIcon = () => {
+                const iconType = alpineData?.iconType ?? 'fontawesome';
                 const iconClass = alpineData?.iconClass?.trim() || 'fa-solid fa-crosshairs';
                 const color = alpineData?.color?.trim() || '#7ead59';
+
+                if (iconType === 'image' && iconClass) {
+                    return L.divIcon({
+                        className: '',
+                        html: `<div class="world-marker is-preview" style="padding: 0; overflow: hidden;"><img src="{{ asset('images/mapicons') }}/${iconClass}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14],
+                    });
+                }
 
                 return L.divIcon({
                     className: '',
@@ -392,30 +418,26 @@
                 `);
 
                 layer.on('click', () => {
-                    if (!alpineData) {
-                        return;
+                    if (alpineData?.mapMode === 'polygon' && alpineData.activePolygonId === polygon.id) {
+                        layer.openPopup();
                     }
-
-                    alpineData.mapMode = 'polygon';
-                    alpineData.activePolygonId = polygon.id;
-                    alpineData.polygonPoints = polygon.coordinates;
-                    alpineData.polygonStrokeColor = polygon.stroke_color;
-                    alpineData.polygonFillColor = polygon.fill_color;
-                    alpineData.polygonFillOpacity = polygon.fill_opacity;
-                    alpineData.polygonStrokeWeight = polygon.stroke_weight;
-                    alpineData.selectedPolygonPointIndex = null;
-                    alpineData.syncPolygonJson();
-                    syncPreview();
                 });
             });
 
             markers.forEach((marker) => {
-                const icon = L.divIcon({
-                    className: '',
-                    html: `<div class="world-marker" style="color: ${marker.color};"><i class="${marker.icon_class}" style="font-size: 0.8rem;"></i></div>`,
-                    iconSize: [28, 28],
-                    iconAnchor: [14, 14],
-                });
+                const icon = marker.icon_type === 'image' && marker.icon_asset_url
+                    ? L.divIcon({
+                        className: '',
+                        html: `<div class="world-marker" style="padding: 0; overflow: hidden;"><img src="${marker.icon_asset_url}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14],
+                    })
+                    : L.divIcon({
+                        className: '',
+                        html: `<div class="world-marker" style="color: ${marker.color};"><i class="${marker.icon_class}" style="font-size: 0.8rem;"></i></div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14],
+                    });
 
                 const leafletMarker = L.marker(pointFromPercent(marker.map_x, marker.map_y), { icon, pane: 'markerPaneTop' }).addTo(map);
                 leafletMarker.bindPopup(`
@@ -436,6 +458,7 @@
                     alpineData.activePolygonId = null;
                     alpineData.x = marker.map_x;
                     alpineData.y = marker.map_y;
+                    alpineData.iconType = marker.icon_type;
                     alpineData.iconClass = marker.icon_class;
                     alpineData.color = marker.color;
                     alpineData.selectedPolygonPointIndex = null;
@@ -446,7 +469,7 @@
             ['x', 'y'].forEach((key) => {
                 alpineRoot?.querySelector(`[name="map_${key}"]`)?.addEventListener('input', syncPreview);
             });
-            ['icon_class', 'color', 'stroke_color', 'fill_color', 'fill_opacity', 'stroke_weight'].forEach((name) => {
+            ['icon_type', 'icon_class', 'color', 'stroke_color', 'fill_color', 'fill_opacity', 'stroke_weight'].forEach((name) => {
                 alpineRoot?.querySelectorAll(`[name="${name}"]`)?.forEach((element) => element.addEventListener('input', syncPreview));
             });
             alpineRoot?.querySelector('[data-polygon-clear]')?.addEventListener('click', () => {
@@ -503,9 +526,30 @@
                         </select>
                     </label>
                     <label class="grid gap-2 text-sm text-white/70">
+                        <span class="uppercase tracking-[0.18em] text-white/45">Marker Asset Type</span>
+                        <span class="text-xs text-white/45">Use a Font Awesome icon or a PNG from `public/images/mapicons`.</span>
+                        <select x-model="iconType" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_type">
+                            <option value="fontawesome">Font Awesome</option>
+                            <option value="image">PNG Image</option>
+                        </select>
+                    </label>
+                    <label class="grid gap-2 text-sm text-white/70" x-show="iconType === 'fontawesome'">
                         <span class="uppercase tracking-[0.18em] text-white/45">Marker Icon</span>
                         <span class="text-xs text-white/45">Use a Font Awesome class for the marker symbol.</span>
-                        <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class" required>
+                        <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome class">
+                    </label>
+                    <label class="grid gap-2 text-sm text-white/70" x-show="iconType === 'image'">
+                        <span class="uppercase tracking-[0.18em] text-white/45">PNG Marker</span>
+                        <span class="text-xs text-white/45">Choose a PNG from `public/images/mapicons`.</span>
+                        <select x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class">
+                            <option value="">Select a PNG</option>
+                            @foreach ($mapIconImages as $mapIconImage)
+                                <option value="{{ $mapIconImage['file'] }}">{{ $mapIconImage['label'] }}</option>
+                            @endforeach
+                        </select>
+                        @if ($mapIconImages->isEmpty())
+                            <p class="text-xs text-white/45">No PNG files found in `public/images/mapicons` yet.</p>
+                        @endif
                     </label>
                     <div class="grid grid-cols-2 gap-4">
                         <label class="grid gap-2 text-sm text-white/70">
@@ -628,7 +672,7 @@
                                 </tr>
                                 <tr x-show="openId === {{ $marker->id }}" x-cloak>
                                     <td colspan="3" class="px-5 pb-5">
-                                        <form method="POST" action="{{ route('admin.map-markers.update', $marker) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
+                                        <form method="POST" action="{{ route('admin.map-markers.update', $marker) }}" x-data="{ iconType: '{{ $marker->icon_type ?? 'fontawesome' }}', iconClass: @js($marker->icon_class) }" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5">
                                             @csrf
                                             @method('PATCH')
                                             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $marker->name }}" required>
@@ -638,8 +682,32 @@
                                                     <option value="{{ $faction->id }}" @selected($marker->faction_id === $faction->id)>{{ $faction->name }}</option>
                                                 @endforeach
                                             </select>
+                                            <label class="grid gap-2 text-sm text-white/70">
+                                                <span class="uppercase tracking-[0.18em] text-white/45">Marker Asset Type</span>
+                                                <span class="text-xs text-white/45">Choose how this marker should render.</span>
+                                                <select x-model="iconType" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_type">
+                                                    <option value="fontawesome">Font Awesome</option>
+                                                    <option value="image">PNG Image</option>
+                                                </select>
+                                            </label>
                                             <div class="grid gap-4 xl:grid-cols-4">
-                                                <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" value="{{ $marker->icon_class }}" required>
+                                                <div class="xl:col-span-2">
+                                                    <label class="grid gap-2 text-sm text-white/70" x-show="iconType === 'fontawesome'">
+                                                        <span class="uppercase tracking-[0.18em] text-white/45">Icon</span>
+                                                        <span class="text-xs text-white/45">Font Awesome class.</span>
+                                                        <input x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" value="{{ $marker->icon_class }}">
+                                                    </label>
+                                                    <label class="grid gap-2 text-sm text-white/70" x-show="iconType === 'image'">
+                                                        <span class="uppercase tracking-[0.18em] text-white/45">PNG Marker</span>
+                                                        <span class="text-xs text-white/45">Choose a PNG from `public/images/mapicons`.</span>
+                                                        <select x-model="iconClass" class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class">
+                                                            <option value="">Select a PNG</option>
+                                                            @foreach ($mapIconImages as $mapIconImage)
+                                                                <option value="{{ $mapIconImage['file'] }}" @selected($marker->icon_class === $mapIconImage['file'])>{{ $mapIconImage['label'] }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </label>
+                                                </div>
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_x" type="number" min="0" max="100" value="{{ $marker->map_x }}" required>
                                                 <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="map_y" type="number" min="0" max="100" value="{{ $marker->map_y }}" required>
                                                 <div class="grid grid-cols-[84px_1fr] gap-3 xl:col-span-1">
@@ -673,7 +741,23 @@
                                     <td class="px-5 py-4">{{ count($polygon->coordinates ?? []) }} pts</td>
                                     <td class="px-5 py-4 text-right">
                                         <div class="flex justify-end gap-2">
-                                            <button type="button" @click="openId = openId === {{ $polygon->id }} ? null : {{ $polygon->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                            <button
+                                                type="button"
+                                                @click="
+                                                    openId = openId === {{ $polygon->id }} ? null : {{ $polygon->id }};
+                                                    if (openId === {{ $polygon->id }}) {
+                                                        $root.closest('.space-y-6')?._x_dataStack?.[0]?.loadPolygonForEditing(@js([
+                                                            'id' => $polygon->id,
+                                                            'stroke_color' => $polygon->stroke_color ?: '#c2a84f',
+                                                            'fill_color' => $polygon->fill_color ?: '#7ead59',
+                                                            'fill_opacity' => (float) $polygon->fill_opacity,
+                                                            'stroke_weight' => (int) $polygon->stroke_weight,
+                                                            'coordinates' => $polygon->coordinates ?? [],
+                                                        ]));
+                                                    }
+                                                "
+                                                class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]"
+                                            >Edit</button>
                                             <form method="POST" action="{{ route('admin.map-polygons.destroy', $polygon) }}">
                                                 @csrf
                                                 @method('DELETE')

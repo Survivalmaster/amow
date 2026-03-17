@@ -37,7 +37,9 @@
         return [
             'name' => $marker->name,
             'description' => $marker->description,
+            'icon_type' => $marker->icon_type ?? 'fontawesome',
             'icon_class' => $marker->icon_class,
+            'icon_asset_url' => $marker->icon_asset_url,
             'map_x' => (int) $marker->map_x,
             'map_y' => (int) $marker->map_y,
             'color' => $marker->color ?: '#c2a84f',
@@ -151,12 +153,19 @@
             });
 
             markers.forEach((marker) => {
-                const icon = L.divIcon({
-                    className: '',
-                    html: `<div class="lobby-map-marker" style="color: ${marker.color};"><i class="${marker.icon_class}" style="font-size: 0.85rem;"></i></div>`,
-                    iconSize: [28, 28],
-                    iconAnchor: [14, 14],
-                });
+                const icon = marker.icon_type === 'image' && marker.icon_asset_url
+                    ? L.divIcon({
+                        className: '',
+                        html: `<div class="lobby-map-marker" style="padding: 0; overflow: hidden;"><img src="${marker.icon_asset_url}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14],
+                    })
+                    : L.divIcon({
+                        className: '',
+                        html: `<div class="lobby-map-marker" style="color: ${marker.color};"><i class="${marker.icon_class}" style="font-size: 0.85rem;"></i></div>`,
+                        iconSize: [28, 28],
+                        iconAnchor: [14, 14],
+                    });
 
                 L.marker(pointFromPercent(marker.map_x, marker.map_y), { icon, pane: 'markerPaneTop' })
                     .addTo(map)

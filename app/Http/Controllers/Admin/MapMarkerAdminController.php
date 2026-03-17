@@ -8,6 +8,7 @@ use App\Models\MapMarker;
 use App\Models\MapPolygon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -19,20 +20,13 @@ class MapMarkerAdminController extends Controller
             'markers' => MapMarker::query()->with('faction')->orderBy('name')->get(),
             'polygons' => MapPolygon::query()->with('faction')->orderBy('name')->get(),
             'factions' => Faction::query()->orderBy('name')->get(),
+            'mapIconImages' => $this->mapIconImages(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'faction_id' => ['nullable', 'exists:factions,id'],
-            'icon_class' => ['required', 'string', 'max:255'],
-            'map_x' => ['required', 'integer', 'between:0,100'],
-            'map_y' => ['required', 'integer', 'between:0,100'],
-            'color' => ['nullable', 'string', 'max:20'],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $this->validatedMarkerData($request);
 
         MapMarker::query()->create($validated);
 
@@ -41,15 +35,7 @@ class MapMarkerAdminController extends Controller
 
     public function update(Request $request, MapMarker $mapMarker): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'faction_id' => ['nullable', 'exists:factions,id'],
-            'icon_class' => ['required', 'string', 'max:255'],
-            'map_x' => ['required', 'integer', 'between:0,100'],
-            'map_y' => ['required', 'integer', 'between:0,100'],
-            'color' => ['nullable', 'string', 'max:20'],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $this->validatedMarkerData($request);
 
         $mapMarker->update($validated);
 
@@ -132,5 +118,56 @@ class MapMarkerAdminController extends Controller
             ], $coordinates),
             'description' => $validated['description'],
         ];
+    }
+
+    private function validatedMarkerData(Request $request): array
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'faction_id' => ['nullable', 'exists:factions,id'],
+            'icon_type' => ['required', 'in:fontawesome,image'],
+            'icon_class' => ['nullable', 'string', 'max:255'],
+            'map_x' => ['required', 'integer', 'between:0,100'],
+            'map_y' => ['required', 'integer', 'between:0,100'],
+            'color' => ['nullable', 'string', 'max:20'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        if ($validated['icon_type'] === 'fontawesome' && blank($validated['icon_class'])) {
+            throw ValidationException::withMessages([
+                'icon_class' => 'A Font Awesome class is required when using an icon font marker.',
+            ]);
+        }
+
+        if ($validated['icon_type'] === 'image') {
+            $allowedImages = $this->mapIconImages()->pluck('file')->all();
+
+            if (blank($validated['icon_class']) || ! in_array($validated['icon_class'], $allowedImages, true)) {
+                throw ValidationException::withMessages([
+                    'icon_class' => 'Select a valid PNG from the mapicons folder.',
+                ]);
+            }
+        }
+
+        return $validated;
+    }
+
+    private function mapIconImages()
+    {
+        $directory = public_path('images/mapicons');
+
+        if (! File::isDirectory($directory)) {
+            return collect();
+        }
+
+        return collect(File::files($directory))
+            ->filter(fn ($file) => strtolower($file->getExtension()) === 'png')
+            ->map(fn ($file) => [
+                'file' => $file->getFilename(),
+                'label' => $file->getFilename(),
+                'url' => asset('images/mapicons/'.$file->getFilename()),
+            ])
+            ->sortBy('file')
+            ->values();
     }
 }

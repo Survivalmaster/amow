@@ -10,12 +10,22 @@ class MapMarker extends Model
     protected $fillable = [
         'name',
         'faction_id',
+        'icon_type',
         'icon_class',
         'map_x',
         'map_y',
         'color',
         'description',
     ];
+
+    public function getIconAssetUrlAttribute(): ?string
+    {
+        if ($this->icon_type !== 'image' || blank($this->icon_class)) {
+            return null;
+        }
+
+        return asset('images/mapicons/'.$this->icon_class);
+    }
 
     public function faction(): BelongsTo
     {
