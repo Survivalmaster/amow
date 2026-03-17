@@ -64,6 +64,7 @@ class GameJobAdminController extends Controller
             'max_pay' => ['required', 'integer', 'gte:min_pay'],
             'required_level' => ['required', 'integer', 'min:0'],
             'work_cooldown_minutes' => ['required', 'integer', 'min:1'],
+            'stamina_decrease' => ['required', 'integer', 'min:0', 'max:100'],
             'is_starter' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
         ]) + [

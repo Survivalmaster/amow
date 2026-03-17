@@ -12,6 +12,7 @@
             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="max_pay" type="number" min="0" placeholder="Max pay" required>
             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_level" type="number" min="0" placeholder="Required level" required>
             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="work_cooldown_minutes" type="number" min="1" placeholder="Cooldown minutes" required>
+            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stamina_decrease" type="number" min="0" max="100" placeholder="Stamina decrease" value="0" required>
             <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                 <input type="checkbox" name="is_starter" value="1">
                 Starter job
@@ -35,6 +36,7 @@
                             <th class="px-5 py-4 text-left">Level</th>
                             <th class="px-5 py-4 text-left">Pay</th>
                             <th class="px-5 py-4 text-left">Cooldown</th>
+                            <th class="px-5 py-4 text-left">Stamina</th>
                             <th class="px-5 py-4 text-left">Status</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
@@ -46,6 +48,7 @@
                                 <td class="px-5 py-4">Level {{ $job->required_level }}</td>
                                 <td class="px-5 py-4">{{ number_format($job->min_pay) }} - {{ number_format($job->max_pay) }}</td>
                                 <td class="px-5 py-4">{{ $job->work_cooldown_minutes }} min</td>
+                                <td class="px-5 py-4">-{{ $job->stamina_decrease }}</td>
                                 <td class="px-5 py-4">
                                     {{ $job->is_active ? 'Active' : 'Hidden' }}
                                     @if ($job->is_starter)
@@ -64,7 +67,7 @@
                                 </td>
                             </tr>
                             <tr x-show="openId === {{ $job->id }}" x-cloak>
-                                <td colspan="6" class="px-5 pb-5">
+                                <td colspan="7" class="px-5 pb-5">
                                     <form method="POST" action="{{ route('admin.jobs.update', $job) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2 xl:grid-cols-4">
                                         @csrf
                                         @method('PATCH')
@@ -74,6 +77,7 @@
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="max_pay" type="number" min="0" value="{{ $job->max_pay }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_level" type="number" min="0" value="{{ $job->required_level }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="work_cooldown_minutes" type="number" min="1" value="{{ $job->work_cooldown_minutes }}" required>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stamina_decrease" type="number" min="0" max="100" value="{{ $job->stamina_decrease }}" required>
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                                             <input type="checkbox" name="is_starter" value="1" @checked($job->is_starter)>
                                             Starter job

@@ -15,6 +15,7 @@ class GameJob extends Model
         'max_pay',
         'required_level',
         'work_cooldown_minutes',
+        'stamina_decrease',
         'is_starter',
         'is_active',
     ];
