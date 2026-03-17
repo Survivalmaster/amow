@@ -46,11 +46,12 @@ class WorkController extends Controller
             CharacterActivity::recordTransaction($character, 'work', $earnings, 'Completed a work shift.');
         });
 
-        $updatedCharacter = $character->fresh(['currentJob']);
+        $updatedCharacter = $character->fresh(['currentJob', 'faction']);
         $currentLevel = $updatedCharacter->level;
         $workActivityMessage = $job->working_display_message ?: 'Is working.';
         $discordActivityMessage = $this->normalizeWorkActivityMessage($workActivityMessage);
         $discordAvatarUrl = $updatedCharacter->user?->discord_avatar_url;
+        $discordColor = $this->resolveDiscordEmbedColor($updatedCharacter->faction?->color);
 
         try {
             $discord->sendEmbedMessage(
@@ -66,7 +67,7 @@ class WorkController extends Controller
                         number_format($earnings),
                         number_format($updatedCharacter->plastic_credits)
                     ),
-                    'color' => hexdec('7EAD59'),
+                    'color' => $discordColor,
                     'footer' => [
                         'text' => 'AMOW Work Activity',
                     ],
@@ -97,5 +98,16 @@ class WorkController extends Controller
         $message = preg_replace('/^is\s+/i', '', $message) ?? $message;
 
         return Str::of($message)->trim()->lower()->toString();
+    }
+
+    private function resolveDiscordEmbedColor(?string $hexColor): int
+    {
+        $normalizedHexColor = strtoupper(ltrim((string) $hexColor, '#'));
+
+        if (! preg_match('/^[0-9A-F]{6}$/', $normalizedHexColor)) {
+            return hexdec('7EAD59');
+        }
+
+        return hexdec($normalizedHexColor);
     }
 }

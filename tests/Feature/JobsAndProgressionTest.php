@@ -84,6 +84,7 @@ test('work awards credits and experience based on the active job', function () {
             && str_contains($embed['title'] ?? '', $character->name.' is begging in the city.')
             && str_contains($embed['description'] ?? '', 'They have earned **')
             && str_contains($embed['description'] ?? '', 'Their total now is **'.number_format($character->plastic_credits).'**.')
+            && isset($embed['color'])
             && ! empty($embed['timestamp']);
     });
 });
