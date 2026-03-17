@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('nation_chat_messages')) {
+            return;
+        }
+
         Schema::create('nation_chat_messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('character_id')->constrained()->cascadeOnDelete();

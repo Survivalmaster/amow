@@ -10,6 +10,7 @@ use App\Models\Item;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
@@ -42,7 +43,7 @@ class AdminDashboardController extends Controller
                 'id' => $user->id,
                 'account_name' => $user->name,
                 'character_name' => $user->character?->name,
-                'current_page_name' => $user->current_page_name ?: 'Unknown Page',
+                'current_page_name' => $this->displayPageName($user),
                 'current_path' => $user->current_path ?: '/',
                 'last_seen_label' => optional($user->last_seen_at)?->timezone(config('app.timezone'))->format('H:i:s') ?? 'Unknown',
             ])->values(),
@@ -56,5 +57,22 @@ class AdminDashboardController extends Controller
             ->where('last_seen_at', '>=', now()->subMinutes(5))
             ->orderByDesc('last_seen_at')
             ->get();
+    }
+
+    private function displayPageName(User $user): string
+    {
+        if (filled($user->current_page_name) && $user->current_page_name !== 'Unknown Page') {
+            return $user->current_page_name;
+        }
+
+        $normalizedPath = trim((string) $user->current_path, '/');
+
+        if ($normalizedPath === '') {
+            return 'Home';
+        }
+
+        return (string) Str::of($normalizedPath)
+            ->replace(['/', '-', '_', '.'], ' ')
+            ->title();
     }
 }

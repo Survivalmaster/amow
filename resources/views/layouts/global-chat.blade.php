@@ -71,19 +71,21 @@
                     <template x-for="message in activeMessages()" :key="`${activeTab}-${message.id}`">
                         <article class="rounded-[1rem] border border-white/10 bg-black/20 px-2.5 py-2">
                             <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-1">
-                                    <p class="font-['Teko'] text-[0.95rem] uppercase leading-none tracking-[0.04em]" :style="`color: ${message.faction_color || '#f4ecd0'}`" x-text="message.character_name"></p>
-                                    <div class="flex flex-wrap items-center gap-1">
-                                        <template x-for="icon in message.account_icons" :key="icon.name + icon.icon_value">
-                                            <span class="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-white/10 bg-black/30 text-[7px]" :style="`color: ${icon.color}`" :title="icon.tooltip">
-                                                <i :class="icon.icon_value"></i>
-                                            </span>
-                                        </template>
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="min-w-0 flex flex-wrap items-center gap-1">
+                                        <p class="font-['Teko'] text-[0.95rem] uppercase leading-none tracking-[0.04em]" :style="`color: ${message.faction_color || '#f4ecd0'}`" x-text="message.character_name"></p>
+                                        <div class="flex flex-wrap items-center gap-1">
+                                            <template x-for="icon in message.account_icons" :key="icon.name + icon.icon_value">
+                                                <span class="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-white/10 bg-black/30 text-[7px]" :style="`color: ${icon.color}`" :title="icon.tooltip">
+                                                    <i :class="icon.icon_value"></i>
+                                                </span>
+                                            </template>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="mt-0.5 flex items-start gap-2">
-                                    <p class="min-w-0 flex-1 whitespace-pre-wrap break-words text-[12px] leading-5" :class="message.message_type === 'standard' ? 'text-white/78' : 'text-[#b98cff] italic'" x-text="message.display_message"></p>
                                     <span class="shrink-0 pt-[1px] text-[9px] uppercase tracking-[0.16em] text-white/35" x-text="message.created_at"></span>
+                                </div>
+                                <div class="mt-0.5">
+                                    <p class="min-w-0 whitespace-pre-wrap break-words text-[12px] leading-5" :class="message.message_type === 'standard' ? 'text-white/78' : 'text-[#b98cff] italic'" x-text="message.display_message"></p>
                                 </div>
                             </div>
                         </article>
