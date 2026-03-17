@@ -5,14 +5,14 @@ use App\Models\DiscordCommand;
 test('discord pray api returns a blessing or smiting message for the chosen deity', function () {
     config()->set('services.discord.linking_secret', 'test-secret');
 
-    DiscordCommand::query()->where('command_name', 'pray')->update([
+    DiscordCommand::query()->where('command_name', 'amowpray')->update([
         'is_active' => true,
     ]);
 
     $response = $this
         ->withHeader('X-Discord-Link-Secret', 'test-secret')
         ->postJson('/api/discord/pray', [
-            'command_name' => 'pray',
+            'command_name' => 'amowpray',
             'deity' => 'Marble',
             'user_mention' => '<@123456789>',
         ]);
@@ -27,7 +27,7 @@ test('discord pray api returns a blessing or smiting message for the chosen deit
 test('discord command config api includes pray command interaction metadata', function () {
     config()->set('services.discord.linking_secret', 'test-secret');
 
-    DiscordCommand::query()->where('command_name', 'pray')->update([
+    DiscordCommand::query()->where('command_name', 'amowpray')->update([
         'is_active' => true,
     ]);
 
@@ -38,7 +38,7 @@ test('discord command config api includes pray command interaction metadata', fu
     $response
         ->assertOk()
         ->assertJsonFragment([
-            'command_name' => 'pray',
+            'command_name' => 'amowpray',
             'handler_key' => 'pray_to_deity',
             'allow_any_channel' => true,
             'access_mode' => 'anyone',

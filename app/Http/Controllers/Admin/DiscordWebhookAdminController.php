@@ -61,7 +61,7 @@ class DiscordWebhookAdminController extends Controller
     {
         $validated = $this->validateCommand($request);
 
-        DiscordCommand::query()->create([
+        $payload = [
             'discord_webhook_id' => $validated['handler_key'] === 'webhook_post' ? $validated['discord_webhook_id'] : null,
             'name' => $validated['name'],
             'command_name' => $validated['command_name'],
@@ -72,7 +72,16 @@ class DiscordWebhookAdminController extends Controller
             'allow_any_channel' => $request->boolean('allow_any_channel'),
             'command_options' => $this->commandOptionsForHandler($validated['handler_key']),
             'is_active' => $request->boolean('is_active'),
-        ]);
+        ];
+
+        if ($validated['handler_key'] === 'pray_to_deity') {
+            DiscordCommand::query()->updateOrCreate(
+                ['command_name' => $validated['command_name']],
+                $payload
+            );
+        } else {
+            DiscordCommand::query()->create($payload);
+        }
 
         return back()->with('status', 'Discord command created.');
     }
@@ -143,6 +152,9 @@ class DiscordWebhookAdminController extends Controller
         }
 
         if (($validated['handler_key'] ?? null) === 'pray_to_deity') {
+            $validated['name'] = 'Pray to Marble or Obsidian';
+            $validated['command_name'] = 'amowpray';
+            $validated['command_description'] = 'Ask Marble or Obsidian to bless or smite you.';
             $validated['access_mode'] = 'anyone';
             $validated['role_id'] = null;
             $validated['allow_any_channel'] = true;

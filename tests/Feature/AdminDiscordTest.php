@@ -131,10 +131,11 @@ test('admin can create a pray command without a webhook', function () {
 
     $response->assertRedirect();
 
-    $command = DiscordCommand::query()->where('command_name', 'templepray')->firstOrFail();
+    $command = DiscordCommand::query()->where('command_name', 'amowpray')->firstOrFail();
 
     expect($command->discord_webhook_id)->toBeNull();
     expect($command->handler_key)->toBe('pray_to_deity');
+    expect($command->name)->toBe('Pray to Marble or Obsidian');
     expect($command->access_mode)->toBe('anyone');
     expect($command->allow_any_channel)->toBeTrue();
     expect($command->command_options)->toBeArray();
