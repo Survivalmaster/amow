@@ -44,17 +44,12 @@
                 }
 
                 listElement.innerHTML = onlineUsers.map((user) => `
-                    <div class="grid gap-2 border-b border-white/10 px-1 py-3 last:border-b-0 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_auto] lg:items-center">
-                        <div class="min-w-0">
-                            <p class="font-['Teko'] text-xl uppercase tracking-[0.08em] text-[#f4ecd0]">${escapeHtml(user.character_name || user.account_name)}</p>
-                            <p class="text-[11px] uppercase tracking-[0.18em] text-white/40">${escapeHtml(user.account_name)}</p>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-xs uppercase tracking-[0.18em] text-white/50">${escapeHtml(user.current_page_name)}</p>
-                            ${user.current_activity_text ? `<p class="truncate text-sm text-[#d7edc7]">${escapeHtml(user.current_activity_text)}</p>` : ''}
-                            <p class="truncate text-[11px] text-white/38">${escapeHtml(user.current_path)}</p>
-                        </div>
-                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#7ead59] lg:text-right">Seen ${escapeHtml(user.last_seen_label)}</p>
+                    <div class="grid gap-2 border-b border-white/10 px-1 py-3 text-sm last:border-b-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_auto] lg:items-center lg:gap-4">
+                        <p class="truncate font-medium text-[#f4ecd0]">${escapeHtml(user.account_name)}</p>
+                        <p class="truncate text-white/72">${escapeHtml(user.character_name || 'No Character')}</p>
+                        <p class="truncate text-white/62">${escapeHtml(user.current_page_name)}</p>
+                        <p class="truncate text-[#d7edc7]">${escapeHtml(user.current_activity_text || '-')}</p>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#7ead59] lg:text-right">${escapeHtml(user.last_seen_label)}</p>
                     </div>
                 `).join('');
             };
@@ -124,20 +119,20 @@
             </div>
 
             <div class="mt-5 rounded-[1.5rem] border border-white/10 bg-black/15 px-4 py-2" data-online-list>
+                <div class="hidden border-b border-white/10 px-1 py-3 text-[11px] uppercase tracking-[0.18em] text-white/40 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_auto] lg:gap-4">
+                    <p>Account Name</p>
+                    <p>Character Name</p>
+                    <p>Page On</p>
+                    <p>Activity</p>
+                    <p class="lg:text-right">Last Updated</p>
+                </div>
                 @forelse ($onlineUsers as $user)
-                    <div class="grid gap-2 border-b border-white/10 px-1 py-3 last:border-b-0 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)_auto] lg:items-center">
-                        <div class="min-w-0">
-                            <p class="font-['Teko'] text-xl uppercase tracking-[0.08em] text-[#f4ecd0]">{{ $user->character?->name ?? $user->name }}</p>
-                            <p class="text-[11px] uppercase tracking-[0.18em] text-white/40">{{ $user->name }}</p>
-                        </div>
-                        <div class="min-w-0">
-                            <p class="text-xs uppercase tracking-[0.18em] text-white/50">{{ $user->current_page_name ?: 'Unknown Page' }}</p>
-                            @if ($user->current_activity_text)
-                                <p class="truncate text-sm text-[#d7edc7]">{{ $user->current_activity_text }}</p>
-                            @endif
-                            <p class="truncate text-[11px] text-white/38">{{ $user->current_path ?: '/' }}</p>
-                        </div>
-                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#7ead59] lg:text-right">Seen {{ optional($user->last_seen_at)->timezone(config('app.timezone'))->format('H:i:s') ?? 'Unknown' }}</p>
+                    <div class="grid gap-2 border-b border-white/10 px-1 py-3 text-sm last:border-b-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1.2fr)_auto] lg:items-center lg:gap-4">
+                        <p class="truncate font-medium text-[#f4ecd0]">{{ $user->name }}</p>
+                        <p class="truncate text-white/72">{{ $user->character?->name ?? 'No Character' }}</p>
+                        <p class="truncate text-white/62">{{ $user->current_page_name ?: 'Unknown Page' }}</p>
+                        <p class="truncate text-[#d7edc7]">{{ $user->current_activity_text ?: '-' }}</p>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-[#7ead59] lg:text-right">{{ optional($user->last_seen_at)->timezone(config('app.timezone'))->format('H:i:s') ?? 'Unknown' }}</p>
                     </div>
                 @empty
                     <div class="px-4 py-10 text-center text-sm uppercase tracking-[0.2em] text-white/45">

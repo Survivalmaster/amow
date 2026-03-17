@@ -55,7 +55,7 @@ class AdminDashboardController extends Controller
     {
         return User::query()
             ->with('character')
-            ->where('last_seen_at', '>=', now()->subMinutes(5))
+            ->where('last_seen_at', '>=', now()->subHour())
             ->orderByDesc('last_seen_at')
             ->get();
     }

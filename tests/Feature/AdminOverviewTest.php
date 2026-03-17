@@ -13,6 +13,7 @@ beforeEach(function () {
 test('admin overview state shows online users and their current page', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $viewer = User::factory()->create();
+    $staleViewer = User::factory()->create();
     $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
 
     $admin->permissions()->attach($permission);
@@ -22,6 +23,12 @@ test('admin overview state shows online users and their current page', function 
         'current_path' => 'stocks',
         'current_page_name' => 'Market Index',
         'current_activity_text' => 'Watching the market.',
+    ]);
+    $staleViewer->update([
+        'last_seen_at' => now()->subHours(2),
+        'current_path' => 'jobs',
+        'current_page_name' => 'Jobs',
+        'current_activity_text' => 'Should not appear.',
     ]);
 
     $this->actingAs($admin)
