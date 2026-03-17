@@ -405,23 +405,10 @@
                         fillOpacity: polygon.fill_opacity,
                         weight: polygon.stroke_weight,
                         originalFillOpacity: polygon.fill_opacity,
+                        interactive: false,
                     }
                 ).addTo(map);
                 polygonLayers.set(polygon.id, layer);
-
-                layer.bindPopup(`
-                    <div style="min-width: 200px">
-                        <strong>${polygon.name}</strong><br>
-                        <span>${polygon.faction ?? 'Unclaimed / Shared'}</span>
-                        ${polygon.description ? `<p style="margin: 8px 0 0;">${polygon.description}</p>` : ''}
-                    </div>
-                `);
-
-                layer.on('click', () => {
-                    if (alpineData?.mapMode === 'polygon' && alpineData.activePolygonId === polygon.id) {
-                        layer.openPopup();
-                    }
-                });
             });
 
             markers.forEach((marker) => {
