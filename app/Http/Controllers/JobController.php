@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GameJob;
+use App\Models\Location;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,10 +14,12 @@ class JobController extends Controller
     public function index(Request $request): View
     {
         $character = $request->user()->character()->with('currentJob')->firstOrFail();
+        $workLocation = Location::query()->where('slug', 'go-to-work')->first();
 
         return view('jobs.index', [
             'character' => $character,
             'jobs' => GameJob::query()->orderBy('required_level')->orderBy('name')->get(),
+            'workLocation' => $workLocation,
         ]);
     }
 

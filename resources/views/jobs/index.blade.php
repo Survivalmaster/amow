@@ -7,6 +7,11 @@
     </x-slot>
 
     @php($jobChangeTime = $character->job_changed_at?->copy()->addDay())
+    @php($workCooldownEndsAt = $character->workCooldownEndsAt())
+    @php($workRemainingSeconds = $workCooldownEndsAt && $workCooldownEndsAt->isFuture() ? now()->diffInSeconds($workCooldownEndsAt) : 0)
+    @php($workCooldownMinutes = $character->currentJob?->work_cooldown_minutes ?? 5)
+    @php($workProgressPercent = $workRemainingSeconds > 0 ? max(0, min(100, (int) round((1 - ($workRemainingSeconds / max(1, $workCooldownMinutes * 60))) * 100))) : 100)
+    @php($canWork = $workRemainingSeconds === 0)
 
     <div class="space-y-6">
         <section class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -26,6 +31,35 @@
                     <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                         <p class="text-xs uppercase tracking-[0.2em] text-white/45">Swap Cooldown</p>
                         <p class="mt-2 text-sm text-white/70">{{ $character->canChangeJob() ? 'Ready now' : 'Available '.optional($jobChangeTime)->format('d M H:i') }}</p>
+                    </div>
+                </div>
+                <div class="mt-5 rounded-[1.75rem] border border-white/10 bg-black/20 p-5">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.2em] text-white/45">Work Cooldown</p>
+                            <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]" data-work-countdown-label>{{ $canWork ? 'Ready now' : gmdate('i:s', $workRemainingSeconds) }}</p>
+                        </div>
+                        @if ($workLocation)
+                            <form method="POST" action="{{ route('work.store', $workLocation) }}">
+                                @csrf
+                                <button
+                                    class="rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition {{ $canWork ? 'bg-[#7ead59] text-[#07100c] hover:bg-[#92c46a]' : 'cursor-not-allowed border border-white/10 bg-white/5 text-white/38' }}"
+                                    data-character-toggle-disabled="work_cooldown_active"
+                                    data-work-button
+                                >
+                                    Work
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                            <span>Shift Recovery</span>
+                            <span data-work-countdown-caption>{{ $canWork ? 'Ready for work' : 'Cooldown active' }}</span>
+                        </div>
+                        <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-white/10">
+                            <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#c2a84f_100%)]" data-work-countdown-progress style="width: {{ $workProgressPercent }}%;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -84,4 +118,82 @@
             @endforeach
         </section>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const countdownLabel = document.querySelector('[data-work-countdown-label]');
+                const countdownCaption = document.querySelector('[data-work-countdown-caption]');
+                const progressBar = document.querySelector('[data-work-countdown-progress]');
+                const workButton = document.querySelector('[data-work-button]');
+
+                if (!countdownLabel || !countdownCaption || !progressBar || !workButton) {
+                    return;
+                }
+
+                let remainingSeconds = {{ $workRemainingSeconds }};
+                let cooldownMinutes = {{ $workCooldownMinutes }};
+
+                const formatSeconds = (seconds) => {
+                    const minutes = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                };
+
+                const render = () => {
+                    const canWork = remainingSeconds <= 0;
+                    const totalSeconds = Math.max(1, cooldownMinutes * 60);
+                    const progress = canWork ? 100 : Math.max(0, Math.min(100, Math.round((1 - (remainingSeconds / totalSeconds)) * 100)));
+
+                    countdownLabel.textContent = canWork ? 'Ready now' : formatSeconds(remainingSeconds);
+                    countdownCaption.textContent = canWork ? 'Ready for work' : 'Cooldown active';
+                    progressBar.style.width = `${progress}%`;
+                    workButton.disabled = !canWork;
+                    workButton.classList.toggle('bg-[#7ead59]', canWork);
+                    workButton.classList.toggle('text-[#07100c]', canWork);
+                    workButton.classList.toggle('hover:bg-[#92c46a]', canWork);
+                    workButton.classList.toggle('cursor-not-allowed', !canWork);
+                    workButton.classList.toggle('border', !canWork);
+                    workButton.classList.toggle('border-white/10', !canWork);
+                    workButton.classList.toggle('bg-white/5', !canWork);
+                    workButton.classList.toggle('text-white/38', !canWork);
+                };
+
+                render();
+
+                window.setInterval(() => {
+                    if (remainingSeconds > 0) {
+                        remainingSeconds -= 1;
+                        render();
+                    }
+                }, 1000);
+
+                window.addEventListener('character-state:updated', (event) => {
+                    const state = event.detail ?? {};
+
+                    if (typeof state.work_remaining_seconds === 'number') {
+                        remainingSeconds = state.work_remaining_seconds;
+                    }
+
+                    if (typeof state.work_cooldown_minutes === 'number') {
+                        cooldownMinutes = state.work_cooldown_minutes;
+                    }
+
+                    if (typeof state.work_status_label === 'string') {
+                        countdownLabel.textContent = state.work_status_label;
+                    }
+
+                    if (typeof state.work_cooldown_progress_percent === 'number') {
+                        progressBar.style.width = `${state.work_cooldown_progress_percent}%`;
+                    }
+
+                    if (typeof state.can_work === 'boolean') {
+                        workButton.disabled = !state.can_work;
+                    }
+
+                    render();
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>

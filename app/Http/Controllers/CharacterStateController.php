@@ -14,6 +14,13 @@ class CharacterStateController extends Controller
         $character = $request->user()->character()->with(['rank', 'currentJob'])->firstOrFail();
         $workCooldownEndsAt = $character->workCooldownEndsAt();
         $nextLevelExperience = $character->experienceRequiredForNextLevel();
+        $workCooldownMinutes = $character->currentJob?->work_cooldown_minutes ?? 5;
+        $workRemainingSeconds = $workCooldownEndsAt && $workCooldownEndsAt->isFuture()
+            ? now()->diffInSeconds($workCooldownEndsAt)
+            : 0;
+        $workCooldownProgressPercent = $workRemainingSeconds > 0
+            ? max(0, min(100, (int) round((1 - ($workRemainingSeconds / max(1, $workCooldownMinutes * 60))) * 100)))
+            : 100;
 
         return response()->json([
             'name' => $character->name,
@@ -34,9 +41,13 @@ class CharacterStateController extends Controller
             'armor_points' => $character->armor_points ?? 0,
             'work_cooldown_active' => $workCooldownEndsAt?->isFuture() ?? false,
             'work_available_at_iso' => $workCooldownEndsAt?->toIso8601String(),
-            'work_remaining_seconds' => $workCooldownEndsAt && $workCooldownEndsAt->isFuture()
-                ? now()->diffInSeconds($workCooldownEndsAt)
-                : 0,
+            'work_remaining_seconds' => $workRemainingSeconds,
+            'work_cooldown_minutes' => $workCooldownMinutes,
+            'work_status_label' => $workRemainingSeconds > 0
+                ? gmdate('i:s', $workRemainingSeconds)
+                : 'Ready now',
+            'work_cooldown_progress_percent' => $workCooldownProgressPercent,
+            'can_work' => $workRemainingSeconds === 0,
             'can_change_job' => $character->canChangeJob(),
             'job_change_available_at_iso' => $character->job_changed_at?->copy()->addDay()->toIso8601String(),
         ]);
