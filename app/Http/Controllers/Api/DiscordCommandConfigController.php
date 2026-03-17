@@ -26,10 +26,13 @@ class DiscordCommandConfigController extends Controller
                 'id' => $command->id,
                 'name' => $command->name,
                 'command_name' => $command->command_name,
-                'command_description' => $command->command_description ?: "Post to {$command->webhook->name}.",
-                'channel_id' => $command->webhook->channel_id,
+                'command_description' => $command->command_description ?: ($command->webhook ? "Post to {$command->webhook->name}." : $command->name),
+                'channel_id' => $command->webhook?->channel_id,
                 'access_mode' => $command->access_mode,
                 'role_id' => $command->role_id,
+                'handler_key' => $command->handler_key,
+                'allow_any_channel' => $command->allow_any_channel,
+                'command_options' => $command->command_options ?? [],
             ])
             ->values();
 

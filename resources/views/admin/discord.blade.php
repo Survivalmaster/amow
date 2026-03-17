@@ -145,7 +145,7 @@
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Discord Command</p>
             <p class="mt-2 text-sm text-white/60">A command points to one webhook and controls the slash command name, who can use it, and how it is described in Discord.</p>
 
-            <form method="POST" action="{{ route('admin.discord.commands.store') }}" class="mt-5 grid gap-4 lg:grid-cols-2" x-data="{ accessMode: 'anyone' }">
+            <form method="POST" action="{{ route('admin.discord.commands.store') }}" class="mt-5 grid gap-4 lg:grid-cols-2" x-data="{ accessMode: 'anyone', handlerKey: 'webhook_post' }" x-effect="if (handlerKey === 'pray_to_deity') accessMode = 'anyone'">
                 @csrf
                 <label class="grid gap-2 text-sm text-white/70">
                     <span class="uppercase tracking-[0.18em] text-white/45">Command Label</span>
@@ -153,9 +153,17 @@
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="WPNN News Command" required>
                 </label>
                 <label class="grid gap-2 text-sm text-white/70">
+                    <span class="uppercase tracking-[0.18em] text-white/45">Command Behavior</span>
+                    <span class="text-xs text-white/45">Choose whether this command posts to a webhook or returns a direct interaction response.</span>
+                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="handler_key" x-model="handlerKey" required>
+                        <option value="webhook_post">Webhook Post</option>
+                        <option value="pray_to_deity">Pray to Marble or Obsidian</option>
+                    </select>
+                </label>
+                <label x-show="handlerKey === 'webhook_post'" x-cloak class="grid gap-2 text-sm text-white/70">
                     <span class="uppercase tracking-[0.18em] text-white/45">Linked Webhook</span>
                     <span class="text-xs text-white/45">Choose which webhook this command should post through.</span>
-                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="discord_webhook_id" required>
+                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="discord_webhook_id" :required="handlerKey === 'webhook_post'">
                         <option value="">Select a webhook</option>
                         @foreach ($webhooks as $webhook)
                             <option value="{{ $webhook->id }}">{{ $webhook->name }} | {{ $webhook->channel_id }}</option>
@@ -180,10 +188,14 @@
                         <option value="role">Specific role only</option>
                     </select>
                 </label>
-                <label x-show="accessMode === 'role'" x-cloak class="grid gap-2 text-sm text-white/70">
+                <label x-show="handlerKey === 'webhook_post' && accessMode === 'role'" x-cloak class="grid gap-2 text-sm text-white/70">
                     <span class="uppercase tracking-[0.18em] text-white/45">Discord Role ID</span>
                     <span class="text-xs text-white/45">Required only for role-restricted commands. Members need this role to use the command.</span>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="role_id" placeholder="805824212060078142">
+                </label>
+                <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80">
+                    <input type="checkbox" name="allow_any_channel" value="1" x-bind:checked="handlerKey === 'pray_to_deity'">
+                    <span>Allow this command in any channel.</span>
                 </label>
                 <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80 self-end">
                     <input type="checkbox" name="is_active" value="1" checked>
@@ -217,8 +229,13 @@
                             <tr>
                                 <td class="px-5 py-4 font-semibold text-white">{{ $command->name }}</td>
                                 <td class="px-5 py-4">/{{ $command->command_name }}</td>
-                                <td class="px-5 py-4">{{ $command->webhook->name }}</td>
-                                <td class="px-5 py-4">{{ $command->access_mode === 'role' ? 'Role: '.$command->role_id : 'Anyone' }}</td>
+                                <td class="px-5 py-4">{{ $command->webhook?->name ?? 'Direct interaction' }}</td>
+                                <td class="px-5 py-4">
+                                    {{ $command->access_mode === 'role' ? 'Role: '.$command->role_id : 'Anyone' }}
+                                    @if ($command->allow_any_channel)
+                                        <span class="block text-xs text-white/45">Any channel</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-4">{{ $command->is_active ? 'Active' : 'Disabled' }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
@@ -233,7 +250,7 @@
                             </tr>
                             <tr x-show="openCommandId === {{ $command->id }}" x-cloak>
                                 <td colspan="6" class="px-5 pb-5">
-                                    <form method="POST" action="{{ route('admin.discord.commands.update', $command) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2" x-data='@json(["accessMode" => $command->access_mode])'>
+                                    <form method="POST" action="{{ route('admin.discord.commands.update', $command) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2" x-data='@json(["accessMode" => $command->access_mode, "handlerKey" => $command->handler_key])' x-effect="if (handlerKey === 'pray_to_deity') accessMode = 'anyone'">
                                         @csrf
                                         @method('PATCH')
                                         <label class="grid gap-2 text-sm text-white/70">
@@ -241,8 +258,16 @@
                                             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $command->name }}" required>
                                         </label>
                                         <label class="grid gap-2 text-sm text-white/70">
+                                            <span class="uppercase tracking-[0.18em] text-white/45">Command Behavior</span>
+                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="handler_key" x-model="handlerKey" required>
+                                                <option value="webhook_post">Webhook Post</option>
+                                                <option value="pray_to_deity">Pray to Marble or Obsidian</option>
+                                            </select>
+                                        </label>
+                                        <label x-show="handlerKey === 'webhook_post'" x-cloak class="grid gap-2 text-sm text-white/70">
                                             <span class="uppercase tracking-[0.18em] text-white/45">Linked Webhook</span>
-                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="discord_webhook_id" required>
+                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="discord_webhook_id" :required="handlerKey === 'webhook_post'">
+                                                <option value="">Select a webhook</option>
                                                 @foreach ($webhooks as $webhook)
                                                     <option value="{{ $webhook->id }}" @selected($command->discord_webhook_id === $webhook->id)>{{ $webhook->name }} | {{ $webhook->channel_id }}</option>
                                                 @endforeach
@@ -263,9 +288,13 @@
                                                 <option value="role">Specific role only</option>
                                             </select>
                                         </label>
-                                        <label x-show="accessMode === 'role'" x-cloak class="grid gap-2 text-sm text-white/70">
+                                        <label x-show="handlerKey === 'webhook_post' && accessMode === 'role'" x-cloak class="grid gap-2 text-sm text-white/70">
                                             <span class="uppercase tracking-[0.18em] text-white/45">Discord Role ID</span>
                                             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="role_id" value="{{ $command->role_id }}">
+                                        </label>
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80">
+                                            <input type="checkbox" name="allow_any_channel" value="1" @checked($command->allow_any_channel)>
+                                            <span>Allow this command in any channel.</span>
                                         </label>
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/80 self-end">
                                             <input type="checkbox" name="is_active" value="1" @checked($command->is_active)>

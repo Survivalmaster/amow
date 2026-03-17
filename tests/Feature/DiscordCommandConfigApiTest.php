@@ -47,15 +47,12 @@ test('discord command config api returns active webhook commands', function () {
 
     $response
         ->assertOk()
-        ->assertJsonCount(1, 'commands')
-        ->assertJson([
-            'commands' => [[
-                'name' => 'WPNN News Command',
-                'command_name' => 'amowwpnn',
-                'command_description' => 'Post WPNN news',
-                'channel_id' => '123',
-                'access_mode' => 'role',
-                'role_id' => '805824212060078142',
-            ]],
+        ->assertJsonFragment([
+            'name' => 'WPNN News Command',
+            'command_name' => 'amowwpnn',
+            'command_description' => 'Post WPNN news',
+            'channel_id' => '123',
+            'access_mode' => 'role',
+            'role_id' => '805824212060078142',
         ]);
 });

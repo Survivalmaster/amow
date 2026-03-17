@@ -62,12 +62,15 @@ class DiscordWebhookAdminController extends Controller
         $validated = $this->validateCommand($request);
 
         DiscordCommand::query()->create([
-            'discord_webhook_id' => $validated['discord_webhook_id'],
+            'discord_webhook_id' => $validated['handler_key'] === 'webhook_post' ? $validated['discord_webhook_id'] : null,
             'name' => $validated['name'],
             'command_name' => $validated['command_name'],
             'command_description' => $validated['command_description'] ?: null,
+            'handler_key' => $validated['handler_key'],
             'access_mode' => $validated['access_mode'],
             'role_id' => $validated['access_mode'] === 'role' ? $validated['role_id'] : null,
+            'allow_any_channel' => $request->boolean('allow_any_channel'),
+            'command_options' => $this->commandOptionsForHandler($validated['handler_key']),
             'is_active' => $request->boolean('is_active'),
         ]);
 
@@ -79,12 +82,15 @@ class DiscordWebhookAdminController extends Controller
         $validated = $this->validateCommand($request, $discordCommand->id);
 
         $discordCommand->update([
-            'discord_webhook_id' => $validated['discord_webhook_id'],
+            'discord_webhook_id' => $validated['handler_key'] === 'webhook_post' ? $validated['discord_webhook_id'] : null,
             'name' => $validated['name'],
             'command_name' => $validated['command_name'],
             'command_description' => $validated['command_description'] ?: null,
+            'handler_key' => $validated['handler_key'],
             'access_mode' => $validated['access_mode'],
             'role_id' => $validated['access_mode'] === 'role' ? $validated['role_id'] : null,
+            'allow_any_channel' => $request->boolean('allow_any_channel'),
+            'command_options' => $this->commandOptionsForHandler($validated['handler_key']),
             'is_active' => $request->boolean('is_active'),
         ]);
 
@@ -111,8 +117,8 @@ class DiscordWebhookAdminController extends Controller
 
     private function validateCommand(Request $request, ?int $ignoreId = null): array
     {
-        return $request->validate([
-            'discord_webhook_id' => ['required', 'exists:discord_webhooks,id'],
+        $validated = $request->validate([
+            'discord_webhook_id' => ['nullable', 'exists:discord_webhooks,id'],
             'name' => ['required', 'string', 'max:255'],
             'command_name' => [
                 'required',
@@ -123,9 +129,42 @@ class DiscordWebhookAdminController extends Controller
                 Rule::unique('discord_commands', 'command_name')->ignore($ignoreId),
             ],
             'command_description' => ['nullable', 'string', 'max:100'],
+            'handler_key' => ['required', Rule::in(['webhook_post', 'pray_to_deity'])],
             'access_mode' => ['required', Rule::in(['anyone', 'role'])],
             'role_id' => ['nullable', 'string', 'max:255'],
+            'allow_any_channel' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
         ]);
+
+        if (($validated['handler_key'] ?? 'webhook_post') === 'webhook_post' && empty($validated['discord_webhook_id'])) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'discord_webhook_id' => 'A linked webhook is required for webhook post commands.',
+            ]);
+        }
+
+        if (($validated['handler_key'] ?? null) === 'pray_to_deity') {
+            $validated['access_mode'] = 'anyone';
+            $validated['role_id'] = null;
+            $validated['allow_any_channel'] = true;
+        }
+
+        return $validated;
+    }
+
+    private function commandOptionsForHandler(string $handlerKey): ?array
+    {
+        return match ($handlerKey) {
+            'pray_to_deity' => [[
+                'name' => 'deity',
+                'description' => 'Choose the god you want to pray to.',
+                'type' => 'string',
+                'required' => true,
+                'choices' => [
+                    ['name' => 'Marble', 'value' => 'Marble'],
+                    ['name' => 'Obsidian', 'value' => 'Obsidian'],
+                ],
+            ]],
+            default => null,
+        };
     }
 }

@@ -12,8 +12,11 @@ class DiscordCommand extends Model
         'name',
         'command_name',
         'command_description',
+        'handler_key',
         'access_mode',
         'role_id',
+        'allow_any_channel',
+        'command_options',
         'is_active',
     ];
 
@@ -21,6 +24,8 @@ class DiscordCommand extends Model
     {
         return [
             'is_active' => 'boolean',
+            'allow_any_channel' => 'boolean',
+            'command_options' => 'array',
         ];
     }
 

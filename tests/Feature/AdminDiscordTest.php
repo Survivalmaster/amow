@@ -2,10 +2,13 @@
 
 use App\Models\DiscordCommand;
 use App\Models\DiscordWebhook;
+use App\Models\Permission;
 use App\Models\User;
 
 test('admin can view discord settings page', function () {
     $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
 
     $response = $this
         ->actingAs($admin)
@@ -18,6 +21,8 @@ test('admin can view discord settings page', function () {
 
 test('admin can create and update discord webhooks and commands', function () {
     $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
 
     $response = $this
         ->actingAs($admin)
@@ -46,6 +51,7 @@ test('admin can create and update discord webhooks and commands', function () {
             'name' => 'WPNN News Command',
             'command_name' => 'amowwpnn',
             'command_description' => 'Post WPNN news',
+            'handler_key' => 'webhook_post',
             'access_mode' => 'role',
             'role_id' => '805824212060078142',
             'is_active' => '1',
@@ -53,7 +59,7 @@ test('admin can create and update discord webhooks and commands', function () {
 
     $response->assertRedirect();
 
-    $command = DiscordCommand::query()->firstOrFail();
+    $command = DiscordCommand::query()->where('command_name', 'amowwpnn')->firstOrFail();
 
     expect($command->name)->toBe('WPNN News Command');
     expect($command->command_name)->toBe('amowwpnn');
@@ -89,6 +95,7 @@ test('admin can create and update discord webhooks and commands', function () {
             'name' => 'Faction News Command',
             'command_name' => 'amowfactionnews',
             'command_description' => 'Post faction news',
+            'handler_key' => 'webhook_post',
             'access_mode' => 'anyone',
         ]);
 
@@ -103,4 +110,32 @@ test('admin can create and update discord webhooks and commands', function () {
     expect($command->access_mode)->toBe('anyone');
     expect($command->role_id)->toBeNull();
     expect($command->is_active)->toBeFalse();
+});
+
+test('admin can create a pray command without a webhook', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
+
+    $response = $this
+        ->actingAs($admin)
+        ->post('/admin/discord/commands', [
+            'name' => 'Temple Prayer',
+            'command_name' => 'templepray',
+            'command_description' => 'Ask Marble or Obsidian to bless or smite you.',
+            'handler_key' => 'pray_to_deity',
+            'access_mode' => 'anyone',
+            'allow_any_channel' => '1',
+            'is_active' => '1',
+        ]);
+
+    $response->assertRedirect();
+
+    $command = DiscordCommand::query()->where('command_name', 'templepray')->firstOrFail();
+
+    expect($command->discord_webhook_id)->toBeNull();
+    expect($command->handler_key)->toBe('pray_to_deity');
+    expect($command->access_mode)->toBe('anyone');
+    expect($command->allow_any_channel)->toBeTrue();
+    expect($command->command_options)->toBeArray();
 });
