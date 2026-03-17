@@ -17,6 +17,7 @@
         @endif
     </head>
     <body class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]">
+        @php($guestCardWidth = request()->routeIs('register') ? 'max-w-6xl' : 'sm:max-w-md')
         <div class="min-h-screen flex flex-col items-center justify-center bg-[linear-gradient(180deg,#0f1b15_0%,#07100c_60%,#030705_100%)] px-4 py-8 text-[#f4ecd0]">
             <div>
                 <a href="/">
@@ -24,7 +25,7 @@
                 </a>
             </div>
 
-            <div class="mt-6 w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 px-6 py-5 shadow-2xl shadow-black/30 sm:max-w-md">
+            <div class="mt-6 w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 px-4 py-4 shadow-2xl shadow-black/30 sm:px-6 sm:py-5 {{ $guestCardWidth }}">
                 {{ $slot }}
             </div>
         </div>
