@@ -60,6 +60,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
         console.error(`Unhandled interaction error for /${interaction.commandName}.`, error);
 
+        if (interaction.deferred && !interaction.replied) {
+            try {
+                await interaction.editReply('The command failed due to a bot or API error.');
+            } catch (replyError) {
+                if (!isUnknownInteractionError(replyError)) {
+                    console.error('Failed to edit deferred interaction reply.', replyError);
+                }
+            }
+
+            return;
+        }
+
         if (!interaction.replied && !interaction.deferred) {
             try {
                 await interaction.reply({
