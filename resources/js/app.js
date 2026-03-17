@@ -111,7 +111,13 @@ const startPresenceHeartbeat = () => {
     };
 
     sendHeartbeat();
-    window.setInterval(sendHeartbeat, 30000);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            sendHeartbeat();
+        }
+    });
+    window.addEventListener('focus', sendHeartbeat);
+    window.setInterval(sendHeartbeat, 5000);
 };
 
 document.addEventListener('DOMContentLoaded', () => {

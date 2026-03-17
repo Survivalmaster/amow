@@ -117,7 +117,7 @@ class User extends Authenticatable
     {
         $attributes = [];
 
-        if (! $this->last_seen_at || $this->last_seen_at->lt(now()->subSeconds(30))) {
+        if (! $this->last_seen_at || $this->last_seen_at->lt(now()->subSeconds(5))) {
             $attributes['last_seen_at'] = now();
         }
 
