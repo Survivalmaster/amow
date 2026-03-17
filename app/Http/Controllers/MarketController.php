@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\StockHolding;
 use App\Support\CharacterActivity;
+use App\Support\StockMarketTicker;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,8 +14,14 @@ use Illuminate\View\View;
 
 class MarketController extends Controller
 {
+    public function __construct(private readonly StockMarketTicker $ticker)
+    {
+    }
+
     public function index(Request $request): View
     {
+        $this->ticker->fluctuateIfDue();
+
         $character = $request->user()->character()->with('holdings.company')->firstOrFail();
 
         return view('market.index', [
@@ -22,8 +30,28 @@ class MarketController extends Controller
         ]);
     }
 
+    public function state(): JsonResponse
+    {
+        $this->ticker->fluctuateIfDue();
+
+        return response()->json([
+            'companies' => Company::query()
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Company $company) => [
+                    'id' => $company->id,
+                    'current_price' => number_format((float) $company->current_price, 2, '.', ''),
+                    'formatted_price' => number_format((float) $company->current_price, 2),
+                    'last_price_updated_at' => $company->last_price_updated_at?->toIso8601String(),
+                ])->values(),
+        ]);
+    }
+
     public function buy(Request $request, Company $company): RedirectResponse
     {
+        $this->ticker->fluctuateIfDue();
+        $company->refresh();
+
         $validated = $request->validate([
             'shares' => ['required', 'integer', 'min:1', 'max:1000'],
         ]);
@@ -58,6 +86,9 @@ class MarketController extends Controller
 
     public function sell(Request $request, Company $company): RedirectResponse
     {
+        $this->ticker->fluctuateIfDue();
+        $company->refresh();
+
         $validated = $request->validate([
             'shares' => ['required', 'integer', 'min:1', 'max:1000'],
         ]);

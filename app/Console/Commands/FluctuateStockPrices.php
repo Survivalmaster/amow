@@ -2,11 +2,16 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Company;
+use App\Support\StockMarketTicker;
 use Illuminate\Console\Command;
 
 class FluctuateStockPrices extends Command
 {
+    public function __construct(private readonly StockMarketTicker $ticker)
+    {
+        parent::__construct();
+    }
+
     /**
      * The name and signature of the console command.
      *
@@ -26,12 +31,7 @@ class FluctuateStockPrices extends Command
      */
     public function handle()
     {
-        Company::query()->each(function (Company $company) {
-            $multiplier = random_int(92, 109) / 100;
-            $company->update([
-                'current_price' => max(5, round($company->current_price * $multiplier, 2)),
-            ]);
-        });
+        $this->ticker->fluctuateIfDue();
 
         $this->info('Stock prices updated.');
     }

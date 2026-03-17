@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/jobs/{gameJob}', [JobController::class, 'store'])->name('jobs.store');
         Route::get('/leaderboards', [LeaderboardController::class, 'index'])->name('leaderboards.index');
         Route::get('/stocks', [MarketController::class, 'index'])->name('market.index');
+        Route::get('/stocks/state', [MarketController::class, 'state'])->name('market.state');
         Route::post('/stocks/{company}/buy', [MarketController::class, 'buy'])->name('market.buy');
         Route::post('/stocks/{company}/sell', [MarketController::class, 'sell'])->name('market.sell');
     });

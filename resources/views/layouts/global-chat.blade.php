@@ -11,20 +11,20 @@
 >
     <section
         x-ref="panel"
-        class="pointer-events-auto fixed bottom-5 right-5 flex w-[min(92vw,24rem)] max-w-[24rem] flex-col overflow-hidden rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,14,10,0.78),rgba(6,10,8,0.74))] shadow-2xl shadow-black/45 backdrop-blur-xl"
-        :class="{ 'h-[34rem]': !minimized, 'h-auto': minimized }"
+        class="pointer-events-auto fixed bottom-5 right-5 flex w-[min(92vw,20rem)] max-w-[20rem] flex-col overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,14,10,0.72),rgba(6,10,8,0.68))] shadow-2xl shadow-black/45 backdrop-blur-xl"
+        :class="{ 'h-[28rem]': !minimized, 'h-auto': minimized }"
         :style="panelStyle"
     >
         <header
             @mousedown.prevent="startDrag($event)"
-            class="flex cursor-move items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-4 py-3"
+            class="flex cursor-move items-center justify-between gap-3 border-b border-white/10 bg-black/20 px-3 py-2.5"
         >
             <div>
-                <p class="font-['Teko'] text-3xl uppercase leading-none tracking-[0.08em] text-[#f4ecd0]">World Chat</p>
-                <p class="mt-1 text-[11px] uppercase tracking-[0.18em] text-white/45">Live transmission across Plastica</p>
+                <p class="font-['Teko'] text-[1.9rem] uppercase leading-none tracking-[0.08em] text-[#f4ecd0]">World Chat</p>
+                <p class="mt-0.5 text-[10px] uppercase tracking-[0.18em] text-white/45">Live transmission across Plastica</p>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" @click="minimized = !minimized; persistPosition()" class="rounded-full border border-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                <button type="button" @click="minimized = !minimized; persistPosition()" class="rounded-full border border-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/60">
                     <span x-text="minimized ? 'Open' : 'Minimize'"></span>
                 </button>
             </div>
@@ -32,46 +32,36 @@
 
         <template x-if="!minimized">
             <div class="flex min-h-0 flex-1 flex-col">
-                <div x-ref="messages" class="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3">
+                <div x-ref="messages" class="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-2.5 py-2.5">
                     <template x-for="message in messages" :key="message.id">
-                        <article class="rounded-[1.25rem] border border-white/10 bg-black/20 px-3 py-3">
-                            <div class="flex items-start gap-3">
-                                <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#17271e] text-sm font-bold text-[#f4ecd0]">
-                                    <template x-if="message.avatar_url">
-                                        <img :src="message.avatar_url" :alt="message.character_name + ' avatar'" class="h-full w-full object-cover">
-                                    </template>
-                                    <template x-if="!message.avatar_url">
-                                        <span x-text="message.character_name.slice(0, 1)"></span>
-                                    </template>
-                                </div>
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <p class="font-['Teko'] text-2xl uppercase leading-none tracking-[0.06em] text-[#f4ecd0]" x-text="message.character_name"></p>
-                                        <div class="flex flex-wrap items-center gap-1">
-                                            <template x-for="icon in message.account_icons" :key="icon.name + icon.icon_value">
-                                                <span class="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-black/30 text-[9px]" :style="`color: ${icon.color}`" :title="icon.tooltip">
-                                                    <i :class="icon.icon_value"></i>
-                                                </span>
-                                            </template>
-                                        </div>
+                        <article class="rounded-[1rem] border border-white/10 bg-black/20 px-2.5 py-2.5">
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <p class="font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.05em] text-[#f4ecd0]" x-text="message.character_name"></p>
+                                    <div class="flex flex-wrap items-center gap-1">
+                                        <template x-for="icon in message.account_icons" :key="icon.name + icon.icon_value">
+                                            <span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-black/30 text-[8px]" :style="`color: ${icon.color}`" :title="icon.tooltip">
+                                                <i :class="icon.icon_value"></i>
+                                            </span>
+                                        </template>
                                     </div>
-                                    <div class="mt-1 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-white/40">
-                                        <span x-text="message.rank_name"></span>
-                                        <span x-text="message.created_at"></span>
-                                    </div>
-                                    <p class="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-white/78" x-text="message.message"></p>
                                 </div>
+                                <div class="mt-1 flex items-center justify-between gap-3 text-[9px] uppercase tracking-[0.18em] text-white/40">
+                                    <span x-text="message.rank_name"></span>
+                                    <span x-text="message.created_at"></span>
+                                </div>
+                                <p class="mt-1.5 whitespace-pre-wrap break-words text-[13px] leading-5" :class="message.message_type === 'standard' ? 'text-white/78' : 'text-[#b98cff] italic'" x-text="message.display_message"></p>
                             </div>
                         </article>
                     </template>
                     <template x-if="messages.length === 0">
-                        <div class="rounded-[1.25rem] border border-dashed border-white/10 px-4 py-8 text-center text-xs uppercase tracking-[0.18em] text-white/38">
+                        <div class="rounded-[1rem] border border-dashed border-white/10 px-4 py-7 text-center text-[10px] uppercase tracking-[0.18em] text-white/38">
                             No messages yet.
                         </div>
                     </template>
                 </div>
 
-                <form @submit.prevent="sendMessage()" class="border-t border-white/10 bg-black/15 p-3">
+                <form @submit.prevent="sendMessage()" class="border-t border-white/10 bg-black/15 p-2.5">
                     <label class="sr-only" for="global-chat-message">World chat message</label>
                     <textarea
                         id="global-chat-message"
@@ -79,14 +69,14 @@
                         @keydown.enter.prevent="if ($event.shiftKey) { draft += '\n'; return; } sendMessage()"
                         maxlength="400"
                         rows="2"
-                        class="w-full resize-none rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-[#f4ecd0] placeholder:text-white/28"
-                        placeholder="Speak to the world..."
+                        class="w-full resize-none rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-[13px] text-[#f4ecd0] placeholder:text-white/28"
+                        placeholder="Speak... Use /me or /do"
                     ></textarea>
-                    <div class="mt-3 flex items-center justify-between gap-3">
-                        <p class="text-[10px] uppercase tracking-[0.18em] text-white/35">
+                    <div class="mt-2.5 flex items-center justify-between gap-3">
+                        <p class="text-[9px] uppercase tracking-[0.18em] text-white/35">
                             Signed in as <span class="text-white/55" x-text="currentCharacter"></span>
                         </p>
-                        <button type="submit" class="rounded-full bg-[#7ead59] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#07100c]" :disabled="sending || !draft.trim()">
+                        <button type="submit" class="rounded-full bg-[#7ead59] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#07100c]" :disabled="sending || !draft.trim()">
                             <span x-text="sending ? 'Sending...' : 'Send'"></span>
                         </button>
                     </div>

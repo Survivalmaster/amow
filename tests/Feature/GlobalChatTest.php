@@ -56,3 +56,24 @@ test('character can post and fetch global chat messages', function () {
         ->assertJsonPath('messages.0.character_name', 'Broadcaster')
         ->assertJsonPath('messages.0.message', 'Hello from the world feed.');
 });
+
+test('global chat formats roleplay commands', function () {
+    $user = User::factory()->create();
+    createGlobalChatCharacter($user);
+
+    $this->actingAs($user)
+        ->postJson(route('chat.global.store'), [
+            'message' => '/me waves at Mighty',
+        ])
+        ->assertOk()
+        ->assertJsonPath('message.message_type', 'emote')
+        ->assertJsonPath('message.display_message', 'Broadcaster waves at Mighty');
+
+    $this->actingAs($user)
+        ->postJson(route('chat.global.store'), [
+            'message' => '/do a storm rolls in',
+        ])
+        ->assertOk()
+        ->assertJsonPath('message.message_type', 'description')
+        ->assertJsonPath('message.display_message', 'a storm rolls in (Broadcaster)');
+});

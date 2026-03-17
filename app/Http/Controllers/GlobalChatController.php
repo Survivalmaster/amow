@@ -53,14 +53,16 @@ class GlobalChatController extends Controller
     {
         $character = $message->character;
         $user = $character->user;
+        [$displayMessage, $messageType] = $this->transformMessage($message->message, $character->name);
 
         return [
             'id' => $message->id,
             'message' => $message->message,
+            'display_message' => $displayMessage,
+            'message_type' => $messageType,
             'created_at' => $message->created_at?->timezone(config('app.timezone'))->format('H:i') ?? now()->format('H:i'),
             'character_name' => $character->name,
             'rank_name' => $character->rank?->name ?? 'Unranked',
-            'avatar_url' => $user->discord_avatar_url,
             'account_icons' => $user->permissionIcons()->map(fn ($icon) => [
                 'name' => $icon->name,
                 'tooltip' => $icon->tooltip ?: $icon->name,
@@ -68,5 +70,20 @@ class GlobalChatController extends Controller
                 'color' => $icon->color ?: '#f4ecd0',
             ])->values()->all(),
         ];
+    }
+
+    private function transformMessage(string $message, string $characterName): array
+    {
+        $trimmed = trim($message);
+
+        if (preg_match('/^\/me\s+(.+)$/is', $trimmed, $matches)) {
+            return [trim($characterName.' '.$matches[1]), 'emote'];
+        }
+
+        if (preg_match('/^\/do\s+(.+)$/is', $trimmed, $matches)) {
+            return [trim($matches[1]).' ('.$characterName.')', 'description'];
+        }
+
+        return [$trimmed, 'standard'];
     }
 }

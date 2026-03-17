@@ -1,25 +1,97 @@
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const marketRoot = document.querySelector('[data-market-root]');
+
+            if (!marketRoot) {
+                return;
+            }
+
+            const stateUrl = marketRoot.dataset.marketStateUrl;
+            let isFetching = false;
+
+            const applyState = (payload) => {
+                if (!Array.isArray(payload?.companies)) {
+                    return;
+                }
+
+                payload.companies.forEach((company) => {
+                    const card = marketRoot.querySelector(`[data-company-id="${company.id}"]`);
+
+                    if (!card) {
+                        return;
+                    }
+
+                    const priceElement = card.querySelector('[data-company-price]');
+                    const updatedElement = card.querySelector('[data-company-updated]');
+
+                    if (priceElement) {
+                        priceElement.textContent = company.formatted_price;
+                    }
+
+                    if (updatedElement && company.last_price_updated_at) {
+                        updatedElement.textContent = `Updated ${new Date(company.last_price_updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                    }
+                });
+            };
+
+            const fetchState = async () => {
+                if (isFetching) {
+                    return;
+                }
+
+                isFetching = true;
+
+                try {
+                    const response = await fetch(stateUrl, {
+                        headers: {
+                            Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        credentials: 'same-origin',
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    applyState(await response.json());
+                } finally {
+                    isFetching = false;
+                }
+            };
+
+            window.setInterval(fetchState, 10000);
+        });
+    </script>
+@endpush
+
 <x-app-layout>
     <x-slot name="header">
         <div>
             <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">Plastica Stock Market</p>
-            <p class="text-sm uppercase tracking-[0.22em] text-white/55">{{ number_format($character->plastic_credits) }} Plastic Credits liquid</p>
+            <p class="text-sm uppercase tracking-[0.22em] text-white/55">{{ number_format($character->plastic_credits) }} Plastic Credits liquid | Prices adjust every minute</p>
         </div>
     </x-slot>
 
-    <div class="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+    <div data-market-root data-market-state-url="{{ route('market.state') }}" class="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Listed Companies</p>
+            <p class="mt-2 text-sm text-white/60">Values drift up and down in small movements about once a minute, so timings and patience matter.</p>
             <div class="mt-5 space-y-4">
                 @foreach ($companies as $company)
-                    <div class="rounded-3xl border border-white/10 bg-black/20 p-4">
+                    <div data-company-id="{{ $company->id }}" class="rounded-3xl border border-white/10 bg-black/20 p-4">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em]">{{ $company->name }}</p>
                                 <p class="mt-2 text-sm text-white/70">{{ $company->description }}</p>
                             </div>
                             <div class="text-right">
-                                <p class="font-['Teko'] text-4xl uppercase text-[#7ead59]">{{ number_format($company->current_price, 2) }}</p>
+                                <p class="font-['Teko'] text-4xl uppercase text-[#7ead59]" data-company-price>{{ number_format($company->current_price, 2) }}</p>
                                 <p class="text-xs uppercase tracking-[0.22em] text-white/45">Share price</p>
+                                <p class="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/35" data-company-updated>
+                                    Updated {{ optional($company->last_price_updated_at)->format('H:i') ?? 'now' }}
+                                </p>
                             </div>
                         </div>
                         <div class="mt-4 grid gap-3 md:grid-cols-2">
