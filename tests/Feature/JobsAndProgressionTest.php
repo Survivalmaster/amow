@@ -6,13 +6,12 @@ use App\Models\GameJob;
 use App\Models\Location;
 use App\Models\Rank;
 use App\Models\User;
-use App\Jobs\SendDiscordChannelMessage;
 use Database\Seeders\FactionSeeder;
 use Database\Seeders\GameJobSeeder;
 use Database\Seeders\LicenceSeeder;
 use Database\Seeders\RankSeeder;
 use Database\Seeders\WorldSeeder;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $this->seed([
@@ -48,7 +47,10 @@ function createCharacterForUser(User $user): Character
 }
 
 test('work awards credits and experience based on the active job', function () {
-    Bus::fake();
+    config()->set('services.discord.bot_token', 'test-token');
+    Http::fake([
+        'https://discord.com/api/v10/channels/1483329516796379136/messages' => Http::response(['id' => '123'], 200),
+    ]);
 
     $user = User::factory()->create();
     $character = createCharacterForUser($user);
@@ -72,10 +74,13 @@ test('work awards credits and experience based on the active job', function () {
     expect($character->stamina_points)->toBe(88);
     expect($character->last_worked_at)->not->toBeNull();
 
-    Bus::assertDispatched(SendDiscordChannelMessage::class, function (SendDiscordChannelMessage $job) use ($character) {
-        return $job->channelId === '1483329516796379136'
-            && str_contains($job->content, $character->name.' Is begging in the city.')
-            && str_contains($job->content, 'their total now is '.number_format($character->plastic_credits).'.');
+    Http::assertSent(function ($request) use ($character) {
+        $payload = $request->data();
+
+        return $request->url() === 'https://discord.com/api/v10/channels/1483329516796379136/messages'
+            && $request->hasHeader('Authorization', 'Bearer test-token')
+            && str_contains($payload['content'] ?? '', $character->name.' Is begging in the city.')
+            && str_contains($payload['content'] ?? '', 'their total now is '.number_format($character->plastic_credits).'.');
     });
 });
 

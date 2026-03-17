@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendDiscordChannelMessage;
 use App\Models\GameJob;
 use App\Models\Location;
+use App\Services\Discord\DiscordClient;
 use App\Support\CharacterActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class WorkController extends Controller
 {
     private const WORK_ACTIVITY_CHANNEL_ID = '1483329516796379136';
 
-    public function store(Request $request, Location $location): RedirectResponse
+    public function store(Request $request, Location $location, DiscordClient $discord): RedirectResponse
     {
         abort_unless($location->slug === 'go-to-work', 403);
 
@@ -47,16 +49,24 @@ class WorkController extends Controller
         $currentLevel = $updatedCharacter->level;
         $workActivityMessage = $job->working_display_message ?: 'Is working.';
 
-        SendDiscordChannelMessage::dispatch(
-            self::WORK_ACTIVITY_CHANNEL_ID,
-            sprintf(
-                '%s %s They have earned %s credits, their total now is %s.',
-                $updatedCharacter->name,
-                $workActivityMessage,
-                number_format($earnings),
-                number_format($updatedCharacter->plastic_credits)
-            )
-        )->afterCommit();
+        try {
+            $discord->sendMessage(
+                self::WORK_ACTIVITY_CHANNEL_ID,
+                sprintf(
+                    '%s %s They have earned %s credits, their total now is %s.',
+                    $updatedCharacter->name,
+                    $workActivityMessage,
+                    number_format($earnings),
+                    number_format($updatedCharacter->plastic_credits)
+                )
+            );
+        } catch (Throwable $exception) {
+            Log::warning('Work activity Discord message failed to send.', [
+                'character_id' => $updatedCharacter->id,
+                'channel_id' => self::WORK_ACTIVITY_CHANNEL_ID,
+                'message' => $exception->getMessage(),
+            ]);
+        }
 
         $levelMessage = $levelsGained > 0 ? " Level up! You reached level {$currentLevel}." : '';
 
