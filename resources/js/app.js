@@ -74,6 +74,47 @@ const startCharacterStatePolling = () => {
     window.setInterval(fetchState, 3000);
 };
 
+const startPresenceHeartbeat = () => {
+    const presenceUrl = document.body.dataset.presenceUrl;
+
+    if (!presenceUrl) {
+        return;
+    }
+
+    let isSending = false;
+
+    const sendHeartbeat = async () => {
+        if (isSending) {
+            return;
+        }
+
+        isSending = true;
+
+        try {
+            await fetch(presenceUrl, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    current_path: document.body.dataset.currentPath,
+                    current_page_name: document.body.dataset.currentPageName,
+                }),
+            });
+        } finally {
+            isSending = false;
+        }
+    };
+
+    sendHeartbeat();
+    window.setInterval(sendHeartbeat, 30000);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+    startPresenceHeartbeat();
     startCharacterStatePolling();
 });

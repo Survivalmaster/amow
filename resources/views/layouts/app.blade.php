@@ -24,6 +24,9 @@
             @if (auth()->user()->character)
                 data-character-state-url="{{ route('characters.state') }}"
             @endif
+            data-presence-url="{{ route('presence.store') }}"
+            data-current-path="{{ request()->path() }}"
+            data-current-page-name="{{ \Illuminate\Support\Str::of(request()->route()?->getName() ?? request()->path())->replace(['.', '-', '_'], ' ')->title() }}"
         @endauth
         class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]"
     >

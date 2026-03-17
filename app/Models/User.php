@@ -31,6 +31,8 @@ class User extends Authenticatable
         'discord_link_token_expires_at',
         'discord_linked_at',
         'last_seen_at',
+        'current_path',
+        'current_page_name',
         'password',
         'is_admin',
     ];
@@ -111,10 +113,24 @@ class User extends Authenticatable
         return "https://cdn.discordapp.com/avatars/{$this->discord_user_id}/{$this->discord_avatar}.{$extension}?size=256";
     }
 
-    public function touchPresence(): void
+    public function touchPresence(?string $currentPath = null, ?string $currentPageName = null): void
     {
+        $attributes = [];
+
         if (! $this->last_seen_at || $this->last_seen_at->lt(now()->subSeconds(30))) {
-            $this->forceFill(['last_seen_at' => now()])->save();
+            $attributes['last_seen_at'] = now();
+        }
+
+        if ($currentPath !== null && $this->current_path !== $currentPath) {
+            $attributes['current_path'] = $currentPath;
+        }
+
+        if ($currentPageName !== null && $this->current_page_name !== $currentPageName) {
+            $attributes['current_page_name'] = $currentPageName;
+        }
+
+        if ($attributes !== []) {
+            $this->forceFill($attributes)->save();
         }
     }
 

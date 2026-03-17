@@ -28,6 +28,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\WorkController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,7 @@ Route::get('/', [GameController::class, 'home'])->name('home');
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [GameController::class, 'dashboard'])->name('dashboard');
+    Route::post('/presence/ping', [PresenceController::class, 'store'])->name('presence.store');
 
     Route::get('/factions', [FactionController::class, 'index'])->name('factions.index');
     Route::post('/factions', [FactionController::class, 'store'])->name('factions.store');
@@ -77,6 +79,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('admin')->middleware('can:access-admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/overview/state', [AdminDashboardController::class, 'state'])->name('overview.state');
         Route::get('/users', [UserAdminController::class, 'index'])->name('users.index');
         Route::patch('/users/{user}', [UserAdminController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [UserAdminController::class, 'destroy'])->name('users.destroy');
