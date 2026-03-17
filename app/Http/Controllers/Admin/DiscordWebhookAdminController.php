@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DiscordCommand;
 use App\Models\DiscordWebhook;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,23 +21,25 @@ class DiscordWebhookAdminController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $validated = $this->validateWebhook($request);
 
-        DiscordWebhook::query()->create([
+        $discordWebhook = DiscordWebhook::query()->create([
             'name' => $validated['name'],
             'channel_id' => $validated['channel_id'],
             'webhook_url' => $validated['webhook_url'],
             'embed_color' => strtoupper($validated['embed_color']),
             'is_active' => $request->boolean('is_active'),
         ]);
+        $adminActionLogger->created($request->user(), 'Discord Webhook', $discordWebhook);
 
         return back()->with('status', 'Discord webhook created.');
     }
 
-    public function update(Request $request, DiscordWebhook $discordWebhook): RedirectResponse
+    public function update(Request $request, DiscordWebhook $discordWebhook, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($discordWebhook);
         $validated = $this->validateWebhook($request, $discordWebhook->id);
 
         $discordWebhook->update([
@@ -46,18 +49,21 @@ class DiscordWebhookAdminController extends Controller
             'embed_color' => strtoupper($validated['embed_color']),
             'is_active' => $request->boolean('is_active'),
         ]);
+        $adminActionLogger->updated($request->user(), 'Discord Webhook', $before, $discordWebhook);
 
         return back()->with('status', 'Discord webhook updated.');
     }
 
-    public function destroy(DiscordWebhook $discordWebhook): RedirectResponse
+    public function destroy(Request $request, DiscordWebhook $discordWebhook, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($discordWebhook);
         $discordWebhook->delete();
+        $adminActionLogger->deleted($request->user(), 'Discord Webhook', $snapshot);
 
         return back()->with('status', 'Discord webhook deleted.');
     }
 
-    public function storeCommand(Request $request): RedirectResponse
+    public function storeCommand(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $validated = $this->validateCommand($request);
 
@@ -75,19 +81,26 @@ class DiscordWebhookAdminController extends Controller
         ];
 
         if ($validated['handler_key'] === 'pray_to_deity') {
-            DiscordCommand::query()->updateOrCreate(
+            $discordCommand = DiscordCommand::query()->updateOrCreate(
                 ['command_name' => $validated['command_name']],
                 $payload
             );
+            if ($discordCommand->wasRecentlyCreated) {
+                $adminActionLogger->created($request->user(), 'Discord Command', $discordCommand);
+            } else {
+                $adminActionLogger->updated($request->user(), 'Discord Command', ['command_name' => $validated['command_name']], $discordCommand);
+            }
         } else {
-            DiscordCommand::query()->create($payload);
+            $discordCommand = DiscordCommand::query()->create($payload);
+            $adminActionLogger->created($request->user(), 'Discord Command', $discordCommand);
         }
 
         return back()->with('status', 'Discord command created.');
     }
 
-    public function updateCommand(Request $request, DiscordCommand $discordCommand): RedirectResponse
+    public function updateCommand(Request $request, DiscordCommand $discordCommand, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($discordCommand);
         $validated = $this->validateCommand($request, $discordCommand->id);
 
         $discordCommand->update([
@@ -102,13 +115,16 @@ class DiscordWebhookAdminController extends Controller
             'command_options' => $this->commandOptionsForHandler($validated['handler_key']),
             'is_active' => $request->boolean('is_active'),
         ]);
+        $adminActionLogger->updated($request->user(), 'Discord Command', $before, $discordCommand);
 
         return back()->with('status', 'Discord command updated.');
     }
 
-    public function destroyCommand(DiscordCommand $discordCommand): RedirectResponse
+    public function destroyCommand(Request $request, DiscordCommand $discordCommand, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($discordCommand);
         $discordCommand->delete();
+        $adminActionLogger->deleted($request->user(), 'Discord Command', $snapshot);
 
         return back()->with('status', 'Discord command deleted.');
     }

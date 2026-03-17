@@ -7,6 +7,7 @@ use App\Models\City;
 use App\Models\Licence;
 use App\Models\Location;
 use App\Models\Rank;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class LocationAdminController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $validated = $request->validate([
             'city_id' => ['required', 'exists:cities,id'],
@@ -38,13 +39,15 @@ class LocationAdminController extends Controller
 
         $validated['is_public'] = $request->boolean('is_public');
 
-        Location::query()->create($validated);
+        $location = Location::query()->create($validated);
+        $adminActionLogger->created($request->user(), 'Location', $location);
 
         return back()->with('status', 'Location created.');
     }
 
-    public function update(Request $request, Location $location): RedirectResponse
+    public function update(Request $request, Location $location, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($location);
         $validated = $request->validate([
             'city_id' => ['required', 'exists:cities,id'],
             'name' => ['required', 'string', 'max:255'],
@@ -59,17 +62,21 @@ class LocationAdminController extends Controller
             ...$validated,
             'is_public' => $request->boolean('is_public'),
         ]);
+        $adminActionLogger->updated($request->user(), 'Location', $before, $location);
 
         return back()->with('status', 'Location updated.');
     }
 
-    public function destroy(Location $location): RedirectResponse
+    public function destroy(Request $request, Location $location, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($location);
         try {
             $location->delete();
         } catch (QueryException) {
             return back()->withErrors('Location could not be deleted because related records still exist.');
         }
+
+        $adminActionLogger->deleted($request->user(), 'Location', $snapshot);
 
         return back()->with('status', 'Location deleted.');
     }

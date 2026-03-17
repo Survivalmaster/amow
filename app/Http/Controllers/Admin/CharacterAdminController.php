@@ -7,6 +7,7 @@ use App\Models\Character;
 use App\Models\Faction;
 use App\Models\GameJob;
 use App\Models\Rank;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -23,8 +24,9 @@ class CharacterAdminController extends Controller
         ]);
     }
 
-    public function update(Request $request, Character $character): RedirectResponse
+    public function update(Request $request, Character $character, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($character);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'age' => ['required', 'integer', 'between:16,80'],
@@ -51,14 +53,17 @@ class CharacterAdminController extends Controller
             ...$validated,
             'is_business_owner' => $request->boolean('is_business_owner'),
         ]);
+        $adminActionLogger->updated($request->user(), 'Character', $before, $character);
 
         return back()->with('status', "Updated character {$character->name}.");
     }
 
-    public function destroy(Character $character): RedirectResponse
+    public function destroy(Request $request, Character $character, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($character);
         $name = $character->name;
         $character->delete();
+        $adminActionLogger->deleted($request->user(), 'Character', $snapshot);
 
         return back()->with('status', "Deleted character {$name}.");
     }

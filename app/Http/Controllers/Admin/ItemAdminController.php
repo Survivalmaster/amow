@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Licence;
 use App\Models\Rank;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class ItemAdminController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -42,13 +43,15 @@ class ItemAdminController extends Controller
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
         ];
 
-        Item::query()->create($validated);
+        $item = Item::query()->create($validated);
+        $adminActionLogger->created($request->user(), 'Item', $item);
 
         return back()->with('status', 'Item created.');
     }
 
-    public function update(Request $request, Item $item): RedirectResponse
+    public function update(Request $request, Item $item, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($item);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:items,slug,'.$item->id],
@@ -68,17 +71,21 @@ class ItemAdminController extends Controller
         ];
 
         $item->update($validated);
+        $adminActionLogger->updated($request->user(), 'Item', $before, $item);
 
         return back()->with('status', 'Item updated.');
     }
 
-    public function destroy(Item $item): RedirectResponse
+    public function destroy(Request $request, Item $item, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($item);
         try {
             $item->delete();
         } catch (QueryException) {
             return back()->withErrors('Item could not be deleted because related records still exist.');
         }
+
+        $adminActionLogger->deleted($request->user(), 'Item', $snapshot);
 
         return back()->with('status', 'Item deleted.');
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
 use App\Models\User;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,8 +22,9 @@ class UserAdminController extends Controller
         ]);
     }
 
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(Request $request, User $user, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $this->userAuditSnapshot($user);
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
@@ -44,14 +46,31 @@ class UserAdminController extends Controller
         $user->save();
         $user->permissions()->sync($permissionIds->all());
 
+        $after = $this->userAuditSnapshot($user->fresh('permissions'));
+        $before['password_changed'] = 'false';
+        $after['password_changed'] = ! empty($validated['password']) ? 'true' : 'false';
+        $adminActionLogger->updated($request->user(), 'User', $before, $after);
+
         return back()->with('status', "Updated user {$user->email}.");
     }
 
-    public function destroy(User $user): RedirectResponse
+    public function destroy(Request $request, User $user, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $this->userAuditSnapshot($user);
         $email = $user->email;
         $user->delete();
+        $adminActionLogger->deleted($request->user(), 'User', $snapshot);
 
         return back()->with('status', "Deleted user {$email}.");
+    }
+
+    private function userAuditSnapshot(User $user): array
+    {
+        $user->loadMissing('permissions');
+
+        return [
+            ...$user->attributesToArray(),
+            'permissions' => $user->permissions->pluck('name')->values()->all(),
+        ];
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Faction;
 use App\Models\MapMarker;
 use App\Models\MapPolygon;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -24,48 +25,58 @@ class MapMarkerAdminController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $validated = $this->validatedMarkerData($request);
 
-        MapMarker::query()->create($validated);
+        $mapMarker = MapMarker::query()->create($validated);
+        $adminActionLogger->created($request->user(), 'Map Marker', $mapMarker);
 
         return back()->with('status', 'Map marker created.');
     }
 
-    public function update(Request $request, MapMarker $mapMarker): RedirectResponse
+    public function update(Request $request, MapMarker $mapMarker, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($mapMarker);
         $validated = $this->validatedMarkerData($request);
 
         $mapMarker->update($validated);
+        $adminActionLogger->updated($request->user(), 'Map Marker', $before, $mapMarker);
 
         return back()->with('status', 'Map marker updated.');
     }
 
-    public function destroy(MapMarker $mapMarker): RedirectResponse
+    public function destroy(Request $request, MapMarker $mapMarker, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($mapMarker);
         $mapMarker->delete();
+        $adminActionLogger->deleted($request->user(), 'Map Marker', $snapshot);
 
         return back()->with('status', 'Map marker deleted.');
     }
 
-    public function storePolygon(Request $request): RedirectResponse
+    public function storePolygon(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
-        MapPolygon::query()->create($this->validatedPolygonData($request));
+        $mapPolygon = MapPolygon::query()->create($this->validatedPolygonData($request));
+        $adminActionLogger->created($request->user(), 'Map Polygon', $mapPolygon);
 
         return back()->with('status', 'Map polygon created.');
     }
 
-    public function updatePolygon(Request $request, MapPolygon $mapPolygon): RedirectResponse
+    public function updatePolygon(Request $request, MapPolygon $mapPolygon, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($mapPolygon);
         $mapPolygon->update($this->validatedPolygonData($request));
+        $adminActionLogger->updated($request->user(), 'Map Polygon', $before, $mapPolygon);
 
         return back()->with('status', 'Map polygon updated.');
     }
 
-    public function destroyPolygon(MapPolygon $mapPolygon): RedirectResponse
+    public function destroyPolygon(Request $request, MapPolygon $mapPolygon, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($mapPolygon);
         $mapPolygon->delete();
+        $adminActionLogger->deleted($request->user(), 'Map Polygon', $snapshot);
 
         return back()->with('status', 'Map polygon deleted.');
     }

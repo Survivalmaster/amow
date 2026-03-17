@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GameJob;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,7 +18,7 @@ class GameJobAdminController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $validated = $this->validatedData($request);
 
@@ -25,13 +26,15 @@ class GameJobAdminController extends Controller
             GameJob::query()->update(['is_starter' => false]);
         }
 
-        GameJob::query()->create($validated);
+        $gameJob = GameJob::query()->create($validated);
+        $adminActionLogger->created($request->user(), 'Job', $gameJob);
 
         return back()->with('status', 'Job created.');
     }
 
-    public function update(Request $request, GameJob $gameJob): RedirectResponse
+    public function update(Request $request, GameJob $gameJob, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($gameJob);
         $validated = $this->validatedData($request, $gameJob);
 
         if ($validated['is_starter']) {
@@ -39,17 +42,20 @@ class GameJobAdminController extends Controller
         }
 
         $gameJob->update($validated);
+        $adminActionLogger->updated($request->user(), 'Job', $before, $gameJob);
 
         return back()->with('status', 'Job updated.');
     }
 
-    public function destroy(GameJob $gameJob): RedirectResponse
+    public function destroy(Request $request, GameJob $gameJob, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         if ($gameJob->characters()->exists()) {
             return back()->withErrors(['jobs' => 'This job is assigned to one or more characters.']);
         }
 
+        $snapshot = $adminActionLogger->snapshot($gameJob);
         $gameJob->delete();
+        $adminActionLogger->deleted($request->user(), 'Job', $snapshot);
 
         return back()->with('status', 'Job deleted.');
     }

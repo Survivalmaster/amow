@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AccountIcon;
 use App\Models\Permission;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,23 +21,28 @@ class PermissionAdminController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
-        Permission::query()->create($this->validatedData($request));
+        $permission = Permission::query()->create($this->validatedData($request));
+        $adminActionLogger->created($request->user(), 'Permission', $permission);
 
         return back()->with('status', 'Permission created.');
     }
 
-    public function update(Request $request, Permission $permission): RedirectResponse
+    public function update(Request $request, Permission $permission, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($permission);
         $permission->update($this->validatedData($request, $permission));
+        $adminActionLogger->updated($request->user(), 'Permission', $before, $permission);
 
         return back()->with('status', 'Permission updated.');
     }
 
-    public function destroy(Permission $permission): RedirectResponse
+    public function destroy(Request $request, Permission $permission, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($permission);
         $permission->delete();
+        $adminActionLogger->deleted($request->user(), 'Permission', $snapshot);
 
         return back()->with('status', 'Permission deleted.');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccountIcon;
+use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,23 +18,28 @@ class AccountIconAdminController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AdminActionLogger $adminActionLogger): RedirectResponse
     {
-        AccountIcon::query()->create($this->validatedData($request));
+        $accountIcon = AccountIcon::query()->create($this->validatedData($request));
+        $adminActionLogger->created($request->user(), 'Account Icon', $accountIcon);
 
         return back()->with('status', 'Account icon created.');
     }
 
-    public function update(Request $request, AccountIcon $accountIcon): RedirectResponse
+    public function update(Request $request, AccountIcon $accountIcon, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $before = $adminActionLogger->snapshot($accountIcon);
         $accountIcon->update($this->validatedData($request, $accountIcon));
+        $adminActionLogger->updated($request->user(), 'Account Icon', $before, $accountIcon);
 
         return back()->with('status', 'Account icon updated.');
     }
 
-    public function destroy(AccountIcon $accountIcon): RedirectResponse
+    public function destroy(Request $request, AccountIcon $accountIcon, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        $snapshot = $adminActionLogger->snapshot($accountIcon);
         $accountIcon->delete();
+        $adminActionLogger->deleted($request->user(), 'Account Icon', $snapshot);
 
         return back()->with('status', 'Account icon deleted.');
     }
