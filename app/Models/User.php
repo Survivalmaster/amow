@@ -30,6 +30,7 @@ class User extends Authenticatable
         'discord_link_token',
         'discord_link_token_expires_at',
         'discord_linked_at',
+        'last_seen_at',
         'password',
         'is_admin',
     ];
@@ -55,6 +56,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'discord_link_token_expires_at' => 'datetime',
             'discord_linked_at' => 'datetime',
+            'last_seen_at' => 'datetime',
             'is_admin' => 'boolean',
             'password' => 'hashed',
         ];
@@ -107,5 +109,17 @@ class User extends Authenticatable
         $extension = str_starts_with($this->discord_avatar, 'a_') ? 'gif' : 'png';
 
         return "https://cdn.discordapp.com/avatars/{$this->discord_user_id}/{$this->discord_avatar}.{$extension}?size=256";
+    }
+
+    public function touchPresence(): void
+    {
+        if (! $this->last_seen_at || $this->last_seen_at->lt(now()->subSeconds(30))) {
+            $this->forceFill(['last_seen_at' => now()])->save();
+        }
+    }
+
+    public function isOnline(): bool
+    {
+        return (bool) $this->last_seen_at?->gt(now()->subMinutes(5));
     }
 }

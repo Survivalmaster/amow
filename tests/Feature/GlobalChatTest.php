@@ -77,3 +77,39 @@ test('global chat formats roleplay commands', function () {
         ->assertJsonPath('message.message_type', 'description')
         ->assertJsonPath('message.display_message', 'a storm rolls in (Broadcaster)');
 });
+
+test('chat state returns nation messages, online users, and direct messages', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    $character = createGlobalChatCharacter($user);
+    $otherCharacter = createGlobalChatCharacter($otherUser);
+    $otherCharacter->update([
+        'name' => 'Mighty',
+        'faction_id' => $character->faction_id,
+    ]);
+
+    $otherUser->update(['last_seen_at' => now()]);
+
+    $this->actingAs($user)
+        ->postJson(route('chat.send'), [
+            'channel' => 'nation',
+            'message' => 'Nation roll call.',
+        ])
+        ->assertOk();
+
+    $this->actingAs($user)
+        ->postJson(route('chat.send'), [
+            'channel' => 'direct',
+            'target_character_id' => $otherCharacter->id,
+            'message' => 'Private hello.',
+        ])
+        ->assertOk();
+
+    $this->actingAs($user)
+        ->getJson(route('chat.state', ['direct_character_id' => $otherCharacter->id]))
+        ->assertOk()
+        ->assertJsonPath('nation_messages.0.display_message', 'Nation roll call.')
+        ->assertJsonPath('online_characters.0.name', 'Mighty')
+        ->assertJsonPath('direct_messages.0.display_message', 'Private hello.');
+});
