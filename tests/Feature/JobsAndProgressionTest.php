@@ -48,6 +48,7 @@ function createCharacterForUser(User $user): Character
 test('work awards credits and experience based on the active job', function () {
     $user = User::factory()->create();
     $character = createCharacterForUser($user);
+    $character->currentJob()->update(['stamina_decrease' => 12]);
     $location = Location::query()->where('slug', 'go-to-work')->firstOrFail();
 
     $response = $this
@@ -61,6 +62,7 @@ test('work awards credits and experience based on the active job', function () {
 
     expect($character->plastic_credits)->toBeGreaterThan(100);
     expect($character->experience_points)->toBe(5);
+    expect($character->stamina_points)->toBe(88);
     expect($character->last_worked_at)->not->toBeNull();
 });
 

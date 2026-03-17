@@ -27,11 +27,15 @@ class WorkController extends Controller
 
         $earnings = random_int($job->min_pay, $job->max_pay);
         $experienceEarned = 5;
+        $staminaDecrease = max(0, (int) ($job->stamina_decrease ?? 0));
         $levelsGained = 0;
 
-        DB::transaction(function () use ($character, $earnings, $experienceEarned, &$levelsGained) {
+        DB::transaction(function () use ($character, $earnings, $experienceEarned, $staminaDecrease, &$levelsGained) {
             $character->increment('plastic_credits', $earnings);
-            $character->forceFill(['last_worked_at' => now()])->save();
+            $character->forceFill([
+                'last_worked_at' => now(),
+                'stamina_points' => max(0, ($character->stamina_points ?? 100) - $staminaDecrease),
+            ])->save();
             $levelsGained = $character->gainExperience($experienceEarned);
             CharacterActivity::recordTransaction($character, 'work', $earnings, 'Completed a work shift.');
         });
