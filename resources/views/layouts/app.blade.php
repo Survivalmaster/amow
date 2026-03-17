@@ -28,6 +28,7 @@
         class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]"
     >
         @php($authUser = auth()->user()?->fresh())
+        @php($chatCharacter = $authUser?->character?->loadMissing(['user.permissions.accountIcon']))
         <div class="min-h-screen bg-[rgba(4,8,6,0.35)]">
             <div class="lg:grid lg:grid-cols-[320px_minmax(0,1fr)]">
                 @include('layouts.navigation')
@@ -59,6 +60,11 @@
                 </div>
             </div>
         </div>
+        @auth
+            @if ($chatCharacter)
+                @include('layouts.global-chat', ['chatCharacter' => $chatCharacter])
+            @endif
+        @endauth
         @auth
             @if ($authUser && ! $authUser->discord_user_id)
                 <div

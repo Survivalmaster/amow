@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Character;
+use App\Models\GlobalChatMessage;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class GlobalChatController extends Controller
+{
+    public function index(): JsonResponse
+    {
+        $messages = GlobalChatMessage::query()
+            ->with([
+                'character.rank',
+                'character.user.permissions.accountIcon',
+            ])
+            ->latest()
+            ->limit(40)
+            ->get()
+            ->reverse()
+            ->values()
+            ->map(fn (GlobalChatMessage $message) => $this->formatMessage($message));
+
+        return response()->json([
+            'messages' => $messages,
+        ]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        /** @var Character $character */
+        $character = $request->user()->character()->with(['user.permissions.accountIcon'])->firstOrFail();
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'min:1', 'max:400'],
+        ]);
+
+        $message = GlobalChatMessage::query()->create([
+            'character_id' => $character->id,
+            'message' => trim($validated['message']),
+        ]);
+
+        $message->load(['character.rank', 'character.user.permissions.accountIcon']);
+
+        return response()->json([
+            'message' => $this->formatMessage($message),
+        ]);
+    }
+
+    private function formatMessage(GlobalChatMessage $message): array
+    {
+        $character = $message->character;
+        $user = $character->user;
+
+        return [
+            'id' => $message->id,
+            'message' => $message->message,
+            'created_at' => $message->created_at?->timezone(config('app.timezone'))->format('H:i') ?? now()->format('H:i'),
+            'character_name' => $character->name,
+            'rank_name' => $character->rank?->name ?? 'Unranked',
+            'avatar_url' => $user->discord_avatar_url,
+            'account_icons' => $user->permissionIcons()->map(fn ($icon) => [
+                'name' => $icon->name,
+                'tooltip' => $icon->tooltip ?: $icon->name,
+                'icon_value' => $icon->icon_value,
+                'color' => $icon->color ?: '#f4ecd0',
+            ])->values()->all(),
+        ];
+    }
+}

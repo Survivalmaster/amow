@@ -18,6 +18,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\DiscordLinkController;
 use App\Http\Controllers\FactionController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\GlobalChatController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\JobController;
@@ -47,6 +48,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/cities/{city:slug}', [CityController::class, 'show'])->name('cities.show');
         Route::get('/locations/{location}', [LocationController::class, 'show'])->name('locations.show');
         Route::post('/locations/{location}/messages', [MessageController::class, 'store'])->name('messages.store');
+        Route::get('/chat/global', [GlobalChatController::class, 'index'])->name('chat.global.index');
+        Route::post('/chat/global', [GlobalChatController::class, 'store'])->name('chat.global.store');
         Route::post('/locations/{location}/work', [WorkController::class, 'store'])->name('work.store');
         Route::get('/store', [StoreController::class, 'index'])->name('store.index');
         Route::post('/store/purchase', [StoreController::class, 'purchase'])->name('store.purchase');
