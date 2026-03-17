@@ -93,4 +93,19 @@ class User extends Authenticatable
             ->filter()
             ->values();
     }
+
+    public function getDiscordAvatarUrlAttribute(): ?string
+    {
+        if (! $this->discord_user_id || ! $this->discord_avatar) {
+            return null;
+        }
+
+        if (str_starts_with($this->discord_avatar, 'http://') || str_starts_with($this->discord_avatar, 'https://')) {
+            return $this->discord_avatar;
+        }
+
+        $extension = str_starts_with($this->discord_avatar, 'a_') ? 'gif' : 'png';
+
+        return "https://cdn.discordapp.com/avatars/{$this->discord_user_id}/{$this->discord_avatar}.{$extension}?size=256";
+    }
 }

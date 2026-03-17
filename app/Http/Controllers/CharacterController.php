@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Faction;
 use App\Models\GameJob;
 use App\Models\Rank;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class CharacterController extends Controller
 
         return view('characters.create', [
             'faction' => Faction::query()->findOrFail($factionId),
-            'occupations' => ['Laborer', 'Merchant', 'Mechanic'],
+            'starterJob' => GameJob::query()->where('is_starter', true)->where('is_active', true)->first(),
         ]);
     }
 
@@ -37,24 +38,29 @@ class CharacterController extends Controller
         }
 
         $faction = Faction::query()->findOrFail($request->session()->get('selected_faction_id'));
+        $starterJob = GameJob::query()->where('is_starter', true)->where('is_active', true)->first();
+
+        if (! $starterJob) {
+            throw new ModelNotFoundException('No starter job is configured.');
+        }
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'age' => ['required', 'integer', 'between:16,80'],
             'biography' => ['required', 'string', 'max:2000'],
-            'starting_occupation' => ['required', 'in:Laborer,Merchant,Mechanic'],
-            'role_type' => ['required', 'in:civilian,military'],
         ]);
 
         $rank = Rank::query()
-            ->where('name', $validated['role_type'] === 'military' ? 'Recruit' : 'Civilian')
+            ->where('name', 'Civilian')
             ->firstOrFail();
 
         $request->user()->character()->create([
             ...$validated,
+            'starting_occupation' => $starterJob->name,
+            'role_type' => 'civilian',
             'faction_id' => $faction->id,
             'rank_id' => $rank->id,
-            'current_job_id' => GameJob::query()->where('is_starter', true)->value('id'),
+            'current_job_id' => $starterJob->id,
             'plastic_credits' => 100,
             'level' => 0,
             'experience_points' => 0,

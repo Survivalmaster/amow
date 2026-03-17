@@ -9,6 +9,7 @@
 @php($experiencePercent = $navCharacter ? min(100, (int) round(($navCharacter->experience_points / max(1, $experienceRequired)) * 100)) : 0)
 @php($accountIcons = $navUser->permissionIcons())
 @php($factionColor = $navCharacter?->faction?->color ?: '#44594e')
+@php($discordAvatarUrl = $navUser->discord_avatar_url)
 @php(
     $formattedCredits = match (true) {
         $creditAmount >= 1000000 => rtrim(rtrim(number_format($creditAmount / 1000000, 1), '0'), '.') . 'M',
@@ -53,8 +54,12 @@
                             <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">
                                 Lvl <span class="ml-1" data-character-field="level">{{ $navCharacter->level }}</span>
                             </div>
-                            <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
-                                <span class="leading-none">?</span>
+                            <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
+                                @if ($discordAvatarUrl)
+                                    <img src="{{ $discordAvatarUrl }}" alt="{{ $navUser->name }} Discord avatar" class="h-full w-full object-cover">
+                                @else
+                                    <span class="leading-none">?</span>
+                                @endif
                             </div>
                             @if ($accountIcons->isNotEmpty())
                                 <div class="grid w-14 grid-cols-3 justify-items-center gap-1">
@@ -162,8 +167,12 @@
                             <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">
                                 Lvl <span class="ml-1" data-character-field="level">{{ $navCharacter->level }}</span>
                             </div>
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
-                                <span class="leading-none">?</span>
+                            <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
+                                @if ($discordAvatarUrl)
+                                    <img src="{{ $discordAvatarUrl }}" alt="{{ $navUser->name }} Discord avatar" class="h-full w-full object-cover">
+                                @else
+                                    <span class="leading-none">?</span>
+                                @endif
                             </div>
                             @if ($accountIcons->isNotEmpty())
                                 <div class="grid w-12 grid-cols-3 justify-items-center gap-1">
