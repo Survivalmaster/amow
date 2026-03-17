@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             LicenceSeeder::class,
             ItemSeeder::class,
             GameJobSeeder::class,
+            AccountIconSeeder::class,
             WorldSeeder::class,
             CompanySeeder::class,
             AdminUserSeeder::class,

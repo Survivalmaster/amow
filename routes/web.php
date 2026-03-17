@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AccountIconAdminController;
 use App\Http\Controllers\Admin\CharacterAdminController;
 use App\Http\Controllers\Admin\CityAdminController;
 use App\Http\Controllers\Admin\FactionAdminController;
@@ -85,6 +86,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/items', [ItemAdminController::class, 'store'])->name('items.store');
         Route::patch('/items/{item}', [ItemAdminController::class, 'update'])->name('items.update');
         Route::delete('/items/{item}', [ItemAdminController::class, 'destroy'])->name('items.destroy');
+        Route::get('/account-icons', [AccountIconAdminController::class, 'index'])->name('account-icons.index');
+        Route::post('/account-icons', [AccountIconAdminController::class, 'store'])->name('account-icons.store');
+        Route::patch('/account-icons/{accountIcon}', [AccountIconAdminController::class, 'update'])->name('account-icons.update');
+        Route::delete('/account-icons/{accountIcon}', [AccountIconAdminController::class, 'destroy'])->name('account-icons.destroy');
         Route::get('/jobs', [GameJobAdminController::class, 'index'])->name('jobs.index');
         Route::post('/jobs', [GameJobAdminController::class, 'store'])->name('jobs.store');
         Route::patch('/jobs/{gameJob}', [GameJobAdminController::class, 'update'])->name('jobs.update');
