@@ -15,13 +15,13 @@ class ChatController extends Controller
     {
         $character = $request->user()->character()->with([
             'faction',
-            'user.permissions.accountIcon',
+            'user.permissions',
         ])->firstOrFail();
 
         $request->user()->touchPresence();
 
         $onlineCharacters = Character::query()
-            ->with(['faction', 'user.permissions.accountIcon'])
+            ->with(['faction', 'user.permissions'])
             ->whereKeyNot($character->id)
             ->whereHas('user', fn ($query) => $query->where('last_seen_at', '>=', now()->subMinutes(5)))
             ->orderBy('name')
@@ -43,7 +43,7 @@ class ChatController extends Controller
     {
         $character = $request->user()->character()->with([
             'faction',
-            'user.permissions.accountIcon',
+            'user.permissions',
         ])->firstOrFail();
 
         $request->user()->touchPresence();
@@ -62,7 +62,7 @@ class ChatController extends Controller
                 'message' => $payloadMessage,
             ]);
 
-            $message->load(['character.faction', 'character.user.permissions.accountIcon']);
+            $message->load(['character.faction', 'character.user.permissions']);
 
             return response()->json([
                 'message' => $this->formatChatMessage($message->character, $message->message, $message->id, $message->created_at),
@@ -76,7 +76,7 @@ class ChatController extends Controller
                 'message' => $payloadMessage,
             ]);
 
-            $message->load(['character.faction', 'character.user.permissions.accountIcon']);
+            $message->load(['character.faction', 'character.user.permissions']);
 
             return response()->json([
                 'message' => $this->formatChatMessage($message->character, $message->message, $message->id, $message->created_at),
@@ -84,7 +84,7 @@ class ChatController extends Controller
         }
 
         $targetCharacter = Character::query()
-            ->with(['faction', 'user.permissions.accountIcon'])
+            ->with(['faction', 'user.permissions'])
             ->whereKey($validated['target_character_id'])
             ->firstOrFail();
 
@@ -96,7 +96,7 @@ class ChatController extends Controller
             'message' => $payloadMessage,
         ]);
 
-        $message->load(['sender.faction', 'sender.user.permissions.accountIcon']);
+        $message->load(['sender.faction', 'sender.user.permissions']);
 
         return response()->json([
             'message' => $this->formatChatMessage($message->sender, $message->message, $message->id, $message->created_at),
@@ -107,7 +107,7 @@ class ChatController extends Controller
     private function formatWorldMessages()
     {
         return GlobalChatMessage::query()
-            ->with(['character.faction', 'character.user.permissions.accountIcon'])
+            ->with(['character.faction', 'character.user.permissions'])
             ->latest()
             ->limit(35)
             ->get()
@@ -119,7 +119,7 @@ class ChatController extends Controller
     private function formatNationMessages(Character $character)
     {
         return NationChatMessage::query()
-            ->with(['character.faction', 'character.user.permissions.accountIcon'])
+            ->with(['character.faction', 'character.user.permissions'])
             ->where('faction_id', $character->faction_id)
             ->latest()
             ->limit(35)
@@ -138,7 +138,7 @@ class ChatController extends Controller
         return DirectChatMessage::query()
             ->with([
                 'sender.faction',
-                'sender.user.permissions.accountIcon',
+                'sender.user.permissions',
             ])
             ->where(function ($query) use ($character, $selectedDirectCharacter) {
                 $query

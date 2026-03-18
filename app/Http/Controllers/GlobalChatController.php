@@ -15,7 +15,7 @@ class GlobalChatController extends Controller
             ->with([
                 'character.rank',
                 'character.faction',
-                'character.user.permissions.accountIcon',
+                'character.user.permissions',
             ])
             ->latest()
             ->limit(40)
@@ -32,7 +32,7 @@ class GlobalChatController extends Controller
     public function store(Request $request): JsonResponse
     {
         /** @var Character $character */
-        $character = $request->user()->character()->with(['user.permissions.accountIcon'])->firstOrFail();
+        $character = $request->user()->character()->with(['user.permissions'])->firstOrFail();
 
         $validated = $request->validate([
             'message' => ['required', 'string', 'min:1', 'max:400'],
@@ -43,7 +43,7 @@ class GlobalChatController extends Controller
             'message' => trim($validated['message']),
         ]);
 
-        $message->load(['character.rank', 'character.faction', 'character.user.permissions.accountIcon']);
+        $message->load(['character.rank', 'character.faction', 'character.user.permissions']);
 
         return response()->json([
             'message' => $this->formatMessage($message),
