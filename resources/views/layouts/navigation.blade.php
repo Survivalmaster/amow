@@ -46,85 +46,85 @@
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
     </div>
 
-    <div class="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:overflow-hidden lg:px-6 lg:py-8">
-        <div class="flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
-            @if ($navCharacter)
-                <div class="relative overflow-hidden rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 pl-5 shadow-xl shadow-black/25">
-                    <div class="absolute inset-y-0 left-0 w-2.5 opacity-95" style="background:
-                        linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.04) 22%, rgba(0,0,0,0.22) 100%),
-                        repeating-linear-gradient(135deg, rgba(255,255,255,0.16) 0 4px, rgba(255,255,255,0) 4px 8px),
-                        repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0 2px, rgba(0,0,0,0) 2px 6px),
-                        {{ $factionColor }};"></div>
-                    <div class="flex items-center gap-3">
-                        <div class="flex shrink-0 flex-col items-center gap-2">
-                            <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">
-                                Lvl <span class="ml-1" data-character-field="level">{{ $navCharacter->level }}</span>
-                            </div>
-                            <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
-                                @if ($discordAvatarUrl)
-                                    <img src="{{ $discordAvatarUrl }}" alt="{{ $navUser->name }} Discord avatar" class="h-full w-full object-cover">
-                                @else
-                                    <span class="leading-none">?</span>
-                                @endif
-                            </div>
-                            @if ($accountIcons->isNotEmpty())
-                                <div class="grid w-14 grid-cols-3 justify-items-center gap-1">
-                                    @foreach ($accountIcons as $accountIcon)
-                                        <span class="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[9px] shadow-inner shadow-black/30" title="{{ $accountIcon->icon_tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->icon_color ?: '#f4ecd0' }};">
-                                            <i class="{{ $accountIcon->icon_value }}"></i>
-                                        </span>
-                                    @endforeach
-                                </div>
+    <div class="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:min-h-0 lg:flex-col lg:px-6 lg:py-8">
+        @if ($navCharacter)
+            <div class="relative mb-6 shrink-0 overflow-hidden rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 pl-5 shadow-xl shadow-black/25">
+                <div class="absolute inset-y-0 left-0 w-2.5 opacity-95" style="background:
+                    linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.04) 22%, rgba(0,0,0,0.22) 100%),
+                    repeating-linear-gradient(135deg, rgba(255,255,255,0.16) 0 4px, rgba(255,255,255,0) 4px 8px),
+                    repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0 2px, rgba(0,0,0,0) 2px 6px),
+                    {{ $factionColor }};"></div>
+                <div class="flex items-center gap-3">
+                    <div class="flex shrink-0 flex-col items-center gap-2">
+                        <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">
+                            Lvl <span class="ml-1" data-character-field="level">{{ $navCharacter->level }}</span>
+                        </div>
+                        <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-[#17271e] text-2xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
+                            @if ($discordAvatarUrl)
+                                <img src="{{ $discordAvatarUrl }}" alt="{{ $navUser->name }} Discord avatar" class="h-full w-full object-cover">
+                            @else
+                                <span class="leading-none">?</span>
                             @endif
                         </div>
-                        <div class="min-w-0 flex-1">
-                            <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]" data-character-field="name">{{ $navCharacter->name }}</p>
-                            <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">
-                                <span data-character-field="rank_name">{{ $navCharacter->rank?->name ?? 'Unranked' }}</span>
-                                |
-                                <span data-character-field="displayed_job_name">{{ $navCharacter->displayed_job_name }}</span>
-                            </p>
-                            <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
-                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
-                                    <i class="fa-solid fa-heart text-[#d75b5b]"></i>
-                                    <span data-character-field="health_label">{{ $healthPoints }}/100</span>
-                                </span>
-                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-white/75">
-                                    <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
-                                    <span data-character-field="armor_points">{{ $armorPoints }}</span>
-                                </span>
-                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-[#f4ecd0]">
-                                    <i class="fa-solid fa-coins text-[#c2a84f]"></i>
-                                    <span class="min-w-[3.5rem]" data-character-field="formatted_credits">{{ $formattedCredits }}</span>
-                                </span>
-                            </div>
-                            <div class="mt-2">
-                                <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
-                                    <span class="text-[#c2a84f]">XP</span>
-                                    <span data-character-field="experience_label">{{ $navCharacter->experience_points }}/{{ $experienceRequired }}</span>
-                                </div>
-                                <div class="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
-                                    <div class="h-full rounded-full bg-[linear-gradient(90deg,#c2a84f_0%,#f4d77a_100%)]" data-character-width="experience_progress_percent" style="width: {{ $experiencePercent }}%;"></div>
-                                </div>
-                            </div>
-                            <div class="mt-1.5">
-                                <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
-                                    <span class="inline-flex items-center gap-1.5 text-[#d7edc7]">
-                                        <i class="fa-solid fa-bolt text-[#7ead59]"></i>
-                                        Stamina
+                        @if ($accountIcons->isNotEmpty())
+                            <div class="grid w-14 grid-cols-3 justify-items-center gap-1">
+                                @foreach ($accountIcons as $accountIcon)
+                                    <span class="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[9px] shadow-inner shadow-black/30" title="{{ $accountIcon->icon_tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->icon_color ?: '#f4ecd0' }};">
+                                        <i class="{{ $accountIcon->icon_value }}"></i>
                                     </span>
-                                    <span data-character-field="stamina_label">{{ $staminaPoints }}/100</span>
-                                </div>
-                                <div class="mt-1 h-2.5 overflow-hidden rounded-full bg-white/10">
-                                    <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#b7d680_100%)]" data-character-width="stamina_percent" style="width: {{ $staminaPercent }}%;"></div>
-                                </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate font-['Teko'] text-[1.35rem] uppercase leading-none tracking-[0.04em]" data-character-field="name">{{ $navCharacter->name }}</p>
+                        <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">
+                            <span data-character-field="rank_name">{{ $navCharacter->rank?->name ?? 'Unranked' }}</span>
+                            |
+                            <span data-character-field="displayed_job_name">{{ $navCharacter->displayed_job_name }}</span>
+                        </p>
+                        <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
+                            <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                <i class="fa-solid fa-heart text-[#d75b5b]"></i>
+                                <span data-character-field="health_label">{{ $healthPoints }}/100</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-white/75">
+                                <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
+                                <span data-character-field="armor_points">{{ $armorPoints }}</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-[#f4ecd0]">
+                                <i class="fa-solid fa-coins text-[#c2a84f]"></i>
+                                <span class="min-w-[3.5rem]" data-character-field="formatted_credits">{{ $formattedCredits }}</span>
+                            </span>
+                        </div>
+                        <div class="mt-2">
+                            <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
+                                <span class="text-[#c2a84f]">XP</span>
+                                <span data-character-field="experience_label">{{ $navCharacter->experience_points }}/{{ $experienceRequired }}</span>
+                            </div>
+                            <div class="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
+                                <div class="h-full rounded-full bg-[linear-gradient(90deg,#c2a84f_0%,#f4d77a_100%)]" data-character-width="experience_progress_percent" style="width: {{ $experiencePercent }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="mt-1.5">
+                            <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
+                                <span class="inline-flex items-center gap-1.5 text-[#d7edc7]">
+                                    <i class="fa-solid fa-bolt text-[#7ead59]"></i>
+                                    Stamina
+                                </span>
+                                <span data-character-field="stamina_label">{{ $staminaPoints }}/100</span>
+                            </div>
+                            <div class="mt-1 h-2.5 overflow-hidden rounded-full bg-white/10">
+                                <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#b7d680_100%)]" data-character-width="stamina_percent" style="width: {{ $staminaPercent }}%;"></div>
                             </div>
                         </div>
                     </div>
                 </div>
-            @endif
+            </div>
+        @endif
 
-            <div class="mt-8">
+        <div class="min-h-0 flex-1 overflow-y-auto pr-1">
+            <div>
                 <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Dashboard</p>
                 <div class="mt-3 grid gap-1">
                     @foreach ($primaryNav as $item)
@@ -204,7 +204,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('logout') }}" class="mt-6">
+        <form method="POST" action="{{ route('logout') }}" class="mt-6 shrink-0">
             @csrf
             <button class="amow-action-button w-full rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Logout</button>
         </form>
