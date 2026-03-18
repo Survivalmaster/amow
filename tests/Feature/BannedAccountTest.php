@@ -24,5 +24,6 @@ test('banned page shows the ban reason and appeal guidance', function () {
         ->assertOk()
         ->assertSee('Account Banned')
         ->assertSee('Repeated severe rule violations.')
-        ->assertSee('If you think the ban is incorrect or you would like to appeal this, query this in our discord.');
+        ->assertSee('If you think the ban is incorrect or you would like to appeal this, query this in our discord.')
+        ->assertSee('https://discord.gg/vC3hpcfRcq');
 });

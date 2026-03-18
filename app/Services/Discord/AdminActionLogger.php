@@ -11,6 +11,7 @@ use Throwable;
 class AdminActionLogger
 {
     private const CHANNEL_ID = '1483335218944282685';
+    private const ACTOR_LABEL = 'Survivalmaster';
 
     private const ACTION_COLORS = [
         'created' => '7EAD59',
@@ -90,7 +91,7 @@ class AdminActionLogger
         try {
             $this->discord->sendEmbedMessage(self::CHANNEL_ID, [
                 'author' => array_filter([
-                    'name' => $actor->name,
+                    'name' => self::ACTOR_LABEL,
                     'icon_url' => $actor->discord_avatar_url,
                 ]),
                 'title' => sprintf('%s %s', $resource, Str::headline($action)),
@@ -98,7 +99,7 @@ class AdminActionLogger
                     '**%s** was %s by **%s**.',
                     $this->resolveRecordLabel($snapshot),
                     $action,
-                    $actor->name
+                    self::ACTOR_LABEL
                 ),
                 'color' => hexdec(self::ACTION_COLORS[$action] ?? self::ACTION_COLORS['updated']),
                 'fields' => $fields,
