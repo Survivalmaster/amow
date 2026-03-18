@@ -46,8 +46,8 @@
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
     </div>
 
-    <div class="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:justify-between lg:px-6 lg:py-8">
-        <div class="flex h-full flex-col">
+    <div class="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:flex-col lg:overflow-hidden lg:px-6 lg:py-8">
+        <div class="flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
             @if ($navCharacter)
                 <div class="relative overflow-hidden rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 pl-5 shadow-xl shadow-black/25">
                     <div class="absolute inset-y-0 left-0 w-2.5 opacity-95" style="background:
@@ -129,7 +129,7 @@
                 <div class="mt-3 grid gap-1">
                     @foreach ($primaryNav as $item)
                         @php($isActive = request()->routeIs(...$item['match']))
-                        <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                             <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                             <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                             <span>{{ $item['label'] }}</span>
@@ -144,7 +144,7 @@
                     <button
                         type="button"
                         @click="ucpOpen = !ucpOpen"
-                        class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+                        class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
                     >
                         <span class="h-6 w-1 rounded-full {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="fa-solid fa-user-gear w-5 text-center text-[#7ead59]"></i>
@@ -155,7 +155,7 @@
                     <div x-show="ucpOpen" x-cloak class="grid gap-1 pl-4">
                         @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Home', 'Settings'], true)) as $item)
                             @php($isActive = request()->routeIs(...$item['match']))
-                            <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                                 <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                                 <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                                 <span>{{ $item['label'] }}</span>
@@ -166,7 +166,7 @@
                     <button
                         type="button"
                         @click="nationOpen = !nationOpen"
-                        class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+                        class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
                     >
                         <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="fa-solid fa-flag w-5 text-center text-[#7ead59]"></i>
@@ -177,14 +177,14 @@
                     <div x-show="nationOpen" x-cloak class="grid gap-1 pl-4">
                         @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation HQ'], true)) as $item)
                             @php($isActive = request()->routeIs(...$item['match']))
-                            <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                                 <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                                 <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                                 <span>{{ $item['label'] }}</span>
                             </a>
                         @endforeach
                         @if ($canLeadNation)
-                            <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                                 <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.requisitions.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                                 <i class="fa-solid fa-file-signature w-5 text-center text-[#7ead59]"></i>
                                 <span>Requisitions Request</span>
@@ -194,7 +194,7 @@
 
                     @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Settings', 'Admin', 'Game Master', 'Moderator'], true)) as $item)
                         @php($isActive = request()->routeIs(...$item['match']))
-                        <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                             <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                             <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                             <span>{{ $item['label'] }}</span>
@@ -204,9 +204,9 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('logout') }}">
+        <form method="POST" action="{{ route('logout') }}" class="mt-6">
             @csrf
-            <button class="w-full rounded-xl border border-[#7ead59]/35 bg-[#7ead59]/90 px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#07100c]">Logout</button>
+            <button class="amow-action-button w-full rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Logout</button>
         </form>
     </div>
 
@@ -291,7 +291,7 @@
             <p class="mt-2 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Dashboard</p>
             @foreach ($primaryNav as $item)
                 @php($isActive = request()->routeIs(...$item['match']))
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                     <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                     <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                     <span>{{ $item['label'] }}</span>
@@ -302,7 +302,7 @@
             <button
                 type="button"
                 @click="ucpOpen = !ucpOpen"
-                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
             >
                 <span class="h-6 w-1 rounded-full {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                 <i class="fa-solid fa-user-gear w-5 text-center text-[#7ead59]"></i>
@@ -313,7 +313,7 @@
             <div x-show="ucpOpen" x-cloak class="grid gap-1 pl-4">
                 @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Home', 'Settings'], true)) as $item)
                     @php($isActive = request()->routeIs(...$item['match']))
-                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                         <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                         <span>{{ $item['label'] }}</span>
@@ -324,7 +324,7 @@
             <button
                 type="button"
                 @click="nationOpen = !nationOpen"
-                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
             >
                 <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                 <i class="fa-solid fa-flag w-5 text-center text-[#7ead59]"></i>
@@ -335,14 +335,14 @@
             <div x-show="nationOpen" x-cloak class="grid gap-1 pl-4">
                 @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation HQ'], true)) as $item)
                     @php($isActive = request()->routeIs(...$item['match']))
-                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                         <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                         <span>{{ $item['label'] }}</span>
                     </a>
                 @endforeach
                 @if ($canLeadNation)
-                    <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                    <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                         <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.requisitions.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="fa-solid fa-file-signature w-5 text-center text-[#7ead59]"></i>
                         <span>Requisitions Request</span>
@@ -352,7 +352,7 @@
 
             @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Settings', 'Admin', 'Game Master', 'Moderator'], true)) as $item)
                 @php($isActive = request()->routeIs(...$item['match']))
-                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                     <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                     <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                     <span>{{ $item['label'] }}</span>
@@ -361,7 +361,7 @@
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button class="mt-2 w-full rounded-xl border border-[#7ead59]/35 bg-[#7ead59]/90 px-4 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-[#07100c]">Logout</button>
+                <button class="amow-action-button mt-2 w-full rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Logout</button>
             </form>
         </div>
     </div>

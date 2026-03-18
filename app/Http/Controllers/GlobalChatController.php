@@ -67,9 +67,9 @@ class GlobalChatController extends Controller
             'faction_color' => $character->faction?->color ?: '#f4ecd0',
             'account_icons' => $user->permissionIcons()->map(fn ($icon) => [
                 'name' => $icon->name,
-                'tooltip' => $icon->tooltip ?: $icon->name,
+                'tooltip' => $icon->icon_tooltip ?: $icon->name,
                 'icon_value' => $icon->icon_value,
-                'color' => $icon->color ?: '#f4ecd0',
+                'color' => $icon->icon_color ?: '#f4ecd0',
             ])->values()->all(),
         ];
     }
