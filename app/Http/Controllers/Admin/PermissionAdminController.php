@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AccountIcon;
 use App\Models\Permission;
 use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
@@ -16,8 +15,8 @@ class PermissionAdminController extends Controller
     public function index(): View
     {
         return view('admin.permissions', [
-            'permissions' => Permission::query()->with('accountIcon')->orderBy('sort_order')->orderBy('name')->get(),
-            'accountIcons' => AccountIcon::query()->orderBy('sort_order')->orderBy('name')->get(),
+            'permissions' => Permission::query()->orderBy('sort_order')->orderBy('name')->get(),
+            'adminSections' => config('admin_sections'),
         ]);
     }
 
@@ -53,13 +52,21 @@ class PermissionAdminController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('permissions', 'slug')->ignore($permission?->id)],
             'description' => ['nullable', 'string', 'max:255'],
-            'account_icon_id' => ['nullable', 'integer', 'exists:account_icons,id'],
+            'icon_type' => ['nullable', 'in:fontawesome'],
+            'icon_value' => ['nullable', 'string', 'max:255'],
+            'icon_color' => ['nullable', 'string', 'max:20'],
+            'icon_tooltip' => ['nullable', 'string', 'max:255'],
             'grants_admin_access' => ['nullable', 'boolean'],
+            'admin_sections' => ['nullable', 'array'],
+            'admin_sections.*' => ['string', Rule::in(array_keys(config('admin_sections', [])))],
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
         ]);
 
         $validated['grants_admin_access'] = $request->boolean('grants_admin_access');
-        $validated['account_icon_id'] = $validated['account_icon_id'] ?? null;
+        $validated['admin_sections'] = $validated['grants_admin_access'] ? array_values($validated['admin_sections'] ?? []) : [];
+        $validated['icon_type'] = filled($validated['icon_value'] ?? null) ? 'fontawesome' : null;
+        $validated['icon_color'] = $validated['icon_color'] ?? null;
+        $validated['icon_tooltip'] = $validated['icon_tooltip'] ?? null;
 
         return $validated;
     }

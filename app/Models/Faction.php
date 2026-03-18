@@ -14,7 +14,15 @@ class Faction extends Model
         'flag_image',
         'color',
         'lore',
+        'nation_bank_credits',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'nation_bank_credits' => 'integer',
+        ];
+    }
 
     public function characters(): HasMany
     {
@@ -24,6 +32,16 @@ class Faction extends Model
     public function cities(): HasMany
     {
         return $this->hasMany(City::class);
+    }
+
+    public function requisitions(): HasMany
+    {
+        return $this->hasMany(NationRequisition::class);
+    }
+
+    public function activeEvents(): HasMany
+    {
+        return $this->hasMany(GameEvent::class);
     }
 
     public function mapMarkers(): HasMany

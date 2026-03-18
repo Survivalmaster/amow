@@ -17,8 +17,8 @@ class UserAdminController extends Controller
     public function index(): View
     {
         return view('admin.users', [
-            'users' => User::query()->with(['character.faction', 'permissions.accountIcon'])->orderBy('name')->get(),
-            'permissions' => Permission::query()->with('accountIcon')->orderBy('sort_order')->orderBy('name')->get(),
+            'users' => User::query()->with(['character.faction', 'permissions'])->orderBy('name')->get(),
+            'permissions' => Permission::query()->orderBy('sort_order')->orderBy('name')->get(),
         ]);
     }
 

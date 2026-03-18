@@ -45,7 +45,7 @@
                             <form method="POST" action="{{ route('work.store', $workLocation) }}">
                                 @csrf
                                 <button
-                                    class="rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition {{ $canWork ? 'bg-[#7ead59] text-[#07100c] hover:bg-[#92c46a]' : 'cursor-not-allowed border border-white/10 bg-white/5 text-white/38' }}"
+                                    class="amow-action-button rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition {{ $canWork ? 'bg-[#7ead59] text-[#07100c] hover:bg-[#92c46a]' : 'cursor-not-allowed border border-white/10 bg-white/5 text-white/38' }}"
                                     data-character-toggle-disabled="work_cooldown_active"
                                     data-work-button
                                 >
@@ -60,7 +60,7 @@
                             <span data-work-countdown-caption>{{ $canWork ? 'Ready for work' : 'Cooldown active' }}</span>
                         </div>
                         <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-white/10">
-                            <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#c2a84f_100%)]" data-work-countdown-progress style="width: {{ $workProgressPercent }}%;"></div>
+                            <div class="amow-progress-fill h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#c2a84f_100%)]" data-work-countdown-progress style="width: {{ $workProgressPercent }}%;"></div>
                         </div>
                     </div>
                 </div>
@@ -110,7 +110,7 @@
                         @else
                             <form method="POST" action="{{ route('jobs.store', $job) }}">
                                 @csrf
-                                <button class="w-full rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]" @disabled(! $character->canChangeJob())>
+                                <button class="amow-action-button w-full rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]" @disabled(! $character->canChangeJob())>
                                     {{ $character->canChangeJob() ? 'Take Job' : 'Swap Cooldown Active' }}
                                 </button>
                             </form>

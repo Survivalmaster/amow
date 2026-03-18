@@ -1,4 +1,4 @@
-@php($navUser = auth()->user()->loadMissing('permissions.accountIcon'))
+@php($navUser = auth()->user()->loadMissing('permissions'))
 @php($navCharacter = $navUser->character?->loadMissing(['rank', 'currentJob', 'faction', 'inventory']))
 @php($creditAmount = $navCharacter?->plastic_credits ?? 0)
 @php($healthPoints = $navCharacter?->health_points ?? 100)
@@ -31,12 +31,13 @@
         ['label' => 'Character', 'route' => 'characters.show', 'match' => ['characters.show'], 'icon' => 'fa-solid fa-id-badge'],
         ['label' => 'Inventory', 'route' => 'inventory.index', 'match' => ['inventory.*'], 'icon' => 'fa-solid fa-box-open'],
         $navCharacter?->hasHomeItem() ? ['label' => 'Home', 'route' => 'home.index', 'match' => ['home.*'], 'icon' => 'fa-solid fa-house'] : null,
+        $navCharacter ? ['label' => 'Nation', 'route' => 'nation.index', 'match' => ['nation.index'], 'icon' => 'fa-solid fa-flag'] : null,
         ['label' => 'Account', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
         $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
     ]))
 )
 
-<nav x-data="{ open: false, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
+<nav x-data="{ open: false, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }}, nationOpen: {{ request()->routeIs('nation.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
     <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:hidden">
         <a href="{{ route('dashboard') }}" class="font-['Teko'] text-3xl uppercase tracking-[0.16em] text-[#f4ecd0]">AMOW</a>
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
@@ -66,7 +67,7 @@
                             @if ($accountIcons->isNotEmpty())
                                 <div class="grid w-14 grid-cols-3 justify-items-center gap-1">
                                     @foreach ($accountIcons as $accountIcon)
-                                        <span class="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[9px] shadow-inner shadow-black/30" title="{{ $accountIcon->tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->color ?: '#f4ecd0' }};">
+                                        <span class="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[9px] shadow-inner shadow-black/30" title="{{ $accountIcon->icon_tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->icon_color ?: '#f4ecd0' }};">
                                             <i class="{{ $accountIcon->icon_value }}"></i>
                                         </span>
                                     @endforeach
@@ -159,6 +160,35 @@
                         @endforeach
                     </div>
 
+                    <button
+                        type="button"
+                        @click="nationOpen = !nationOpen"
+                        class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+                    >
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-flag w-5 text-center text-[#7ead59]"></i>
+                        <span class="flex-1 text-left">Nation</span>
+                        <i class="fa-solid text-xs text-white/45" :class="nationOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+
+                    <div x-show="nationOpen" x-cloak class="grid gap-1 pl-4">
+                        @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation'], true)) as $item)
+                            @php($isActive = request()->routeIs(...$item['match']))
+                            <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                                <span>{{ $item['label'] }}</span>
+                            </a>
+                        @endforeach
+                        @if ($navCharacter?->canLeadNation())
+                            <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.requisitions.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="fa-solid fa-file-signature w-5 text-center text-[#7ead59]"></i>
+                                <span>Requisitions</span>
+                            </a>
+                        @endif
+                    </div>
+
                     @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Account', 'Admin'], true)) as $item)
                         @php($isActive = request()->routeIs(...$item['match']))
                         <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
@@ -201,7 +231,7 @@
                             @if ($accountIcons->isNotEmpty())
                                 <div class="grid w-12 grid-cols-3 justify-items-center gap-1">
                                     @foreach ($accountIcons as $accountIcon)
-                                        <span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[8px] shadow-inner shadow-black/30" title="{{ $accountIcon->tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->color ?: '#f4ecd0' }};">
+                                        <span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[8px] shadow-inner shadow-black/30" title="{{ $accountIcon->icon_tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->icon_color ?: '#f4ecd0' }};">
                                             <i class="{{ $accountIcon->icon_value }}"></i>
                                         </span>
                                     @endforeach
@@ -286,6 +316,35 @@
                         <span>{{ $item['label'] }}</span>
                     </a>
                 @endforeach
+            </div>
+
+            <button
+                type="button"
+                @click="nationOpen = !nationOpen"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+            >
+                <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                <i class="fa-solid fa-flag w-5 text-center text-[#7ead59]"></i>
+                <span class="flex-1 text-left">Nation</span>
+                <i class="fa-solid text-xs text-white/45" :class="nationOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </button>
+
+            <div x-show="nationOpen" x-cloak class="grid gap-1 pl-4">
+                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation'], true)) as $item)
+                    @php($isActive = request()->routeIs(...$item['match']))
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endforeach
+                @if ($navCharacter?->canLeadNation())
+                    <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.requisitions.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-file-signature w-5 text-center text-[#7ead59]"></i>
+                        <span>Requisitions</span>
+                    </a>
+                @endif
             </div>
 
             @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Account', 'Admin'], true)) as $item)

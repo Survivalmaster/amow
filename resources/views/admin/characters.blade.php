@@ -13,6 +13,7 @@
                             <th class="px-5 py-4 text-left">User</th>
                             <th class="px-5 py-4 text-left">Faction</th>
                             <th class="px-5 py-4 text-left">Rank</th>
+                            <th class="px-5 py-4 text-left">Nation Leader</th>
                             <th class="px-5 py-4 text-left">Job</th>
                             <th class="px-5 py-4 text-left">Credits</th>
                             <th class="px-5 py-4 text-right">Actions</th>
@@ -25,6 +26,7 @@
                                 <td class="px-5 py-4">{{ $character->user->email }}</td>
                                 <td class="px-5 py-4">{{ $character->faction->name }}</td>
                                 <td class="px-5 py-4">{{ $character->rank->name }}</td>
+                                <td class="px-5 py-4">{{ $character->is_nation_leader ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ $character->displayed_job_name }}</td>
                                 <td class="px-5 py-4">{{ number_format($character->plastic_credits) }}</td>
                                 <td class="px-5 py-4 text-right">
@@ -39,7 +41,7 @@
                                 </td>
                             </tr>
                             <tr x-show="openId === {{ $character->id }}" x-cloak>
-                                <td colspan="7" class="px-5 pb-5">
+                                <td colspan="8" class="px-5 pb-5">
                                     <form method="POST" action="{{ route('admin.characters.update', $character) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2 xl:grid-cols-4">
                                         @csrf
                                         @method('PATCH')
@@ -136,6 +138,13 @@
                                             <span>
                                                 <span class="block uppercase tracking-[0.18em] text-white/45">Business Owner</span>
                                                 <span class="block text-xs text-white/45">Marks this character as owning a business.</span>
+                                            </span>
+                                        </label>
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                                            <input type="checkbox" name="is_nation_leader" value="1" @checked($character->is_nation_leader)>
+                                            <span>
+                                                <span class="block uppercase tracking-[0.18em] text-white/45">Nation Leader</span>
+                                                <span class="block text-xs text-white/45">Only one nation leader is kept per faction at a time.</span>
                                             </span>
                                         </label>
                                         <label class="grid gap-2 text-sm text-white/70 xl:col-span-4">

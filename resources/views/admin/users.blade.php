@@ -12,7 +12,6 @@
                             <th class="px-5 py-4 text-left">Name</th>
                             <th class="px-5 py-4 text-left">Email</th>
                             <th class="px-5 py-4 text-left">Character</th>
-                            <th class="px-5 py-4 text-left">Admin Access</th>
                             <th class="px-5 py-4 text-left">Permissions</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
@@ -23,14 +22,13 @@
                                 <td class="px-5 py-4 font-semibold text-white">{{ $user->name }}</td>
                                 <td class="px-5 py-4">{{ $user->email }}</td>
                                 <td class="px-5 py-4">{{ $user->character?->name ? $user->character->name.' | '.($user->character->faction?->name ?? 'No faction') : 'None' }}</td>
-                                <td class="px-5 py-4">{{ $user->permissions->contains(fn ($permission) => $permission->grants_admin_access) ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">
                                     <div class="flex flex-wrap gap-2">
                                         @forelse ($user->permissions->sortBy(fn ($permission) => sprintf('%05d-%s', $permission->sort_order, $permission->name)) as $permission)
                                             <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/20 px-3 py-1.5" title="{{ $permission->description ?: $permission->name }}">
-                                                @if ($permission->accountIcon)
-                                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-black/20" style="color: {{ $permission->accountIcon->color ?: '#f4ecd0' }};">
-                                                        <i class="{{ $permission->accountIcon->icon_value }}"></i>
+                                                @if ($permission->icon_value)
+                                                    <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-black/20" style="color: {{ $permission->icon_color ?: '#f4ecd0' }};">
+                                                        <i class="{{ $permission->icon_value }}"></i>
                                                     </span>
                                                 @endif
                                                 <span>{{ $permission->name }}</span>
@@ -54,7 +52,7 @@
                                 </td>
                             </tr>
                             <tr x-show="openId === {{ $user->id }}" x-cloak>
-                                <td colspan="6" class="px-5 pb-5">
+                                <td colspan="5" class="px-5 pb-5">
                                     <form method="POST" action="{{ route('admin.users.update', $user) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 md:grid-cols-2 xl:grid-cols-3">
                                         @csrf
                                         @method('PATCH')
@@ -67,9 +65,9 @@
                                                 @foreach ($permissions as $permission)
                                                     <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
                                                         <input type="checkbox" name="permission_ids[]" value="{{ $permission->id }}" @checked($user->permissions->contains('id', $permission->id))>
-                                                        @if ($permission->accountIcon)
-                                                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/20" style="color: {{ $permission->accountIcon->color ?: '#f4ecd0' }};">
-                                                                <i class="{{ $permission->accountIcon->icon_value }}"></i>
+                                                        @if ($permission->icon_value)
+                                                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/20" style="color: {{ $permission->icon_color ?: '#f4ecd0' }};">
+                                                                <i class="{{ $permission->icon_value }}"></i>
                                                             </span>
                                                         @else
                                                             <span class="inline-flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-white/10 bg-black/20 text-xs text-white/35">No</span>

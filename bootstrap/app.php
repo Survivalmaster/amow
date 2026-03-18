@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'character' => \App\Http\Middleware\EnsureCharacterExists::class,
+            'admin.section' => \App\Http\Middleware\EnsureAdminSectionAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

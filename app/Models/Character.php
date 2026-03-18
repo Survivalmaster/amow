@@ -31,6 +31,7 @@ class Character extends Model
         'armor_points',
         'role_type',
         'is_business_owner',
+        'is_nation_leader',
         'last_worked_at',
         'job_changed_at',
         'last_business_payout_at',
@@ -40,6 +41,7 @@ class Character extends Model
     {
         return [
             'is_business_owner' => 'boolean',
+            'is_nation_leader' => 'boolean',
             'last_worked_at' => 'datetime',
             'job_changed_at' => 'datetime',
             'last_business_payout_at' => 'datetime',
@@ -89,6 +91,11 @@ class Character extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
+    }
+
+    public function nationRequisitions(): HasMany
+    {
+        return $this->hasMany(NationRequisition::class, 'submitted_by_character_id');
     }
 
     public function getDisplayedJobNameAttribute(): string
@@ -216,5 +223,10 @@ class Character extends Model
         }
 
         return ($this->inventorySlotsUsed() + 1) <= ($this->inventorySlotCapacity() + max(0, (int) $item->inventory_slot_bonus));
+    }
+
+    public function canLeadNation(): bool
+    {
+        return $this->is_nation_leader && $this->role_type === 'military';
     }
 }

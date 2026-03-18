@@ -10,13 +10,24 @@ use App\Models\Item;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
 {
-    public function index(): View
+    public function index(): View|RedirectResponse
     {
+        $user = request()->user()?->loadMissing('permissions');
+
+        if ($user && ! $user->canAccessAdminSection('overview')) {
+            foreach (config('admin_sections', []) as $section => $definition) {
+                if ($user->canAccessAdminSection($section)) {
+                    return redirect()->route($definition['route']);
+                }
+            }
+        }
+
         $onlineUsers = $this->onlineUsers();
 
         return view('admin.dashboard', [

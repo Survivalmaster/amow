@@ -31,3 +31,54 @@
         transition: background-color 9999s ease-out 0s;
     }
 }
+
+@layer components {
+    .amow-action-button {
+        position: relative;
+        overflow: hidden;
+        transition:
+            transform 180ms ease,
+            box-shadow 180ms ease,
+            filter 180ms ease,
+            background-color 220ms ease,
+            color 220ms ease,
+            border-color 220ms ease;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+    }
+
+    .amow-action-button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        filter: brightness(1.05);
+        box-shadow: 0 18px 34px rgba(0, 0, 0, 0.28);
+    }
+
+    .amow-action-button:active:not(:disabled) {
+        transform: translateY(1px) scale(0.99);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    }
+
+    .amow-action-button:disabled {
+        box-shadow: none;
+    }
+
+    .amow-progress-fill {
+        position: relative;
+        overflow: hidden;
+        transition: width 800ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .amow-progress-fill::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.22) 45%, transparent 100%);
+        transform: translateX(-100%);
+        animation: amow-progress-shimmer 2.8s linear infinite;
+    }
+}
+
+@keyframes amow-progress-shimmer {
+    to {
+        transform: translateX(100%);
+    }
+}

@@ -10,6 +10,7 @@ use App\Models\Rank;
 use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class CharacterAdminController extends Controller
@@ -21,6 +22,7 @@ class CharacterAdminController extends Controller
             'factions' => Faction::query()->orderBy('name')->get(),
             'jobs' => GameJob::query()->orderBy('required_level')->orderBy('name')->get(),
             'ranks' => Rank::query()->orderBy('order_index')->get(),
+            'militaryRanks' => Rank::query()->where('is_military', true)->orderBy('order_index')->get(),
         ]);
     }
 
@@ -45,14 +47,28 @@ class CharacterAdminController extends Controller
             'stamina_points' => ['required', 'integer', 'min:0', 'max:100'],
             'armor_points' => ['required', 'integer', 'min:0', 'max:100'],
             'is_business_owner' => ['nullable', 'boolean'],
+            'is_nation_leader' => ['nullable', 'boolean'],
             'job_changed_at' => ['nullable', 'date'],
             'biography' => ['required', 'string', 'max:2000'],
         ]);
 
-        $character->update([
-            ...$validated,
-            'is_business_owner' => $request->boolean('is_business_owner'),
-        ]);
+        DB::transaction(function () use ($request, $character, $validated) {
+            $isNationLeader = $request->boolean('is_nation_leader');
+
+            if ($isNationLeader) {
+                Character::query()
+                    ->where('faction_id', $validated['faction_id'])
+                    ->where('id', '!=', $character->id)
+                    ->update(['is_nation_leader' => false]);
+            }
+
+            $character->update([
+                ...$validated,
+                'is_business_owner' => $request->boolean('is_business_owner'),
+                'is_nation_leader' => $isNationLeader,
+            ]);
+        });
+
         $adminActionLogger->updated($request->user(), 'Character', $before, $character);
 
         return back()->with('status', "Updated character {$character->name}.");

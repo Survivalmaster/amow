@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Permission extends Model
@@ -12,8 +11,12 @@ class Permission extends Model
         'name',
         'slug',
         'description',
-        'account_icon_id',
+        'icon_type',
+        'icon_value',
+        'icon_color',
+        'icon_tooltip',
         'grants_admin_access',
+        'admin_sections',
         'sort_order',
     ];
 
@@ -21,16 +24,17 @@ class Permission extends Model
     {
         return [
             'grants_admin_access' => 'boolean',
+            'admin_sections' => 'array',
         ];
-    }
-
-    public function accountIcon(): BelongsTo
-    {
-        return $this->belongsTo(AccountIcon::class);
     }
 
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withTimestamps();
+    }
+
+    public function grantsAdminSection(string $section): bool
+    {
+        return in_array($section, $this->admin_sections ?? [], true);
     }
 }

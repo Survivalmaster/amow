@@ -68,7 +68,7 @@
                     </div>
                     <form method="POST" action="{{ route('home.sleep') }}">
                         @csrf
-                        <button class="rounded-full px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] {{ $character->stamina_points >= 100 ? 'cursor-not-allowed border border-white/10 bg-white/5 text-white/35' : 'border border-[#7ead59]/35 bg-[#7ead59]/12 text-[#d7edc7]' }}" @disabled($character->stamina_points >= 100)>Sleep</button>
+                        <button class="amow-action-button rounded-full px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] {{ $character->stamina_points >= 100 ? 'cursor-not-allowed border border-white/10 bg-white/5 text-white/35' : 'border border-[#7ead59]/35 bg-[#7ead59]/12 text-[#d7edc7]' }}" @disabled($character->stamina_points >= 100)>Sleep</button>
                     </form>
                 </div>
                 <div class="mt-4 grid gap-4 sm:grid-cols-2">
@@ -80,6 +80,9 @@
                         <p class="text-xs uppercase tracking-[0.2em] text-white/45">Stamina</p>
                         <p class="mt-2 font-['Teko'] text-4xl uppercase">{{ $character->stamina_points }}/100</p>
                         <p class="mt-2 text-xs uppercase tracking-[0.18em] text-[#7ead59]">{{ $character->stamina_points >= 100 ? 'Fully rested' : 'Sleep restores this to full' }}</p>
+                        <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-white/10">
+                            <div class="amow-progress-fill h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#b7d680_100%)]" style="width: {{ max(0, min(100, $character->stamina_points)) }}%;"></div>
+                        </div>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
                         <p class="text-xs uppercase tracking-[0.2em] text-white/45">Armor</p>

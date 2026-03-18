@@ -1,14 +1,11 @@
+@php($adminNavUser = auth()->user()->loadMissing('permissions'))
+@php($adminSections = collect(config('admin_sections', [])))
+
 <nav class="mb-6 flex flex-wrap gap-3">
-    <a href="{{ route('admin.dashboard') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.dashboard') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Overview</a>
-    <a href="{{ route('admin.users.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.users.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Users</a>
-    <a href="{{ route('admin.characters.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.characters.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Characters</a>
-    <a href="{{ route('admin.factions.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.factions.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Factions</a>
-    <a href="{{ route('admin.cities.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.cities.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Cities</a>
-    <a href="{{ route('admin.locations.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.locations.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Locations</a>
-    <a href="{{ route('admin.items.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.items.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Items</a>
-    <a href="{{ route('admin.jobs.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.jobs.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Jobs</a>
-    <a href="{{ route('admin.account-icons.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.account-icons.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Account Icons</a>
-    <a href="{{ route('admin.permissions.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.permissions.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Permissions</a>
-    <a href="{{ route('admin.map-markers.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.map-markers.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Map Markers</a>
-    <a href="{{ route('admin.discord.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ request()->routeIs('admin.discord.*') ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">Discord</a>
+    @foreach ($adminSections as $section => $definition)
+        @continue(! $adminNavUser->canAccessAdminSection($section))
+        @php($routeGroup = Str::beforeLast($definition['route'], '.'))
+        @php($isActive = request()->routeIs($definition['route']) || ($routeGroup !== 'admin' && request()->routeIs($routeGroup.'.*')))
+        <a href="{{ route($definition['route']) }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] {{ $isActive ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#7ead59]' : 'border-white/10 bg-white/5' }}">{{ $definition['label'] }}</a>
+    @endforeach
 </nav>

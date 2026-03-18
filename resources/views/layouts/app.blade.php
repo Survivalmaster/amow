@@ -45,6 +45,26 @@
                         </header>
                     @endisset
 
+                    @if (! request()->routeIs('admin.*') && ($activeGameEvents ?? collect())->isNotEmpty())
+                        <div class="px-4 pt-4 sm:px-6 lg:px-8">
+                            <div class="space-y-3">
+                                @foreach ($activeGameEvents as $activeGameEvent)
+                                    <div class="rounded-[1.6rem] border border-[#c2a84f]/35 bg-[linear-gradient(135deg,rgba(194,168,79,0.18),rgba(194,168,79,0.06))] px-5 py-4 shadow-xl shadow-black/20">
+                                        <div class="flex items-start gap-3">
+                                            <span class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#c2a84f]/35 bg-black/20 text-[#f4d77a]">
+                                                <i class="fa-solid fa-exclamation"></i>
+                                            </span>
+                                            <div>
+                                                <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-[#f4ecd0]">{{ $activeGameEvent->title }}</p>
+                                                <p class="text-sm leading-6 text-white/78">{{ $activeGameEvent->body }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     <main class="px-4 py-8 sm:px-6 lg:px-8">
                         @if (session('status'))
                             <div class="mb-6 rounded-2xl border border-[#7ead59]/35 bg-[#7ead59]/10 px-4 py-3 text-sm">
