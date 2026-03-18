@@ -40,6 +40,19 @@
     ]))
 )
 
+@push('styles')
+    <style>
+        .sidebar-scrollbar-hidden {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .sidebar-scrollbar-hidden::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+@endpush
+
 <nav x-data="{ open: false, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }}, nationOpen: {{ request()->routeIs('nation.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
     <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:hidden">
         <a href="{{ route('dashboard') }}" class="font-['Teko'] text-3xl uppercase tracking-[0.16em] text-[#f4ecd0]">AMOW</a>
@@ -123,7 +136,7 @@
             </div>
         @endif
 
-        <div class="min-h-0 flex-1 overflow-y-auto pr-1">
+        <div class="sidebar-scrollbar-hidden min-h-0 flex-1 overflow-y-auto pr-1">
             <div>
                 <p class="px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Dashboard</p>
                 <div class="mt-3 grid gap-1">
