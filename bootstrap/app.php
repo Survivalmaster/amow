@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'character' => \App\Http\Middleware\EnsureCharacterExists::class,
             'admin.section' => \App\Http\Middleware\EnsureAdminSectionAccess::class,
+            'not_banned' => \App\Http\Middleware\EnsureAccountIsNotBanned::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

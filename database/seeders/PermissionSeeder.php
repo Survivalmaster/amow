@@ -58,6 +58,18 @@ class PermissionSeeder extends Seeder
                 'admin_sections' => ['moderator'],
                 'sort_order' => 40,
             ],
+            [
+                'name' => 'Nation Leader',
+                'slug' => 'nation-leader',
+                'description' => 'Nation leadership badge and requisition access.',
+                'icon_type' => 'fontawesome',
+                'icon_value' => 'fa-solid fa-star',
+                'icon_color' => '#f4d77a',
+                'icon_tooltip' => 'Nation Leader',
+                'grants_admin_access' => false,
+                'admin_sections' => [],
+                'sort_order' => 50,
+            ],
         ];
 
         foreach ($permissions as $attributes) {

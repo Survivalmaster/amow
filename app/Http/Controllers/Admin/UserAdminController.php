@@ -9,6 +9,7 @@ use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -31,20 +32,44 @@ class UserAdminController extends Controller
             'permission_ids' => ['nullable', 'array'],
             'permission_ids.*' => ['integer', 'exists:permissions,id'],
             'password' => ['nullable', 'string', 'min:8'],
+            'ban_reason' => ['nullable', 'string', 'max:2000'],
+            'is_banned' => ['nullable', 'boolean'],
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
+        $isBeingBanned = $request->boolean('is_banned');
 
         if (! empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
         }
 
+        $user->banned_at = $isBeingBanned ? ($user->banned_at ?? now()) : null;
+        $user->banned_reason = $isBeingBanned ? ($validated['ban_reason'] ?? 'No reason provided.') : null;
+
         $permissionIds = collect($validated['permission_ids'] ?? [])->map(fn ($id) => (int) $id)->values();
         $adminPermissionId = Permission::query()->where('slug', 'admin')->value('id');
-        $user->is_admin = $adminPermissionId ? $permissionIds->contains((int) $adminPermissionId) : false;
-        $user->save();
-        $user->permissions()->sync($permissionIds->all());
+        $nationLeaderPermissionId = Permission::query()->where('slug', 'nation-leader')->value('id');
+
+        DB::transaction(function () use ($user, $permissionIds, $adminPermissionId, $nationLeaderPermissionId) {
+            $user->is_admin = $adminPermissionId ? $permissionIds->contains((int) $adminPermissionId) : false;
+            $user->save();
+            $user->permissions()->sync($permissionIds->all());
+
+            if ($nationLeaderPermissionId && $permissionIds->contains((int) $nationLeaderPermissionId) && $user->character) {
+                User::query()
+                    ->where('id', '!=', $user->id)
+                    ->whereHas('character', fn ($query) => $query->where('faction_id', $user->character->faction_id))
+                    ->whereHas('permissions', fn ($query) => $query->where('permissions.id', $nationLeaderPermissionId))
+                    ->get()
+                    ->each(function (User $otherUser) use ($nationLeaderPermissionId) {
+                        $otherUser->permissions()->detach($nationLeaderPermissionId);
+                        $otherUser->update([
+                            'is_admin' => $otherUser->permissions()->where('permissions.slug', 'admin')->exists(),
+                        ]);
+                    });
+            }
+        });
 
         $after = $this->userAuditSnapshot($user->fresh('permissions'));
         $before['password_changed'] = 'false';

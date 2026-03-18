@@ -227,6 +227,6 @@ class Character extends Model
 
     public function canLeadNation(): bool
     {
-        return $this->is_nation_leader && $this->role_type === 'military';
+        return $this->role_type === 'military' && (bool) $this->user?->hasPermission('nation-leader');
     }
 }

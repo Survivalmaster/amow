@@ -12,6 +12,7 @@
                             <th class="px-5 py-4 text-left">Name</th>
                             <th class="px-5 py-4 text-left">Email</th>
                             <th class="px-5 py-4 text-left">Character</th>
+                            <th class="px-5 py-4 text-left">Status</th>
                             <th class="px-5 py-4 text-left">Permissions</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
@@ -22,6 +23,13 @@
                                 <td class="px-5 py-4 font-semibold text-white">{{ $user->name }}</td>
                                 <td class="px-5 py-4">{{ $user->email }}</td>
                                 <td class="px-5 py-4">{{ $user->character?->name ? $user->character->name.' | '.($user->character->faction?->name ?? 'No faction') : 'None' }}</td>
+                                <td class="px-5 py-4">
+                                    @if ($user->isBanned())
+                                        <span class="rounded-full border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Banned</span>
+                                    @else
+                                        <span class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Active</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-4">
                                     <div class="flex flex-wrap gap-2">
                                         @forelse ($user->permissions->sortBy(fn ($permission) => sprintf('%05d-%s', $permission->sort_order, $permission->name)) as $permission)
@@ -52,13 +60,24 @@
                                 </td>
                             </tr>
                             <tr x-show="openId === {{ $user->id }}" x-cloak>
-                                <td colspan="5" class="px-5 pb-5">
+                                <td colspan="6" class="px-5 pb-5">
                                     <form method="POST" action="{{ route('admin.users.update', $user) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 md:grid-cols-2 xl:grid-cols-3">
                                         @csrf
                                         @method('PATCH')
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $user->name }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="email" type="email" value="{{ $user->email }}" required>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="password" type="password" placeholder="New password">
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70 xl:col-span-3">
+                                            <input type="checkbox" name="is_banned" value="1" @checked($user->isBanned())>
+                                            <span>
+                                                <span class="block uppercase tracking-[0.18em] text-white/45">Account Banned</span>
+                                                <span class="block text-xs text-white/45">Banned users are redirected to the account banned page.</span>
+                                            </span>
+                                        </label>
+                                        <label class="grid gap-2 text-sm text-white/70 xl:col-span-3">
+                                            <span class="uppercase tracking-[0.18em] text-white/45">Ban Reason</span>
+                                            <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="ban_reason" placeholder="Why was this account banned?">{{ $user->banned_reason }}</textarea>
+                                        </label>
                                         <label class="grid gap-2 text-sm text-white/70 xl:col-span-3">
                                             <span class="uppercase tracking-[0.18em] text-white/45">Permissions</span>
                                             <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-4">

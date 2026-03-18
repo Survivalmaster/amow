@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\GameMasterAdminController;
 use App\Http\Controllers\Admin\StockMarketAdminController;
 use App\Http\Controllers\Admin\DiscordWebhookAdminController;
 use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\BannedAccountController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterStateController;
 use App\Http\Controllers\CityController;
@@ -40,7 +41,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [GameController::class, 'home'])->name('home');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'not_banned'])->group(function () {
     Route::get('/dashboard', [GameController::class, 'dashboard'])->name('dashboard');
     Route::post('/presence/ping', [PresenceController::class, 'store'])->name('presence.store');
 

@@ -65,7 +65,7 @@ class NationController extends Controller
         ]);
 
         $leader = $request->user()->character()->with(['faction', 'rank'])->firstOrFail();
-        abort_unless($leader->canLeadNation(), 403);
+        abort_unless($request->user()->hasPermission('nation-leader') && $leader->canLeadNation(), 403);
         abort_unless($leader->faction_id === $character->faction_id, 403);
         abort_unless($character->role_type === 'military', 422);
 

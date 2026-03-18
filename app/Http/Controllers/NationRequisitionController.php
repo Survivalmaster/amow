@@ -12,7 +12,7 @@ class NationRequisitionController extends Controller
     public function index(Request $request): View
     {
         $character = $request->user()->character()->with('faction')->firstOrFail();
-        abort_unless($character->canLeadNation(), 403);
+        abort_unless($request->user()->hasPermission('nation-leader') && $character->canLeadNation(), 403);
 
         return view('nation.requisitions', [
             'character' => $character,
@@ -31,7 +31,7 @@ class NationRequisitionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $character = $request->user()->character()->with('faction')->firstOrFail();
-        abort_unless($character->canLeadNation(), 403);
+        abort_unless($request->user()->hasPermission('nation-leader') && $character->canLeadNation(), 403);
 
         $hasOutstandingRequest = NationRequisition::query()
             ->where('faction_id', $character->faction_id)

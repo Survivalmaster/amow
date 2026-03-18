@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Account Banned</title>
+        <style>
+            html, body {
+                background-color: #fff;
+                color: #000;
+                font-family: ui-sans-serif, system-ui, sans-serif;
+                font-weight: 100;
+                height: 100vh;
+                margin: 0;
+            }
+
+            .full-height {
+                height: 100vh;
+            }
+
+            .flex-center {
+                align-items: center;
+                display: flex;
+                justify-content: center;
+            }
+
+            .position-ref {
+                position: relative;
+            }
+
+            .content {
+                text-align: center;
+                max-width: 720px;
+                padding: 2rem;
+            }
+
+            .title {
+                font-size: 36px;
+                padding: 20px;
+            }
+
+            .subtitle {
+                font-size: 18px;
+                color: #555;
+                line-height: 1.6;
+            }
+
+            .reason {
+                margin-top: 1.5rem;
+                font-size: 16px;
+                color: #222;
+                line-height: 1.7;
+            }
+
+            .appeal {
+                margin-top: 1.25rem;
+                font-size: 15px;
+                color: #666;
+                line-height: 1.7;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="flex-center position-ref full-height">
+            <div class="content">
+                <div class="title">Account Banned</div>
+                <div class="subtitle">Your account has been banned from accessing this service.</div>
+                <div class="reason">{{ $user->banned_reason ?: 'No reason was provided for this ban.' }}</div>
+                <div class="appeal">If you think the ban is incorrect or you would like to appeal this, query this in our discord.</div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -10,6 +10,7 @@
 @php($accountIcons = $navUser->permissionIcons())
 @php($factionColor = $navCharacter?->faction?->color ?: '#44594e')
 @php($discordAvatarUrl = $navUser->discord_avatar_url)
+@php($canLeadNation = $navUser->hasPermission('nation-leader') && $navCharacter?->canLeadNation())
 @php(
     $formattedCredits = match (true) {
         $creditAmount >= 1000000 => rtrim(rtrim(number_format($creditAmount / 1000000, 1), '0'), '.') . 'M',
@@ -31,13 +32,13 @@
         ['label' => 'Character', 'route' => 'characters.show', 'match' => ['characters.show'], 'icon' => 'fa-solid fa-id-badge'],
         ['label' => 'Inventory', 'route' => 'inventory.index', 'match' => ['inventory.*'], 'icon' => 'fa-solid fa-box-open'],
         $navCharacter?->hasHomeItem() ? ['label' => 'Home', 'route' => 'home.index', 'match' => ['home.*'], 'icon' => 'fa-solid fa-house'] : null,
-        $navCharacter ? ['label' => 'Nation', 'route' => 'nation.index', 'match' => ['nation.index'], 'icon' => 'fa-solid fa-flag'] : null,
+        $navCharacter ? ['label' => 'Nation HQ', 'route' => 'nation.index', 'match' => ['nation.index'], 'icon' => 'fa-solid fa-landmark-flag'] : null,
         ['label' => 'Account', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
-        $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
+        $navUser->canAccessAdmin() ? ['label' => 'Admin Home', 'route' => 'admin.dashboard', 'match' => ['admin.dashboard'], 'icon' => 'fa-solid fa-shield-halved'] : null,
     ]))
 )
 
-<nav x-data="{ open: false, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }}, nationOpen: {{ request()->routeIs('nation.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
+<nav x-data="{ open: false, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }}, nationOpen: {{ request()->routeIs('nation.*') ? 'true' : 'false' }}, adminOpen: {{ request()->routeIs('admin.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
     <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:hidden">
         <a href="{{ route('dashboard') }}" class="font-['Teko'] text-3xl uppercase tracking-[0.16em] text-[#f4ecd0]">AMOW</a>
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
@@ -172,7 +173,7 @@
                     </button>
 
                     <div x-show="nationOpen" x-cloak class="grid gap-1 pl-4">
-                        @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation'], true)) as $item)
+                        @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation HQ'], true)) as $item)
                             @php($isActive = request()->routeIs(...$item['match']))
                             <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                                 <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
@@ -180,7 +181,7 @@
                                 <span>{{ $item['label'] }}</span>
                             </a>
                         @endforeach
-                        @if ($navCharacter?->canLeadNation())
+                        @if ($canLeadNation)
                             <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                                 <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.requisitions.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                                 <i class="fa-solid fa-file-signature w-5 text-center text-[#7ead59]"></i>
@@ -189,7 +190,43 @@
                         @endif
                     </div>
 
-                    @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Account', 'Admin'], true)) as $item)
+                    <button
+                        type="button"
+                        @click="adminOpen = !adminOpen"
+                        class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+                    >
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-shield-halved w-5 text-center text-[#7ead59]"></i>
+                        <span class="flex-1 text-left">Admin</span>
+                        <i class="fa-solid text-xs text-white/45" :class="adminOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+
+                    <div x-show="adminOpen" x-cloak class="grid gap-1 pl-4">
+                        @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Admin Home'], true)) as $item)
+                            @php($isActive = request()->routeIs(...$item['match']))
+                            <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                                <span>{{ $item['label'] }}</span>
+                            </a>
+                        @endforeach
+                        @if ($navUser->canAccessAdminSection('game_master'))
+                            <a href="{{ route('admin.game-master.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('admin.game-master.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.game-master.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="fa-solid fa-dice-d20 w-5 text-center text-[#7ead59]"></i>
+                                <span>Game Master</span>
+                            </a>
+                        @endif
+                        @if ($navUser->canAccessAdminSection('moderator'))
+                            <a href="{{ route('admin.moderator.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('admin.moderator.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.moderator.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="fa-solid fa-gavel w-5 text-center text-[#7ead59]"></i>
+                                <span>Moderator</span>
+                            </a>
+                        @endif
+                    </div>
+
+                    @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Account'], true)) as $item)
                         @php($isActive = request()->routeIs(...$item['match']))
                         <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                             <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
@@ -330,7 +367,7 @@
             </button>
 
             <div x-show="nationOpen" x-cloak class="grid gap-1 pl-4">
-                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation'], true)) as $item)
+                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation HQ'], true)) as $item)
                     @php($isActive = request()->routeIs(...$item['match']))
                     <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                         <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
@@ -338,7 +375,7 @@
                         <span>{{ $item['label'] }}</span>
                     </a>
                 @endforeach
-                @if ($navCharacter?->canLeadNation())
+                @if ($canLeadNation)
                     <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                         <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.requisitions.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="fa-solid fa-file-signature w-5 text-center text-[#7ead59]"></i>
@@ -347,7 +384,43 @@
                 @endif
             </div>
 
-            @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Account', 'Admin'], true)) as $item)
+            <button
+                type="button"
+                @click="adminOpen = !adminOpen"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+            >
+                <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                <i class="fa-solid fa-shield-halved w-5 text-center text-[#7ead59]"></i>
+                <span class="flex-1 text-left">Admin</span>
+                <i class="fa-solid text-xs text-white/45" :class="adminOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </button>
+
+            <div x-show="adminOpen" x-cloak class="grid gap-1 pl-4">
+                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Admin Home'], true)) as $item)
+                    @php($isActive = request()->routeIs(...$item['match']))
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endforeach
+                @if ($navUser->canAccessAdminSection('game_master'))
+                    <a href="{{ route('admin.game-master.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('admin.game-master.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.game-master.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-dice-d20 w-5 text-center text-[#7ead59]"></i>
+                        <span>Game Master</span>
+                    </a>
+                @endif
+                @if ($navUser->canAccessAdminSection('moderator'))
+                    <a href="{{ route('admin.moderator.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ request()->routeIs('admin.moderator.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.moderator.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-gavel w-5 text-center text-[#7ead59]"></i>
+                        <span>Moderator</span>
+                    </a>
+                @endif
+            </div>
+
+            @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Account'], true)) as $item)
                 @php($isActive = request()->routeIs(...$item['match']))
                 <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                     <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>

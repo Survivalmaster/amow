@@ -33,6 +33,8 @@ class User extends Authenticatable
         'current_path',
         'current_page_name',
         'current_activity_text',
+        'banned_at',
+        'banned_reason',
         'password',
         'is_admin',
     ];
@@ -59,6 +61,7 @@ class User extends Authenticatable
             'discord_link_token_expires_at' => 'datetime',
             'discord_linked_at' => 'datetime',
             'last_seen_at' => 'datetime',
+            'banned_at' => 'datetime',
             'is_admin' => 'boolean',
             'password' => 'hashed',
         ];
@@ -145,5 +148,10 @@ class User extends Authenticatable
     public function isOnline(): bool
     {
         return (bool) $this->last_seen_at?->gt(now()->subMinutes(5));
+    }
+
+    public function isBanned(): bool
+    {
+        return (bool) $this->banned_at;
     }
 }

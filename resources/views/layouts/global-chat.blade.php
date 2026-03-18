@@ -11,6 +11,7 @@
     class="pointer-events-none fixed inset-0 z-[85]"
 >
     <section
+        x-show="!hidden"
         class="pointer-events-auto fixed bottom-5 right-5 flex w-[min(92vw,21rem)] max-w-[21rem] flex-col overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,14,10,0.72),rgba(6,10,8,0.68))] shadow-2xl shadow-black/45 backdrop-blur-xl"
         :class="{ 'h-[30rem]': !minimized, 'h-auto': minimized }"
     >
@@ -29,6 +30,9 @@
                     <template x-if="minimized && totalUnreadCount() > 0">
                         <span class="absolute -right-1.5 -top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[#c65b3f] px-1 text-[9px] font-bold text-white" x-text="totalUnreadCount()"></span>
                     </template>
+                </button>
+                <button type="button" @click="hideChat()" class="rounded-full border border-white/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                    Hide
                 </button>
             </div>
         </header>
@@ -135,6 +139,20 @@
             </div>
         </template>
     </section>
+
+    <button
+        x-show="hidden"
+        x-cloak
+        type="button"
+        @click="showChat()"
+        class="pointer-events-auto fixed bottom-5 right-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[linear-gradient(180deg,rgba(8,14,10,0.9),rgba(6,10,8,0.86))] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#f4ecd0] shadow-2xl shadow-black/45 backdrop-blur-xl"
+    >
+        <i class="fa-solid fa-comments text-[#7ead59]"></i>
+        <span>Show Chat</span>
+        <template x-if="totalUnreadCount() > 0">
+            <span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#c65b3f] px-1 text-[10px] font-bold text-white" x-text="totalUnreadCount()"></span>
+        </template>
+    </button>
 </div>
 
 @push('scripts')
@@ -157,6 +175,7 @@
                 draft: '',
                 sending: false,
                 minimized: false,
+                hidden: false,
                 isFetching: false,
                 pollTimer: null,
                 init() {
@@ -195,6 +214,7 @@
 
                         if (saved) {
                             this.minimized = Boolean(saved.minimized);
+                            this.hidden = Boolean(saved.hidden);
                         }
                     } catch (error) {
                     }
@@ -202,10 +222,12 @@
                 persistState() {
                     window.localStorage.setItem('amow-global-chat-state', JSON.stringify({
                         minimized: this.minimized,
+                        hidden: this.hidden,
                     }));
                 },
                 toggleMinimized() {
                     this.minimized = !this.minimized;
+                    this.hidden = false;
 
                     if (!this.minimized) {
                         this.clearUnread();
@@ -213,6 +235,17 @@
                     }
 
                     this.persistState();
+                },
+                hideChat() {
+                    this.hidden = true;
+                    this.persistState();
+                },
+                showChat() {
+                    this.hidden = false;
+                    this.minimized = false;
+                    this.clearUnread();
+                    this.persistState();
+                    this.$nextTick(() => this.scrollToBottom());
                 },
                 setActiveTab(tab) {
                     this.activeTab = tab;
@@ -280,7 +313,7 @@
                         this.applyUnread('nation', previousNationLastId, nextNationLastId);
                         this.applyUnread('direct', previousDirectLastId, nextDirectLastId);
 
-                        if (!this.minimized) {
+                        if (!this.minimized && !this.hidden) {
                             this.unread[this.activeTab] = 0;
                         }
 
@@ -291,7 +324,7 @@
                                 : (this.activeTab === 'nation' ? previousNationLastId : previousDirectLastId);
                             const nextLastId = activeMessages.length ? activeMessages[activeMessages.length - 1].id : null;
 
-                            if (scrollToBottom || previousLastId !== nextLastId) {
+                            if (!this.hidden && (scrollToBottom || previousLastId !== nextLastId)) {
                                 this.scrollToBottom();
                             }
                         });

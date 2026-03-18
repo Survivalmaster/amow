@@ -3,6 +3,7 @@
 
 <nav class="mb-6 flex flex-wrap gap-3">
     @foreach ($adminSections as $section => $definition)
+        @continue(in_array($section, ['game_master', 'moderator'], true))
         @continue(! $adminNavUser->canAccessAdminSection($section))
         @php($routeGroup = Str::beforeLast($definition['route'], '.'))
         @php($isActive = request()->routeIs($definition['route']) || ($routeGroup !== 'admin' && request()->routeIs($routeGroup.'.*')))

@@ -62,6 +62,7 @@ test('developer permission can access permissions admin section without overview
 test('nation leader can only submit one outstanding requisition at a time', function () {
     $user = User::factory()->create();
     $character = createNationCharacter($user, ['is_nation_leader' => true]);
+    $user->permissions()->attach(Permission::query()->where('slug', 'nation-leader')->firstOrFail());
 
     $this->actingAs($user)
         ->post(route('nation.requisitions.store'), [
