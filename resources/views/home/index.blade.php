@@ -154,29 +154,35 @@
                                                 @php($remainingHours = intdiv($remainingSeconds, 3600))
                                                 @php($remainingMinutes = intdiv($remainingSeconds % 3600, 60))
                                                 @php($remainingFormatted = sprintf('%02d:%02d:%02d', $remainingHours, $remainingMinutes, $remainingSeconds % 60))
-                                                @php($progressBarClass = match (true) {
-                                                    $progressPercent >= 100 => 'bg-[linear-gradient(90deg,#7ead59_0%,#d7edc7_100%)]',
-                                                    $progressPercent >= 75 => 'bg-[linear-gradient(90deg,#8fbe63_0%,#d7edc7_100%)]',
-                                                    $progressPercent >= 40 => 'bg-[linear-gradient(90deg,#c2a84f_0%,#f4ecd0_100%)]',
-                                                    default => 'bg-[linear-gradient(90deg,#c65b3f_0%,#f0b29f_100%)]',
+                                                @php($progressBarStyle = match (true) {
+                                                    $progressPercent >= 100 => 'linear-gradient(90deg,#7ead59 0%,#d7edc7 100%)',
+                                                    $progressPercent >= 75 => 'linear-gradient(90deg,#8fbe63 0%,#d7edc7 100%)',
+                                                    $progressPercent >= 40 => 'linear-gradient(90deg,#c2a84f 0%,#f4ecd0 100%)',
+                                                    default => 'linear-gradient(90deg,#c65b3f 0%,#f0b29f 100%)',
                                                 })
 
                                                 <div class="flex h-12 w-12 items-center justify-center rounded-lg border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-16 sm:w-16">
                                                     <i class="{{ $cell['building']->item->display_icon_class }} text-2xl sm:text-3xl"></i>
                                                 </div>
                                                 <p class="mt-1.5 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
-                                                <p class="mt-1 text-[10px] uppercase tracking-[0.16em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
-                                                <div class="mt-1.5 w-full max-w-[5.5rem] sm:max-w-[6.5rem]">
+                                                <p class="mt-1 text-[10px] uppercase tracking-[0.16em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}" data-build-status>{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
+                                                <div
+                                                    class="mt-1.5 w-full max-w-[5.5rem] sm:max-w-[6.5rem]"
+                                                    data-construction-timer
+                                                    data-build-start="{{ $buildStartedAt?->toIso8601String() }}"
+                                                    data-build-complete="{{ $buildCompleteAt?->toIso8601String() }}"
+                                                >
                                                     <div class="h-1.5 overflow-hidden rounded-full bg-black/35 sm:h-2">
                                                         <div
-                                                            class="h-full rounded-full {{ $progressBarClass }}"
-                                                            style="width: {{ max(0, min(100, $progressPercent)) }}%;"
+                                                            class="h-full rounded-full"
+                                                            data-build-progress-fill
+                                                            style="width: {{ max(0, min(100, $progressPercent)) }}%; background: {{ $progressBarStyle }};"
                                                         ></div>
                                                     </div>
-                                                    <p class="mt-1 text-center text-[9px] uppercase tracking-[0.14em] text-[#d7edc7]/75">
+                                                    <p class="mt-1 text-center text-[9px] uppercase tracking-[0.14em] text-[#d7edc7]/75" data-build-progress-percent>
                                                         {{ $cell['status'] === 'complete' ? '100%' : $progressPercent.'%' }}
                                                     </p>
-                                                    <p class="mt-0.5 text-center text-[9px] uppercase tracking-[0.14em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">
+                                                    <p class="mt-0.5 text-center text-[9px] uppercase tracking-[0.14em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}" data-build-progress-remaining>
                                                         {{ $cell['status'] === 'complete' ? '00:00:00' : $remainingFormatted }}
                                                     </p>
                                                 </div>
@@ -207,29 +213,34 @@
                         @php($remainingHours = intdiv($remainingSeconds, 3600))
                         @php($remainingMinutes = intdiv($remainingSeconds % 3600, 60))
                         @php($remainingFormatted = sprintf('%02d:%02d:%02d', $remainingHours, $remainingMinutes, $remainingSeconds % 60))
-                        @php($progressBarClass = match (true) {
-                            $progressPercent >= 100 => 'bg-[linear-gradient(90deg,#7ead59_0%,#d7edc7_100%)]',
-                            $progressPercent >= 75 => 'bg-[linear-gradient(90deg,#8fbe63_0%,#d7edc7_100%)]',
-                            $progressPercent >= 40 => 'bg-[linear-gradient(90deg,#c2a84f_0%,#f4ecd0_100%)]',
-                            default => 'bg-[linear-gradient(90deg,#c65b3f_0%,#f0b29f_100%)]',
+                        @php($progressBarStyle = match (true) {
+                            $progressPercent >= 100 => 'linear-gradient(90deg,#7ead59 0%,#d7edc7 100%)',
+                            $progressPercent >= 75 => 'linear-gradient(90deg,#8fbe63 0%,#d7edc7 100%)',
+                            $progressPercent >= 40 => 'linear-gradient(90deg,#c2a84f 0%,#f4ecd0 100%)',
+                            default => 'linear-gradient(90deg,#c65b3f 0%,#f0b29f 100%)',
                         })
                         <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ $building->item->name }}</p>
                                     <p class="text-sm text-white/70">Placed at {{ $building->grid_x }}, {{ $building->grid_y }} | {{ $building->item->footprint_width }}x{{ $building->item->footprint_height }}</p>
-                                    <div class="mt-3 max-w-md">
+                                    <div
+                                        class="mt-3 max-w-md"
+                                        data-construction-timer
+                                        data-build-start="{{ $buildStartedAt?->toIso8601String() }}"
+                                        data-build-complete="{{ $buildCompleteAt?->toIso8601String() }}"
+                                    >
                                         <div class="h-2.5 overflow-hidden rounded-full bg-white/10">
-                                            <div class="h-full rounded-full {{ $progressBarClass }}" style="width: {{ max(0, min(100, $progressPercent)) }}%;"></div>
+                                            <div class="h-full rounded-full" data-build-progress-fill style="width: {{ max(0, min(100, $progressPercent)) }}%; background: {{ $progressBarStyle }};"></div>
                                         </div>
                                         <div class="mt-2 flex items-center justify-between gap-4 text-[11px] uppercase tracking-[0.16em]">
-                                            <span class="text-[#d7edc7]/75">{{ $progressPercent }}%</span>
-                                            <span class="{{ $building->isComplete() ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $building->isComplete() ? '00:00:00' : $remainingFormatted }}</span>
+                                            <span class="text-[#d7edc7]/75" data-build-progress-percent>{{ $progressPercent }}%</span>
+                                            <span class="{{ $building->isComplete() ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}" data-build-progress-remaining>{{ $building->isComplete() ? '00:00:00' : $remainingFormatted }}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-['Teko'] text-2xl uppercase {{ $building->isComplete() ? 'text-[#7ead59]' : 'text-[#c2a84f]' }}">{{ $building->isComplete() ? 'Ready' : 'Building' }}</p>
+                                    <p class="font-['Teko'] text-2xl uppercase {{ $building->isComplete() ? 'text-[#7ead59]' : 'text-[#c2a84f]' }}" data-build-status>{{ $building->isComplete() ? 'Ready' : 'Building' }}</p>
                                     <p class="text-xs uppercase tracking-[0.2em] text-white/45">
                                         {{ $building->isComplete() ? 'Completed' : 'Time Remaining' }}
                                     </p>
@@ -243,4 +254,92 @@
             </div>
         </section>
     </div>
+
+    @push('scripts')
+        <script>
+            (() => {
+                const timers = document.querySelectorAll('[data-construction-timer]');
+
+                if (!timers.length) {
+                    return;
+                }
+
+                const gradientForPercent = (percent) => {
+                    if (percent >= 100) {
+                        return 'linear-gradient(90deg,#7ead59 0%,#d7edc7 100%)';
+                    }
+
+                    if (percent >= 75) {
+                        return 'linear-gradient(90deg,#8fbe63 0%,#d7edc7 100%)';
+                    }
+
+                    if (percent >= 40) {
+                        return 'linear-gradient(90deg,#c2a84f 0%,#f4ecd0 100%)';
+                    }
+
+                    return 'linear-gradient(90deg,#c65b3f 0%,#f0b29f 100%)';
+                };
+
+                const formatDuration = (totalSeconds) => {
+                    const safeSeconds = Math.max(0, totalSeconds);
+                    const hours = Math.floor(safeSeconds / 3600);
+                    const minutes = Math.floor((safeSeconds % 3600) / 60);
+                    const seconds = safeSeconds % 60;
+
+                    return [hours, minutes, seconds].map((value) => String(value).padStart(2, '0')).join(':');
+                };
+
+                const updateTimers = () => {
+                    const now = Date.now();
+
+                    timers.forEach((timer) => {
+                        const buildStart = Date.parse(timer.dataset.buildStart || '');
+                        const buildComplete = Date.parse(timer.dataset.buildComplete || '');
+
+                        if (!buildStart || !buildComplete || buildComplete <= buildStart) {
+                            return;
+                        }
+
+                        const durationMs = Math.max(1000, buildComplete - buildStart);
+                        const elapsedMs = Math.max(0, Math.min(durationMs, now - buildStart));
+                        const remainingSeconds = Math.max(0, Math.ceil((buildComplete - now) / 1000));
+                        const progressPercent = Math.max(0, Math.min(100, Math.round((elapsedMs / durationMs) * 100)));
+                        const isComplete = now >= buildComplete;
+
+                        const fill = timer.querySelector('[data-build-progress-fill]');
+                        const percentLabel = timer.querySelector('[data-build-progress-percent]');
+                        const remainingLabel = timer.querySelector('[data-build-progress-remaining]');
+                        const statusLabel = timer.parentElement?.querySelector('[data-build-status]') ?? timer.closest('[data-construction-timer]')?.querySelector('[data-build-status]');
+
+                        if (fill) {
+                            fill.style.width = `${progressPercent}%`;
+                            fill.style.background = gradientForPercent(progressPercent);
+                        }
+
+                        if (percentLabel) {
+                            percentLabel.textContent = `${progressPercent}%`;
+                        }
+
+                        if (remainingLabel) {
+                            remainingLabel.textContent = isComplete ? '00:00:00' : formatDuration(remainingSeconds);
+                        }
+
+                        const container = timer.closest('.rounded-2xl, .flex');
+                        const scopedStatus = container ? container.querySelector('[data-build-status]') : null;
+
+                        if (scopedStatus) {
+                            scopedStatus.textContent = isComplete ? 'Ready' : 'Building';
+                            scopedStatus.classList.toggle('text-[#7ead59]', isComplete);
+                            scopedStatus.classList.toggle('text-[#c2a84f]', !isComplete);
+                            scopedStatus.classList.toggle('text-[#d7edc7]', isComplete);
+                            scopedStatus.classList.toggle('text-[#f4ecd0]', !isComplete);
+                        }
+                    });
+                };
+
+                updateTimers();
+                window.setInterval(updateTimers, 1000);
+            })();
+        </script>
+    @endpush
 </x-app-layout>
