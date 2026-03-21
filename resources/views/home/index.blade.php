@@ -164,12 +164,10 @@
                                                 @if ($cell['building']->isComplete())
                                                     <button
                                                         type="button"
-                                                        x-on:click="$dispatch('open-modal', 'building-{{ $cell['building']->id }}')"
-                                                        class="flex h-full w-full flex-col items-center justify-center rounded-md border border-[#d7edc7]/18 bg-black/10 px-2 py-3 text-center transition hover:border-[#d7edc7]/35 hover:bg-black/20"
+                                                        onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'building-{{ $cell['building']->id }}' }))"
+                                                        class="flex h-full w-full flex-col items-center justify-center px-2 py-3 text-center transition hover:bg-black/10"
                                                     >
-                                                        <div class="flex h-12 w-12 items-center justify-center rounded-lg border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-16 sm:w-16">
-                                                            <i class="{{ $cell['building']->item->display_icon_class }} text-2xl sm:text-3xl"></i>
-                                                        </div>
+                                                        <i class="{{ $cell['building']->item->display_icon_class }} text-4xl text-[#f4ecd0] sm:text-5xl"></i>
                                                         <p class="mt-2 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
                                                     </button>
                                                 @else
