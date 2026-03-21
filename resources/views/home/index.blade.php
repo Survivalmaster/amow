@@ -133,23 +133,26 @@
                 </div>
 
                 <div class="mt-5">
-                    <div class="mx-auto w-full max-w-[42rem] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a0f0c] shadow-inner shadow-black/40">
+                    <div class="mx-auto w-full max-w-[52rem] overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#0a0f0c] shadow-inner shadow-black/40">
                         <div
                             class="grid w-full gap-px bg-white/10"
-                            style="grid-template-columns: repeat(10, minmax(0, 1fr)); aspect-ratio: 1 / 1;"
+                            style="grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(10, minmax(0, 1fr)); aspect-ratio: 1 / 1;"
                         >
                         @foreach ($gridRows as $row)
                             @foreach ($row as $cell)
-                                <div class="flex min-h-0 min-w-0 flex-col p-1.5 text-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
-                                    <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">{{ $cell['x'] }},{{ $cell['y'] }}</p>
+                                <div class="relative flex min-h-0 min-w-0 items-center justify-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
+                                    <p class="absolute left-1 top-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/35 sm:left-1.5 sm:top-1.5">{{ $cell['x'] }},{{ $cell['y'] }}</p>
                                     @if ($cell['building'])
-                                        <div class="mt-1.5 flex min-h-0 flex-1 flex-col justify-between">
-                                            <p class="font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['is_anchor'] ? $cell['building']->item->name : '' }}</p>
-                                            <p class="text-[10px] uppercase tracking-[0.16em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
+                                        <div class="flex h-full w-full flex-col items-center justify-center p-2">
+                                            @if ($cell['is_anchor'])
+                                                <i class="{{ $cell['building']->item->display_icon_class }} text-lg text-[#f4ecd0] sm:text-2xl"></i>
+                                                <p class="mt-1 line-clamp-2 text-center font-['Teko'] text-[10px] uppercase leading-none text-[#f4ecd0] sm:text-xs">{{ $cell['building']->item->name }}</p>
+                                                <p class="mt-1 text-[9px] uppercase tracking-[0.14em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
+                                            @endif
                                         </div>
                                     @else
-                                        <div class="mt-1.5 flex min-h-0 flex-1 items-center justify-center text-white/15">
-                                            <i class="fa-regular fa-square"></i>
+                                        <div class="flex h-full w-full items-center justify-center text-white/18">
+                                            <i class="fa-regular fa-square text-base sm:text-lg"></i>
                                         </div>
                                     @endif
                                 </div>
