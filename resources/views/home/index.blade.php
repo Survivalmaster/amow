@@ -49,9 +49,9 @@
                 <div class="flex items-center justify-between gap-4">
                     <div>
                         <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Land Grid</p>
-                        <p class="mt-2 text-sm text-white/60">Cells marked amber are still building. Green cells are complete.</p>
+                        <p class="mt-2 text-sm text-white/60">Blocked cells contain salvage obstacles. Clear them to expand your usable building area.</p>
                     </div>
-                    <span class="rounded-full border border-[#7ead59]/30 bg-[#7ead59]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">{{ $activeBuildings->count() }} placed</span>
+                    <span class="rounded-full border border-[#c2a84f]/30 bg-[#c2a84f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f4ecd0]">Next Clear: {{ number_format($nextTileClearCost) }}</span>
                 </div>
 
                 <div class="mt-5">
@@ -62,7 +62,7 @@
                         >
                         @foreach ($gridRows as $row)
                             @foreach ($row as $cell)
-                                <div class="relative flex min-h-0 min-w-0 items-center justify-center overflow-hidden border border-[#d7edc7]/30 {{ $cell['status'] === 'complete' ? 'bg-[#274737]/78' : ($cell['status'] === 'building' ? 'bg-[#5a4a23]/78' : 'bg-[#14221a]/88') }}">
+                                <div class="relative flex min-h-0 min-w-0 items-center justify-center overflow-hidden border border-[#d7edc7]/30 {{ $cell['status'] === 'complete' ? 'bg-[#274737]/78' : ($cell['status'] === 'building' ? 'bg-[#5a4a23]/78' : ($cell['status'] === 'blocked' ? 'bg-[#2e2d26]/92' : 'bg-[#14221a]/88')) }}">
                                     <p class="absolute left-1 top-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#d7edc7]/55 sm:left-1.5 sm:top-1.5">{{ $cell['x'] }},{{ $cell['y'] }}</p>
                                     @if ($cell['building'])
                                         <div class="flex h-full w-full flex-col items-center justify-center p-2 pt-5 sm:pt-6">
@@ -119,6 +119,27 @@
                                                     </div>
                                                 @endif
                                             @endif
+                                        </div>
+                                    @elseif ($cell['status'] === 'blocked')
+                                        @php($obstacleIcon = match ($cell['obstacle_type']) {
+                                            'rock' => 'fa-solid fa-mountain',
+                                            'scrap' => 'fa-solid fa-gears',
+                                            'debris' => 'fa-solid fa-industry',
+                                            'roots' => 'fa-solid fa-seedling',
+                                            default => 'fa-solid fa-triangle-exclamation',
+                                        })
+                                        <div class="flex h-full w-full flex-col items-center justify-center px-2 py-2 pt-5 text-center">
+                                            <i class="{{ $obstacleIcon }} text-xl text-[#c2a84f] sm:text-2xl"></i>
+                                            <p class="mt-1 font-['Teko'] text-[0.72rem] uppercase leading-none text-[#f4ecd0] sm:text-[0.82rem]">{{ $cell['obstacle_type'] }}</p>
+                                            <p class="mt-1 text-[8px] uppercase tracking-[0.12em] text-white/55">{{ number_format($cell['clear_cost']) }} credits</p>
+                                            <form method="POST" action="{{ route('home.tiles.clear') }}" class="mt-1.5">
+                                                @csrf
+                                                <input type="hidden" name="grid_x" value="{{ $cell['x'] }}">
+                                                <input type="hidden" name="grid_y" value="{{ $cell['y'] }}">
+                                                <button class="rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/12 px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.14em] text-[#f4ecd0]">
+                                                    Salvage
+                                                </button>
+                                            </form>
                                         </div>
                                     @else
                                         <div class="pointer-events-none h-full w-full bg-[radial-gradient(circle_at_center,rgba(215,237,199,0.05),transparent_62%)]"></div>

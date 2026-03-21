@@ -79,7 +79,7 @@ test('placing a building consumes the item and adds it to land construction', fu
         ->post(route('home.buildings.place'), [
             'item_id' => $tent->id,
             'grid_x' => 3,
-            'grid_y' => 4,
+            'grid_y' => 3,
         ])
         ->assertRedirect();
 
@@ -126,6 +126,13 @@ test('completed buildings can be moved and returned to inventory', function () {
     ]);
 
     $this->actingAs($user)
+        ->post(route('home.tiles.clear'), [
+            'grid_x' => 4,
+            'grid_y' => 5,
+        ])
+        ->assertRedirect();
+
+    $this->actingAs($user)
         ->patch(route('home.buildings.move', $building), [
             'grid_x' => 4,
             'grid_y' => 5,
@@ -144,6 +151,43 @@ test('completed buildings can be moved and returned to inventory', function () {
 
     expect($character->fresh()->landBuildings()->count())->toBe(0);
     expect((int) optional($character->fresh()->inventory()->where('items.id', $tent->id)->first())->pivot?->quantity)->toBe(1);
+});
+
+test('clearing blocked land tiles costs credits and price increases each time', function () {
+    $user = User::factory()->create();
+    $character = createHomeCharacter($user);
+    $land = Licence::query()->where('slug', 'land')->firstOrFail();
+
+    $character->licences()->attach($land->id);
+    $character->update(['plastic_credits' => 1000]);
+
+    $this->actingAs($user)
+        ->get(route('home.index'))
+        ->assertOk()
+        ->assertSee('Next Clear: 75');
+
+    $this->actingAs($user)
+        ->post(route('home.tiles.clear'), [
+            'grid_x' => 4,
+            'grid_y' => 1,
+        ])
+        ->assertRedirect();
+
+    expect($character->fresh()->plastic_credits)->toBe(925);
+
+    $this->actingAs($user)
+        ->get(route('home.index'))
+        ->assertOk()
+        ->assertSee('Next Clear: 110');
+
+    $this->actingAs($user)
+        ->post(route('home.tiles.clear'), [
+            'grid_x' => 4,
+            'grid_y' => 2,
+        ])
+        ->assertRedirect();
+
+    expect($character->fresh()->plastic_credits)->toBe(815);
 });
 
 test('inventory page shows slot based inventory management', function () {

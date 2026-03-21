@@ -88,6 +88,11 @@ class Character extends Model
         return $this->hasMany(CharacterLandBuilding::class);
     }
 
+    public function landTiles(): HasMany
+    {
+        return $this->hasMany(CharacterLandTile::class);
+    }
+
     public function holdings(): HasMany
     {
         return $this->hasMany(StockHolding::class);

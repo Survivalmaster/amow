@@ -68,6 +68,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::get('/profile/game', [CharacterController::class, 'show'])->name('characters.show');
         Route::get('/profile/inventory', [InventoryController::class, 'index'])->name('inventory.index');
         Route::get('/home', [HomeController::class, 'index'])->name('home.index');
+        Route::post('/home/tiles/clear', [HomeController::class, 'clearTile'])->name('home.tiles.clear');
         Route::post('/home/buildings/place', [HomeController::class, 'placeBuilding'])->name('home.buildings.place');
         Route::patch('/home/buildings/{characterLandBuilding}/move', [HomeController::class, 'moveBuilding'])->name('home.buildings.move');
         Route::delete('/home/buildings/{characterLandBuilding}', [HomeController::class, 'destroyBuilding'])->name('home.buildings.destroy');

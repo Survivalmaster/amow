@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CharacterLandBuilding;
+use App\Models\CharacterLandTile;
 use App\Models\Item;
 use App\Support\CharacterActivity;
 use Illuminate\Http\RedirectResponse;
@@ -12,6 +13,11 @@ use Illuminate\View\View;
 
 class HomeController extends Controller
 {
+    private const STARTER_OPEN_WIDTH = 3;
+    private const STARTER_OPEN_HEIGHT = 3;
+    private const CLEAR_COST_BASE = 75;
+    private const CLEAR_COST_STEP = 35;
+
     public function index(Request $request): View
     {
         $character = $request->user()->character()->with([
@@ -21,14 +27,18 @@ class HomeController extends Controller
             'inventory',
             'licences',
             'landBuildings.item',
+            'landTiles',
         ])->firstOrFail();
 
         abort_unless($character->hasLand(), 404);
+        $this->ensureLandTilesInitialized($character);
+        $character->load(['landTiles', 'landBuildings.item']);
 
         return view('home.index', [
             'character' => $character,
             'buildingItems' => $character->buildingItems(),
             'gridRows' => $this->buildGridRows($character),
+            'nextTileClearCost' => $this->nextTileClearCost($character),
         ]);
     }
 
@@ -64,9 +74,11 @@ class HomeController extends Controller
 
     public function placeBuilding(Request $request): RedirectResponse
     {
-        $character = $request->user()->character()->with(['inventory', 'licences', 'landBuildings.item'])->firstOrFail();
+        $character = $request->user()->character()->with(['inventory', 'licences', 'landBuildings.item', 'landTiles'])->firstOrFail();
 
         abort_unless($character->hasLand(), 404);
+        $this->ensureLandTilesInitialized($character);
+        $character->load(['landTiles', 'landBuildings.item']);
 
         $validated = $request->validate([
             'item_id' => ['required', 'integer', 'exists:items,id'],
@@ -117,6 +129,52 @@ class HomeController extends Controller
         });
 
         return back()->with('status', "{$item->name} is now under construction.");
+    }
+
+    public function clearTile(Request $request): RedirectResponse
+    {
+        $character = $request->user()->character()->with(['licences', 'landBuildings.item', 'landTiles'])->firstOrFail();
+
+        abort_unless($character->hasLand(), 404);
+        $this->ensureLandTilesInitialized($character);
+        $character->load(['landTiles', 'landBuildings.item']);
+
+        $validated = $request->validate([
+            'grid_x' => ['required', 'integer', 'min:1', 'max:10'],
+            'grid_y' => ['required', 'integer', 'min:1', 'max:10'],
+        ]);
+
+        /** @var CharacterLandTile $tile */
+        $tile = $character->landTiles()
+            ->where('grid_x', (int) $validated['grid_x'])
+            ->where('grid_y', (int) $validated['grid_y'])
+            ->firstOrFail();
+
+        if (! $tile->isBlocked()) {
+            return back()->withErrors(['land' => 'That tile is already open.']);
+        }
+
+        $clearCost = $this->nextTileClearCost($character);
+
+        if ((int) $character->plastic_credits < $clearCost) {
+            return back()->withErrors(['land' => 'Not enough Plastic Credits to clear that tile.']);
+        }
+
+        $character->decrement('plastic_credits', $clearCost);
+        $tile->forceFill([
+            'state' => CharacterLandTile::STATE_OPEN,
+            'obstacle_type' => null,
+            'cleared_at' => now(),
+        ])->save();
+
+        CharacterActivity::recordTransaction(
+            $character,
+            'land_salvage',
+            -$clearCost,
+            "Cleared land tile {$validated['grid_x']}, {$validated['grid_y']}."
+        );
+
+        return back()->with('status', "Tile {$validated['grid_x']}, {$validated['grid_y']} cleared for {$clearCost} credits.");
     }
 
     public function moveBuilding(Request $request, CharacterLandBuilding $characterLandBuilding): RedirectResponse
@@ -192,18 +250,25 @@ class HomeController extends Controller
 
     protected function buildGridRows($character): array
     {
+        $tilesByCoordinate = $character->landTiles->keyBy(fn (CharacterLandTile $tile) => $tile->grid_x.'-'.$tile->grid_y);
         $grid = [];
+        $nextClearCost = $this->nextTileClearCost($character);
 
         for ($y = 1; $y <= 10; $y++) {
             $row = [];
 
             for ($x = 1; $x <= 10; $x++) {
+                /** @var CharacterLandTile|null $tile */
+                $tile = $tilesByCoordinate->get($x.'-'.$y);
                 $row[] = [
                     'x' => $x,
                     'y' => $y,
+                    'tile' => $tile,
                     'building' => null,
                     'label' => null,
-                    'status' => 'empty',
+                    'status' => $tile?->isBlocked() ? 'blocked' : 'empty',
+                    'obstacle_type' => $tile?->obstacle_type,
+                    'clear_cost' => $tile?->isBlocked() ? $nextClearCost : null,
                     'is_anchor' => false,
                 ];
             }
@@ -249,6 +314,18 @@ class HomeController extends Controller
             return false;
         }
 
+        $tilesByCoordinate = $character->landTiles->keyBy(fn (CharacterLandTile $tile) => $tile->grid_x.'-'.$tile->grid_y);
+
+        for ($offsetY = 0; $offsetY < $height; $offsetY++) {
+            for ($offsetX = 0; $offsetX < $width; $offsetX++) {
+                $tile = $tilesByCoordinate->get(($gridX + $offsetX).'-'.($gridY + $offsetY));
+
+                if (! $tile || $tile->isBlocked()) {
+                    return false;
+                }
+            }
+        }
+
         foreach ($character->landBuildings as $placedBuilding) {
             if ($ignoreBuilding && $placedBuilding->id === $ignoreBuilding->id) {
                 continue;
@@ -275,5 +352,62 @@ class HomeController extends Controller
         }
 
         return true;
+    }
+
+    protected function ensureLandTilesInitialized($character): void
+    {
+        if ($character->landTiles()->exists()) {
+            return;
+        }
+
+        $occupiedCoordinates = [];
+
+        foreach ($character->landBuildings as $building) {
+            $width = max(1, (int) $building->item->footprint_width);
+            $height = max(1, (int) $building->item->footprint_height);
+
+            for ($offsetY = 0; $offsetY < $height; $offsetY++) {
+                for ($offsetX = 0; $offsetX < $width; $offsetX++) {
+                    $occupiedCoordinates[($building->grid_x + $offsetX).'-'.($building->grid_y + $offsetY)] = true;
+                }
+            }
+        }
+
+        $tiles = [];
+
+        for ($y = 1; $y <= 10; $y++) {
+            for ($x = 1; $x <= 10; $x++) {
+                $isStarterOpen = $x <= self::STARTER_OPEN_WIDTH && $y <= self::STARTER_OPEN_HEIGHT;
+                $isOccupied = isset($occupiedCoordinates[$x.'-'.$y]);
+                $isOpen = $isStarterOpen || $isOccupied;
+
+                $tiles[] = [
+                    'character_id' => $character->id,
+                    'grid_x' => $x,
+                    'grid_y' => $y,
+                    'state' => $isOpen ? CharacterLandTile::STATE_OPEN : CharacterLandTile::STATE_BLOCKED,
+                    'obstacle_type' => $isOpen ? null : $this->obstacleTypeFor($x, $y),
+                    'cleared_at' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+        }
+
+        CharacterLandTile::query()->insert($tiles);
+    }
+
+    protected function obstacleTypeFor(int $gridX, int $gridY): string
+    {
+        $obstacles = ['rock', 'scrap', 'debris', 'roots'];
+
+        return $obstacles[($gridX + $gridY) % count($obstacles)];
+    }
+
+    protected function nextTileClearCost($character): int
+    {
+        $clearedCount = $character->landTiles->whereNotNull('cleared_at')->count();
+
+        return self::CLEAR_COST_BASE + ($clearedCount * self::CLEAR_COST_STEP);
     }
 }
