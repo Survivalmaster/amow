@@ -8,6 +8,7 @@
 
     @php($completedBuildings = $character->completedLandBuildings())
     @php($activeBuildings = $character->landBuildings)
+    @php($inProgressBuildings = $activeBuildings->reject(fn ($building) => $building->isComplete())->values())
 
     <div class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <section class="space-y-6">
@@ -140,10 +141,10 @@
                         >
                         @foreach ($gridRows as $row)
                             @foreach ($row as $cell)
-                                <div class="relative flex min-h-0 min-w-0 items-center justify-center border border-[#d7edc7]/30 {{ $cell['status'] === 'complete' ? 'bg-[#274737]/78' : ($cell['status'] === 'building' ? 'bg-[#5a4a23]/78' : 'bg-[#14221a]/88') }}">
+                                <div class="relative flex min-h-0 min-w-0 items-center justify-center overflow-hidden border border-[#d7edc7]/30 {{ $cell['status'] === 'complete' ? 'bg-[#274737]/78' : ($cell['status'] === 'building' ? 'bg-[#5a4a23]/78' : 'bg-[#14221a]/88') }}">
                                     <p class="absolute left-1 top-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#d7edc7]/55 sm:left-1.5 sm:top-1.5">{{ $cell['x'] }},{{ $cell['y'] }}</p>
                                     @if ($cell['building'])
-                                        <div class="flex h-full w-full flex-col items-center justify-center p-2">
+                                        <div class="flex h-full w-full flex-col items-center justify-center p-2 pt-5 sm:pt-6">
                                             @if ($cell['is_anchor'])
                                                 @php($buildStartedAt = $cell['building']->build_started_at)
                                                 @php($buildCompleteAt = $cell['building']->build_complete_at)
@@ -160,32 +161,46 @@
                                                     $progressPercent >= 40 => 'linear-gradient(90deg,#c2a84f 0%,#f4ecd0 100%)',
                                                     default => 'linear-gradient(90deg,#c65b3f 0%,#f0b29f 100%)',
                                                 })
-
-                                                <div class="flex h-12 w-12 items-center justify-center rounded-lg border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-16 sm:w-16">
-                                                    <i class="{{ $cell['building']->item->display_icon_class }} text-2xl sm:text-3xl"></i>
-                                                </div>
-                                                <p class="mt-1.5 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
-                                                <p class="mt-1 text-[10px] uppercase tracking-[0.16em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}" data-build-status>{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
-                                                <div
-                                                    class="mt-1.5 w-full max-w-[5.5rem] sm:max-w-[6.5rem]"
-                                                    data-construction-timer
-                                                    data-build-start="{{ $buildStartedAt?->toIso8601String() }}"
-                                                    data-build-complete="{{ $buildCompleteAt?->toIso8601String() }}"
-                                                >
-                                                    <div class="h-1.5 overflow-hidden rounded-full bg-black/35 sm:h-2">
+                                                @if ($cell['building']->isComplete())
+                                                    <button
+                                                        type="button"
+                                                        x-on:click="$dispatch('open-modal', 'building-{{ $cell['building']->id }}')"
+                                                        class="flex h-full w-full flex-col items-center justify-center rounded-md border border-[#d7edc7]/18 bg-black/10 px-2 py-3 text-center transition hover:border-[#d7edc7]/35 hover:bg-black/20"
+                                                    >
+                                                        <div class="flex h-12 w-12 items-center justify-center rounded-lg border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-16 sm:w-16">
+                                                            <i class="{{ $cell['building']->item->display_icon_class }} text-2xl sm:text-3xl"></i>
+                                                        </div>
+                                                        <p class="mt-2 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
+                                                    </button>
+                                                @else
+                                                    <div class="flex h-full w-full flex-col items-center justify-center px-2 py-3 text-center">
+                                                        <div class="flex h-12 w-12 items-center justify-center rounded-lg border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-16 sm:w-16">
+                                                            <i class="{{ $cell['building']->item->display_icon_class }} text-2xl sm:text-3xl"></i>
+                                                        </div>
+                                                        <p class="mt-1.5 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
+                                                        <p class="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#f4ecd0]" data-build-status>Building</p>
                                                         <div
-                                                            class="block h-full rounded-full"
-                                                            data-build-progress-fill
-                                                            style="width: {{ max(0, min(100, $progressPercent)) }}%; background-color: #c2a84f; background-image: {{ $progressBarStyle }};"
-                                                        ></div>
+                                                            class="mt-1.5 w-full max-w-[5.5rem] sm:max-w-[6.5rem]"
+                                                            data-construction-timer
+                                                            data-build-start="{{ $buildStartedAt?->toIso8601String() }}"
+                                                            data-build-complete="{{ $buildCompleteAt?->toIso8601String() }}"
+                                                        >
+                                                            <div class="h-1.5 overflow-hidden rounded-full bg-black/35 sm:h-2">
+                                                                <div
+                                                                    class="block h-full rounded-full"
+                                                                    data-build-progress-fill
+                                                                    style="width: {{ max(0, min(100, $progressPercent)) }}%; background-color: #c2a84f; background-image: {{ $progressBarStyle }};"
+                                                                ></div>
+                                                            </div>
+                                                            <p class="mt-1 text-center text-[9px] uppercase tracking-[0.14em] text-[#d7edc7]/75" data-build-progress-percent>
+                                                                {{ $progressPercent.'%' }}
+                                                            </p>
+                                                            <p class="mt-0.5 text-center text-[9px] uppercase tracking-[0.14em] text-[#f4ecd0]" data-build-progress-remaining>
+                                                                {{ $remainingFormatted }}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <p class="mt-1 text-center text-[9px] uppercase tracking-[0.14em] text-[#d7edc7]/75" data-build-progress-percent>
-                                                        {{ $cell['status'] === 'complete' ? '100%' : $progressPercent.'%' }}
-                                                    </p>
-                                                    <p class="mt-0.5 text-center text-[9px] uppercase tracking-[0.14em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}" data-build-progress-remaining>
-                                                        {{ $cell['status'] === 'complete' ? '00:00:00' : $remainingFormatted }}
-                                                    </p>
-                                                </div>
+                                                @endif
                                             @endif
                                         </div>
                                     @else
@@ -203,7 +218,7 @@
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Construction Queue</p>
                 <div class="mt-4 space-y-3">
-                    @forelse ($activeBuildings as $building)
+                    @forelse ($inProgressBuildings as $building)
                         @php($buildStartedAt = $building->build_started_at)
                         @php($buildCompleteAt = $building->build_complete_at)
                         @php($buildDurationSeconds = max(1, (int) $buildStartedAt?->diffInSeconds($buildCompleteAt, true)))
@@ -240,19 +255,63 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-['Teko'] text-2xl uppercase {{ $building->isComplete() ? 'text-[#7ead59]' : 'text-[#c2a84f]' }}" data-build-status>{{ $building->isComplete() ? 'Ready' : 'Building' }}</p>
+                                    <p class="font-['Teko'] text-2xl uppercase text-[#c2a84f]" data-build-status>Building</p>
                                     <p class="text-xs uppercase tracking-[0.2em] text-white/45">
-                                        {{ $building->isComplete() ? 'Completed' : 'Time Remaining' }}
+                                        Time Remaining
                                     </p>
                                 </div>
                             </div>
                         </div>
                     @empty
-                        <p class="text-sm text-white/45">No buildings have been placed yet.</p>
+                        <p class="text-sm text-white/45">No buildings are currently being constructed.</p>
                     @endforelse
                 </div>
             </div>
         </section>
     </div>
+
+    @foreach ($completedBuildings as $building)
+        <x-modal name="building-{{ $building->id }}" maxWidth="lg">
+            <div class="border border-white/10 bg-[linear-gradient(180deg,rgba(16,29,21,0.98),rgba(7,12,9,0.98))] p-6 text-[#f4ecd0]">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="font-['Teko'] text-4xl uppercase tracking-[0.08em]">{{ $building->item->name }}</p>
+                        <p class="mt-1 text-xs uppercase tracking-[0.18em] text-white/45">Placed at {{ $building->grid_x }}, {{ $building->grid_y }}</p>
+                    </div>
+                    <button type="button" x-on:click="$dispatch('close-modal', 'building-{{ $building->id }}')" class="rounded-full border border-white/10 px-3 py-2 text-xs uppercase tracking-[0.18em] text-white/60">Close</button>
+                </div>
+
+                <div class="mt-5 rounded-[1.4rem] border border-white/10 bg-black/20 p-5">
+                    <div class="flex items-center gap-4">
+                        <div class="flex h-14 w-14 items-center justify-center rounded-xl border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0]">
+                            <i class="{{ $building->item->display_icon_class }} text-3xl"></i>
+                        </div>
+                        <div>
+                            <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ $building->item->name }}</p>
+                            <p class="text-sm text-white/65">{{ $building->item->description }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <p class="text-xs uppercase tracking-[0.2em] text-white/45">Available Actions</p>
+                    <div class="mt-3 flex flex-wrap gap-3">
+                        @if (str_contains($building->item->slug, 'tent'))
+                            <form method="POST" action="{{ route('home.sleep') }}">
+                                @csrf
+                                <button class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]" @disabled($character->stamina_points >= 100)>
+                                    Sleep
+                                </button>
+                            </form>
+                        @else
+                            <div class="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                                No actions yet
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </x-modal>
+    @endforeach
 
 </x-app-layout>
