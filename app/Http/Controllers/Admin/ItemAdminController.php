@@ -19,7 +19,7 @@ class ItemAdminController extends Controller
         return view('admin.items', [
             'items' => Item::query()->with(['requiredRank', 'requiredLicence'])->orderBy('name')->get(),
             'ranks' => Rank::query()->orderBy('order_index')->get(),
-            'licences' => Licence::query()->orderBy('name')->get(),
+            'licences' => Licence::query()->with('requiredRank')->orderBy('name')->get(),
         ]);
     }
 
@@ -32,6 +32,10 @@ class ItemAdminController extends Controller
             'type' => ['required', 'string', 'max:255'],
             'icon_class' => ['nullable', 'string', 'max:255'],
             'is_home' => ['nullable', 'boolean'],
+            'is_building' => ['nullable', 'boolean'],
+            'footprint_width' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'footprint_height' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'build_time_minutes' => ['nullable', 'integer', 'min:0'],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
             'price' => ['required', 'integer', 'min:1'],
             'required_rank_id' => ['nullable', 'exists:ranks,id'],
@@ -40,6 +44,10 @@ class ItemAdminController extends Controller
             'stock' => ['nullable', 'integer', 'min:0'],
         ]) + [
             'is_home' => $request->boolean('is_home'),
+            'is_building' => $request->boolean('is_building'),
+            'footprint_width' => (int) $request->input('footprint_width', 1),
+            'footprint_height' => (int) $request->input('footprint_height', 1),
+            'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
         ];
 
@@ -59,6 +67,10 @@ class ItemAdminController extends Controller
             'type' => ['required', 'string', 'max:255'],
             'icon_class' => ['nullable', 'string', 'max:255'],
             'is_home' => ['nullable', 'boolean'],
+            'is_building' => ['nullable', 'boolean'],
+            'footprint_width' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'footprint_height' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'build_time_minutes' => ['nullable', 'integer', 'min:0'],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
             'price' => ['required', 'integer', 'min:1'],
             'required_rank_id' => ['nullable', 'exists:ranks,id'],
@@ -67,6 +79,10 @@ class ItemAdminController extends Controller
             'stock' => ['nullable', 'integer', 'min:0'],
         ]) + [
             'is_home' => $request->boolean('is_home'),
+            'is_building' => $request->boolean('is_building'),
+            'footprint_width' => (int) $request->input('footprint_width', 1),
+            'footprint_height' => (int) $request->input('footprint_height', 1),
+            'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
         ];
 

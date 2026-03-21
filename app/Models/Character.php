@@ -83,6 +83,11 @@ class Character extends Model
         return $this->hasMany(Transaction::class);
     }
 
+    public function landBuildings(): HasMany
+    {
+        return $this->hasMany(CharacterLandBuilding::class);
+    }
+
     public function holdings(): HasMany
     {
         return $this->hasMany(StockHolding::class);
@@ -155,6 +160,11 @@ class Character extends Model
         return $this->licences->contains('slug', $slug);
     }
 
+    public function hasLand(): bool
+    {
+        return $this->hasLicence('land');
+    }
+
     public function canAccessLocation(Location $location): bool
     {
         if ($location->city->faction_id !== $this->faction_id) {
@@ -197,6 +207,21 @@ class Character extends Model
     public function hasHomeItem(): bool
     {
         return $this->homeItems()->isNotEmpty();
+    }
+
+    public function buildingItems(): Collection
+    {
+        return $this->inventory->filter(fn (Item $item) => $item->is_building)->values();
+    }
+
+    public function completedLandBuildings(): Collection
+    {
+        return $this->landBuildings->filter(fn (CharacterLandBuilding $building) => $building->isComplete())->values();
+    }
+
+    public function hasCompletedLandBuilding(): bool
+    {
+        return $this->completedLandBuildings()->isNotEmpty();
     }
 
     public function inventorySlotCapacity(): int

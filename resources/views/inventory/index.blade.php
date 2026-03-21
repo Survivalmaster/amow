@@ -24,8 +24,8 @@
                         <p class="mt-2 font-['Teko'] text-4xl uppercase text-[#7ead59]">{{ $character->inventorySlotsRemaining() }}</p>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
-                        <p class="text-xs uppercase tracking-[0.2em] text-white/45">Home Items</p>
-                        <p class="mt-2 font-['Teko'] text-4xl uppercase text-[#c2a84f]">{{ $character->homeItems()->sum(fn ($item) => (int) $item->pivot->quantity) }}</p>
+                        <p class="text-xs uppercase tracking-[0.2em] text-white/45">Building Items</p>
+                        <p class="mt-2 font-['Teko'] text-4xl uppercase text-[#c2a84f]">{{ $character->buildingItems()->sum(fn ($item) => (int) $item->pivot->quantity) }}</p>
                     </div>
                 </div>
                 <p class="mt-4 text-sm leading-7 text-white/65">Base capacity is 12 slots. Backpack items add more room. Each item stack uses one slot, which keeps the system quick and readable while still making capacity matter.</p>
@@ -80,8 +80,8 @@
                                     <p class="mt-2 line-clamp-3 text-xs leading-5 text-white/58">{{ $slot->description }}</p>
                                 </div>
                                 <div class="mt-2 flex flex-wrap gap-1">
-                                    @if ($slot->is_home)
-                                        <span class="rounded-full border border-[#7ead59]/30 bg-[#7ead59]/10 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#d7edc7]">Home</span>
+                                    @if ($slot->is_building)
+                                        <span class="rounded-full border border-[#7ead59]/30 bg-[#7ead59]/10 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#d7edc7]">Building</span>
                                     @endif
                                     @if ($slot->inventory_slot_bonus > 0)
                                         <span class="rounded-full border border-[#c2a84f]/30 bg-[#c2a84f]/10 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#f4ecd0]">+{{ $slot->inventory_slot_bonus }}</span>

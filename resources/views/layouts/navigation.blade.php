@@ -1,5 +1,5 @@
 @php($navUser = auth()->user()->loadMissing('permissions'))
-@php($navCharacter = $navUser->character?->loadMissing(['rank', 'currentJob', 'faction', 'inventory']))
+@php($navCharacter = $navUser->character?->loadMissing(['rank', 'currentJob', 'faction', 'inventory', 'licences']))
 @php($creditAmount = $navCharacter?->plastic_credits ?? 0)
 @php($healthPoints = $navCharacter?->health_points ?? 100)
 @php($staminaPoints = $navCharacter?->stamina_points ?? 100)
@@ -31,7 +31,7 @@
     $operationsNav = array_values(array_filter([
         ['label' => 'Character', 'route' => 'characters.show', 'match' => ['characters.show'], 'icon' => 'fa-solid fa-id-badge'],
         ['label' => 'Inventory', 'route' => 'inventory.index', 'match' => ['inventory.*'], 'icon' => 'fa-solid fa-box-open'],
-        $navCharacter?->hasHomeItem() ? ['label' => 'Home', 'route' => 'home.index', 'match' => ['home.*'], 'icon' => 'fa-solid fa-house'] : null,
+        $navCharacter?->hasLand() ? ['label' => 'Land', 'route' => 'home.index', 'match' => ['home.*'], 'icon' => 'fa-solid fa-house'] : null,
         $navCharacter ? ['label' => 'Nation HQ', 'route' => 'nation.index', 'match' => ['nation.index'], 'icon' => 'fa-solid fa-landmark-flag'] : null,
         ['label' => 'Settings', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
         $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.dashboard'], 'icon' => 'fa-solid fa-shield-halved'] : null,
@@ -166,7 +166,7 @@
                     </button>
 
                     <div x-show="ucpOpen" x-cloak class="grid gap-1 pl-4">
-                        @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Home', 'Settings'], true)) as $item)
+                        @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Land', 'Settings'], true)) as $item)
                             @php($isActive = request()->routeIs(...$item['match']))
                             <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                                 <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
@@ -324,7 +324,7 @@
             </button>
 
             <div x-show="ucpOpen" x-cloak class="grid gap-1 pl-4">
-                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Home', 'Settings'], true)) as $item)
+                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Land', 'Settings'], true)) as $item)
                     @php($isActive = request()->routeIs(...$item['match']))
                     <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                         <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>

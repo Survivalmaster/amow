@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CityAdminController;
 use App\Http\Controllers\Admin\FactionAdminController;
 use App\Http\Controllers\Admin\GameJobAdminController;
 use App\Http\Controllers\Admin\ItemAdminController;
+use App\Http\Controllers\Admin\LicenceAdminController;
 use App\Http\Controllers\Admin\LocationAdminController;
 use App\Http\Controllers\Admin\MapMarkerAdminController;
 use App\Http\Controllers\Admin\ModeratorAdminController;
@@ -67,6 +68,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::get('/profile/game', [CharacterController::class, 'show'])->name('characters.show');
         Route::get('/profile/inventory', [InventoryController::class, 'index'])->name('inventory.index');
         Route::get('/home', [HomeController::class, 'index'])->name('home.index');
+        Route::post('/home/buildings/place', [HomeController::class, 'placeBuilding'])->name('home.buildings.place');
         Route::post('/home/sleep', [HomeController::class, 'sleep'])->name('home.sleep');
         Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
         Route::post('/jobs/{gameJob}', [JobController::class, 'store'])->name('jobs.store');
@@ -113,6 +115,9 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::post('/items', [ItemAdminController::class, 'store'])->middleware('admin.section:items')->name('items.store');
         Route::patch('/items/{item}', [ItemAdminController::class, 'update'])->middleware('admin.section:items')->name('items.update');
         Route::delete('/items/{item}', [ItemAdminController::class, 'destroy'])->middleware('admin.section:items')->name('items.destroy');
+        Route::post('/licences', [LicenceAdminController::class, 'store'])->middleware('admin.section:items')->name('licences.store');
+        Route::patch('/licences/{licence}', [LicenceAdminController::class, 'update'])->middleware('admin.section:items')->name('licences.update');
+        Route::delete('/licences/{licence}', [LicenceAdminController::class, 'destroy'])->middleware('admin.section:items')->name('licences.destroy');
         Route::get('/permissions', [PermissionAdminController::class, 'index'])->middleware('admin.section:permissions')->name('permissions.index');
         Route::post('/permissions', [PermissionAdminController::class, 'store'])->middleware('admin.section:permissions')->name('permissions.store');
         Route::patch('/permissions/{permission}', [PermissionAdminController::class, 'update'])->middleware('admin.section:permissions')->name('permissions.update');

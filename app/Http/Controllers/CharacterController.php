@@ -95,7 +95,7 @@ class CharacterController extends Controller
             'character' => $character,
             'inventorySlotsUsed' => $character->inventorySlotsUsed(),
             'inventorySlotCapacity' => $character->inventorySlotCapacity(),
-            'homeItemCount' => $character->homeItems()->sum(fn ($item) => (int) $item->pivot->quantity),
+            'buildingItemCount' => $character->buildingItems()->sum(fn ($item) => (int) $item->pivot->quantity),
         ]);
     }
 }

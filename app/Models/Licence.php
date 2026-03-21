@@ -31,4 +31,9 @@ class Licence extends Model
     {
         return $this->hasMany(Location::class, 'required_licence_id');
     }
+
+    public function isLandLicence(): bool
+    {
+        return $this->slug === 'land';
+    }
 }

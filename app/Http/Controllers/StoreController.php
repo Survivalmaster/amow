@@ -15,10 +15,12 @@ class StoreController extends Controller
     public function index(Request $request): View
     {
         $character = $request->user()->character()->with(['rank', 'licences', 'inventory'])->firstOrFail();
+        $items = Item::query()->with(['requiredRank', 'requiredLicence'])->orderBy('type')->orderBy('price')->get();
 
         return view('store.index', [
             'character' => $character,
-            'items' => Item::query()->with(['requiredRank', 'requiredLicence'])->orderBy('type')->orderBy('price')->get(),
+            'gearItems' => $items->where('is_building', false)->values(),
+            'buildingItems' => $items->where('is_building', true)->values(),
             'licences' => Licence::query()->with('requiredRank')->orderBy('cost')->get(),
         ]);
     }

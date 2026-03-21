@@ -72,8 +72,8 @@
                         <p class="mt-2 font-['Teko'] text-4xl uppercase">{{ $inventorySlotCapacity }}</p>
                     </div>
                     <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-4">
-                        <p class="text-xs uppercase tracking-[0.2em] text-white/45">Home Assets</p>
-                        <p class="mt-2 font-['Teko'] text-4xl uppercase">{{ $homeItemCount }}</p>
+                        <p class="text-xs uppercase tracking-[0.2em] text-white/45">Building Items</p>
+                        <p class="mt-2 font-['Teko'] text-4xl uppercase">{{ $buildingItemCount }}</p>
                     </div>
                 </div>
                 <div class="mt-4 grid gap-3 md:grid-cols-2">

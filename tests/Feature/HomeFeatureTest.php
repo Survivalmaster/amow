@@ -4,17 +4,19 @@ use App\Models\Character;
 use App\Models\Faction;
 use App\Models\GameJob;
 use App\Models\Item;
-use App\Models\Rank;
+use App\Models\Licence;
 use App\Models\User;
 use Database\Seeders\FactionSeeder;
 use Database\Seeders\GameJobSeeder;
 use Database\Seeders\ItemSeeder;
+use Database\Seeders\LicenceSeeder;
 use Database\Seeders\RankSeeder;
 
 beforeEach(function () {
     $this->seed([
         FactionSeeder::class,
         RankSeeder::class,
+        LicenceSeeder::class,
         GameJobSeeder::class,
         ItemSeeder::class,
     ]);
@@ -27,11 +29,11 @@ function createHomeCharacter(User $user): Character
         'faction_id' => Faction::query()->firstOrFail()->id,
         'name' => 'Shelter Tester',
         'age' => 27,
-        'biography' => 'Testing home access.',
+        'biography' => 'Testing land access.',
         'starting_occupation' => 'Begger',
         'current_job_id' => GameJob::query()->where('is_starter', true)->value('id'),
         'plastic_credits' => 500,
-        'rank_id' => Rank::query()->where('name', 'Civilian')->firstOrFail()->id,
+        'rank_id' => \App\Models\Rank::query()->where('name', 'Civilian')->firstOrFail()->id,
         'role_type' => 'civilian',
         'health_points' => 100,
         'stamina_points' => 100,
@@ -41,7 +43,7 @@ function createHomeCharacter(User $user): Character
     ]);
 }
 
-test('home page is unavailable without a home item', function () {
+test('land page is unavailable without the land licence', function () {
     $user = User::factory()->create();
     createHomeCharacter($user);
 
@@ -50,26 +52,55 @@ test('home page is unavailable without a home item', function () {
         ->assertNotFound();
 });
 
-test('home page is available when character owns a home item', function () {
+test('land page is available when character owns the land licence', function () {
     $user = User::factory()->create();
     $character = createHomeCharacter($user);
-    $homeItem = Item::query()->where('is_home', true)->firstOrFail();
+    $land = Licence::query()->where('slug', 'land')->firstOrFail();
 
-    $character->inventory()->attach($homeItem->id, ['quantity' => 1]);
+    $character->licences()->attach($land->id);
 
     $this->actingAs($user)
         ->get(route('home.index'))
         ->assertOk()
-        ->assertSee('Home Base')
-        ->assertSee($homeItem->name);
+        ->assertSee('Personal Plot')
+        ->assertSee('10 x 10');
 });
 
-test('sleeping at home restores stamina to full', function () {
+test('placing a building consumes the item and adds it to land construction', function () {
     $user = User::factory()->create();
     $character = createHomeCharacter($user);
-    $homeItem = Item::query()->where('is_home', true)->firstOrFail();
+    $land = Licence::query()->where('slug', 'land')->firstOrFail();
+    $tent = Item::query()->where('slug', 'salvaged-tent')->firstOrFail();
 
-    $character->inventory()->attach($homeItem->id, ['quantity' => 1]);
+    $character->licences()->attach($land->id);
+    $character->inventory()->attach($tent->id, ['quantity' => 1]);
+
+    $this->actingAs($user)
+        ->post(route('home.buildings.place'), [
+            'item_id' => $tent->id,
+            'grid_x' => 3,
+            'grid_y' => 4,
+        ])
+        ->assertRedirect();
+
+    expect($character->fresh()->landBuildings()->count())->toBe(1);
+    expect($character->fresh()->inventory()->where('items.id', $tent->id)->exists())->toBeFalse();
+});
+
+test('sleeping on land restores stamina to full once a building is complete', function () {
+    $user = User::factory()->create();
+    $character = createHomeCharacter($user);
+    $land = Licence::query()->where('slug', 'land')->firstOrFail();
+    $tent = Item::query()->where('slug', 'salvaged-tent')->firstOrFail();
+
+    $character->licences()->attach($land->id);
+    $character->landBuildings()->create([
+        'item_id' => $tent->id,
+        'grid_x' => 1,
+        'grid_y' => 1,
+        'build_started_at' => now()->subMinutes(30),
+        'build_complete_at' => now()->subMinutes(15),
+    ]);
     $character->update(['stamina_points' => 42]);
 
     $this->actingAs($user)
@@ -83,15 +114,16 @@ test('inventory page shows slot based inventory management', function () {
     $user = User::factory()->create();
     $character = createHomeCharacter($user);
     $backpack = Item::query()->where('slug', 'canvas-backpack')->firstOrFail();
-    $homeItem = Item::query()->where('is_home', true)->firstOrFail();
+    $building = Item::query()->where('slug', 'salvaged-tent')->firstOrFail();
 
     $character->inventory()->attach($backpack->id, ['quantity' => 1]);
-    $character->inventory()->attach($homeItem->id, ['quantity' => 1]);
+    $character->inventory()->attach($building->id, ['quantity' => 1]);
 
     $this->actingAs($user)
         ->get(route('inventory.index'))
         ->assertOk()
         ->assertSee('Inventory Grid')
         ->assertSee('20')
-        ->assertSee($backpack->name);
+        ->assertSee($backpack->name)
+        ->assertSee('Building');
 });

@@ -17,6 +17,13 @@ class LicenceSeeder extends Seeder
 
         $licences = [
             [
+                'name' => 'Land',
+                'slug' => 'land',
+                'description' => 'Unlocks a personal 10x10 land plot where buildings can be placed and constructed.',
+                'cost' => 260,
+                'required_rank_id' => null,
+            ],
+            [
                 'name' => 'Senator',
                 'slug' => 'senator',
                 'description' => 'Access to civic power, debate chambers, and upper-political buildings.',

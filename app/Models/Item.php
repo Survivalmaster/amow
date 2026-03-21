@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Item extends Model
 {
@@ -15,6 +16,10 @@ class Item extends Model
         'type',
         'icon_class',
         'is_home',
+        'is_building',
+        'footprint_width',
+        'footprint_height',
+        'build_time_minutes',
         'inventory_slot_bonus',
         'price',
         'required_rank_id',
@@ -38,10 +43,19 @@ class Item extends Model
         return $this->belongsToMany(Character::class, 'character_items')->withPivot('quantity')->withTimestamps();
     }
 
+    public function landBuildings(): HasMany
+    {
+        return $this->hasMany(CharacterLandBuilding::class);
+    }
+
     protected function casts(): array
     {
         return [
             'is_home' => 'boolean',
+            'is_building' => 'boolean',
+            'footprint_width' => 'integer',
+            'footprint_height' => 'integer',
+            'build_time_minutes' => 'integer',
             'inventory_slot_bonus' => 'integer',
         ];
     }
@@ -54,6 +68,7 @@ class Item extends Model
 
         return match ($this->type) {
             'home' => 'fa-solid fa-house',
+            'building' => 'fa-solid fa-tents',
             'backpack' => 'fa-solid fa-backpack',
             'military' => 'fa-solid fa-shield-halved',
             'business' => 'fa-solid fa-briefcase',
