@@ -10,41 +10,42 @@
     @php($activeBuildings = $character->landBuildings)
     @php($inProgressBuildings = $activeBuildings->reject(fn ($building) => $building->isComplete())->values())
 
-    <div class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <section class="space-y-6">
-            <div class="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(126,173,89,0.12),rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.03)_100%)] p-6 shadow-2xl shadow-black/30">
-                <div class="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                        <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Personal Plot</p>
-                        <p class="mt-3 max-w-2xl text-sm leading-7 text-white/70">
-                            Land ownership unlocks this page. Buy building items in the store, place them on your 10x10 plot, and wait for construction to complete before they become usable.
-                        </p>
-                    </div>
-                    <div class="rounded-[1.5rem] border border-[#7ead59]/25 bg-black/25 px-4 py-3 text-right">
-                        <p class="text-xs uppercase tracking-[0.22em] text-white/45">Completed Buildings</p>
-                        <p class="font-['Teko'] text-4xl uppercase text-[#d7edc7]">{{ $completedBuildings->count() }}</p>
-                    </div>
+    <div class="space-y-6">
+        <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(126,173,89,0.12),rgba(255,255,255,0.02)_45%,rgba(255,255,255,0.03)_100%)] p-6 shadow-2xl shadow-black/30">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Personal Plot</p>
+                    <p class="mt-3 max-w-3xl text-sm leading-7 text-white/70">
+                        Land ownership unlocks this page. Buy building items in the store, place them on your 10x10 plot, and wait for construction to complete before they become usable.
+                    </p>
                 </div>
-
-                <div class="mt-5 grid gap-4 md:grid-cols-3">
-                    <div class="rounded-[1.5rem] border border-white/10 bg-black/25 p-4">
-                        <p class="text-xs uppercase tracking-[0.22em] text-white/45">Grid Size</p>
-                        <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]">10 x 10</p>
-                        <p class="mt-2 text-sm text-white/60">One hundred buildable cells for tents and future structures.</p>
-                    </div>
-                    <div class="rounded-[1.5rem] border border-white/10 bg-black/25 p-4">
-                        <p class="text-xs uppercase tracking-[0.22em] text-white/45">Faction Zone</p>
-                        <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]">{{ $character->faction->name }}</p>
-                        <p class="mt-2 text-sm text-white/60">Your land remains linked to your current character and faction context.</p>
-                    </div>
-                    <div class="rounded-[1.5rem] border border-white/10 bg-black/25 p-4">
-                        <p class="text-xs uppercase tracking-[0.22em] text-white/45">Buildings In Progress</p>
-                        <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]">{{ $activeBuildings->count() - $completedBuildings->count() }}</p>
-                        <p class="mt-2 text-sm text-white/60">Construction timers must finish before the placed structure can be used.</p>
-                    </div>
+                <div class="rounded-[1.5rem] border border-[#7ead59]/25 bg-black/25 px-4 py-3 text-right">
+                    <p class="text-xs uppercase tracking-[0.22em] text-white/45">Completed Buildings</p>
+                    <p class="font-['Teko'] text-4xl uppercase text-[#d7edc7]">{{ $completedBuildings->count() }}</p>
                 </div>
             </div>
 
+            <div class="mt-5 grid gap-4 md:grid-cols-3">
+                <div class="rounded-[1.5rem] border border-white/10 bg-black/25 p-4">
+                    <p class="text-xs uppercase tracking-[0.22em] text-white/45">Grid Size</p>
+                    <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]">10 x 10</p>
+                    <p class="mt-2 text-sm text-white/60">One hundred buildable cells for tents and future structures.</p>
+                </div>
+                <div class="rounded-[1.5rem] border border-white/10 bg-black/25 p-4">
+                    <p class="text-xs uppercase tracking-[0.22em] text-white/45">Faction Zone</p>
+                    <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]">{{ $character->faction->name }}</p>
+                    <p class="mt-2 text-sm text-white/60">Your land remains linked to your current character and faction context.</p>
+                </div>
+                <div class="rounded-[1.5rem] border border-white/10 bg-black/25 p-4">
+                    <p class="text-xs uppercase tracking-[0.22em] text-white/45">Buildings In Progress</p>
+                    <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]">{{ $activeBuildings->count() - $completedBuildings->count() }}</p>
+                    <p class="mt-2 text-sm text-white/60">Construction timers must finish before the placed structure can be used.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="grid gap-6 xl:grid-cols-[0.72fr_1.28fr]">
+            <section class="space-y-6">
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 <div class="flex items-center justify-between gap-4">
                     <div>
@@ -121,9 +122,9 @@
                     @endforelse
                 </div>
             </div>
-        </section>
+            </section>
 
-        <section class="space-y-6">
+            <section class="space-y-6">
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 <div class="flex items-center justify-between gap-4">
                     <div>
@@ -134,7 +135,7 @@
                 </div>
 
                 <div class="mt-5">
-                    <div class="mx-auto w-full max-w-[66rem] overflow-hidden rounded-[1.25rem] border border-[#d7edc7]/20 bg-[radial-gradient(circle_at_center,rgba(92,160,120,0.16),rgba(15,24,18,0.96)_70%)] p-4 shadow-inner shadow-black/40">
+                    <div class="mx-auto w-full max-w-[78rem] overflow-hidden rounded-[1.25rem] border border-[#d7edc7]/20 bg-[radial-gradient(circle_at_center,rgba(92,160,120,0.16),rgba(15,24,18,0.96)_70%)] p-4 shadow-inner shadow-black/40">
                         <div
                             class="grid w-full border border-[#d7edc7]/35 bg-[#d7edc7]/20"
                             style="grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(10, minmax(0, 1fr)); aspect-ratio: 1 / 1;"
@@ -263,7 +264,8 @@
                     @endforelse
                 </div>
             </div>
-        </section>
+            </section>
+        </div>
     </div>
 
     @foreach ($completedBuildings as $building)
