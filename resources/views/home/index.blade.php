@@ -133,27 +133,28 @@
                 </div>
 
                 <div class="mt-5">
-                    <div class="mx-auto w-full max-w-[52rem] overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#0a0f0c] shadow-inner shadow-black/40">
+                    <div class="mx-auto w-full max-w-[60rem] overflow-hidden rounded-[1.25rem] border border-[#d7edc7]/20 bg-[radial-gradient(circle_at_center,rgba(92,160,120,0.16),rgba(15,24,18,0.96)_70%)] p-4 shadow-inner shadow-black/40">
                         <div
-                            class="grid w-full gap-px bg-white/10"
+                            class="grid w-full border border-[#d7edc7]/35 bg-[#d7edc7]/20"
                             style="grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(10, minmax(0, 1fr)); aspect-ratio: 1 / 1;"
                         >
                         @foreach ($gridRows as $row)
                             @foreach ($row as $cell)
-                                <div class="relative flex min-h-0 min-w-0 items-center justify-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
-                                    <p class="absolute left-1 top-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/35 sm:left-1.5 sm:top-1.5">{{ $cell['x'] }},{{ $cell['y'] }}</p>
+                                <div class="relative flex min-h-0 min-w-0 items-center justify-center border border-[#d7edc7]/30 {{ $cell['status'] === 'complete' ? 'bg-[#274737]/78' : ($cell['status'] === 'building' ? 'bg-[#5a4a23]/78' : 'bg-[#14221a]/88') }}">
+                                    <p class="absolute left-1 top-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#d7edc7]/55 sm:left-1.5 sm:top-1.5">{{ $cell['x'] }},{{ $cell['y'] }}</p>
                                     @if ($cell['building'])
-                                        <div class="m-1 flex h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] flex-col items-center justify-center rounded-[0.7rem] border border-white/10 bg-black/15 p-2 sm:m-1.5 sm:h-[calc(100%-0.75rem)] sm:w-[calc(100%-0.75rem)] sm:rounded-[0.9rem]">
+                                        <div class="flex h-full w-full flex-col items-center justify-center p-2">
                                             @if ($cell['is_anchor'])
-                                                <i class="{{ $cell['building']->item->display_icon_class }} text-2xl text-[#f4ecd0] sm:text-3xl"></i>
+                                                <div class="flex h-10 w-10 items-center justify-center rounded-md border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-12 sm:w-12">
+                                                    <i class="{{ $cell['building']->item->display_icon_class }} text-xl sm:text-2xl"></i>
+                                                </div>
                                                 <p class="mt-1 line-clamp-2 text-center font-['Teko'] text-xs uppercase leading-none text-[#f4ecd0] sm:text-sm">{{ $cell['building']->item->name }}</p>
                                                 <p class="mt-1 text-[9px] uppercase tracking-[0.14em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
                                             @endif
                                         </div>
                                     @else
-                                        <div class="m-1 flex h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] items-center justify-center rounded-[0.7rem] border border-white/10 bg-black/15 text-white/25 sm:m-1.5 sm:h-[calc(100%-0.75rem)] sm:w-[calc(100%-0.75rem)] sm:rounded-[0.9rem]">
-                                            <i class="fa-regular fa-square-full text-2xl sm:text-3xl"></i>
-                                        </div>
+                                        <div class="pointer-events-none h-full w-full bg-[radial-gradient(circle_at_center,rgba(215,237,199,0.05),transparent_62%)]"></div>
+                                        <span class="absolute bottom-1 right-1 h-2.5 w-2.5 rounded-full border border-[#d7edc7]/25 bg-[#d7edc7]/10 sm:h-3 sm:w-3"></span>
                                     @endif
                                 </div>
                             @endforeach
