@@ -133,24 +133,26 @@
                 </div>
 
                 <div class="mt-5 overflow-x-auto">
-                    <div class="grid min-w-[36rem] grid-cols-10 gap-2">
+                    <div class="min-w-[36rem] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a0f0c]">
+                        <div class="grid grid-cols-10 gap-px bg-white/10">
                         @foreach ($gridRows as $row)
                             @foreach ($row as $cell)
-                                <div class="aspect-square rounded-2xl border p-2 text-center {{ $cell['status'] === 'complete' ? 'border-[#7ead59]/35 bg-[#7ead59]/12' : ($cell['status'] === 'building' ? 'border-[#c2a84f]/35 bg-[#c2a84f]/12' : 'border-white/10 bg-black/20') }}">
-                                    <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/45">{{ $cell['x'] }},{{ $cell['y'] }}</p>
+                                <div class="aspect-square p-1.5 text-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
+                                    <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">{{ $cell['x'] }},{{ $cell['y'] }}</p>
                                     @if ($cell['building'])
-                                        <div class="mt-2 flex h-[calc(100%-1.25rem)] flex-col justify-between">
-                                            <p class="font-['Teko'] text-lg uppercase leading-none text-[#f4ecd0]">{{ $cell['is_anchor'] ? $cell['building']->item->name : '...' }}</p>
-                                            <p class="text-[10px] uppercase tracking-[0.18em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
+                                        <div class="mt-1.5 flex h-[calc(100%-1rem)] flex-col justify-between">
+                                            <p class="font-['Teko'] text-base uppercase leading-none text-[#f4ecd0]">{{ $cell['is_anchor'] ? $cell['building']->item->name : '' }}</p>
+                                            <p class="text-[10px] uppercase tracking-[0.16em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
                                         </div>
                                     @else
-                                        <div class="mt-2 flex h-[calc(100%-1.25rem)] items-center justify-center text-white/20">
+                                        <div class="mt-1.5 flex h-[calc(100%-1rem)] items-center justify-center text-white/15">
                                             <i class="fa-regular fa-square"></i>
                                         </div>
                                     @endif
                                 </div>
                             @endforeach
                         @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
