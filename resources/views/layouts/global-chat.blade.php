@@ -126,7 +126,7 @@
                         <span x-text="sending ? 'Sending...' : 'Send'"></span>
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     </section>
 
