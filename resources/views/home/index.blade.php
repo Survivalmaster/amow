@@ -174,9 +174,9 @@
                                                 >
                                                     <div class="h-1.5 overflow-hidden rounded-full bg-black/35 sm:h-2">
                                                         <div
-                                                            class="h-full rounded-full"
+                                                            class="block h-full rounded-full"
                                                             data-build-progress-fill
-                                                            style="width: {{ max(0, min(100, $progressPercent)) }}%; background: {{ $progressBarStyle }};"
+                                                            style="width: {{ max(0, min(100, $progressPercent)) }}%; background-color: #c2a84f; background-image: {{ $progressBarStyle }};"
                                                         ></div>
                                                     </div>
                                                     <p class="mt-1 text-center text-[9px] uppercase tracking-[0.14em] text-[#d7edc7]/75" data-build-progress-percent>
@@ -231,7 +231,7 @@
                                         data-build-complete="{{ $buildCompleteAt?->toIso8601String() }}"
                                     >
                                         <div class="h-2.5 overflow-hidden rounded-full bg-white/10">
-                                            <div class="h-full rounded-full" data-build-progress-fill style="width: {{ max(0, min(100, $progressPercent)) }}%; background: {{ $progressBarStyle }};"></div>
+                                            <div class="block h-full rounded-full" data-build-progress-fill style="width: {{ max(0, min(100, $progressPercent)) }}%; background-color: #c2a84f; background-image: {{ $progressBarStyle }};"></div>
                                         </div>
                                         <div class="mt-2 flex items-center justify-between gap-4 text-[11px] uppercase tracking-[0.16em]">
                                             <span class="text-[#d7edc7]/75" data-build-progress-percent>{{ $progressPercent }}%</span>
@@ -255,9 +255,9 @@
         </section>
     </div>
 
-    @push('scripts')
-        <script>
-            (() => {
+    <script>
+        (function () {
+            const initConstructionTimers = () => {
                 const timers = document.querySelectorAll('[data-construction-timer]');
 
                 if (!timers.length) {
@@ -265,18 +265,9 @@
                 }
 
                 const gradientForPercent = (percent) => {
-                    if (percent >= 100) {
-                        return 'linear-gradient(90deg,#7ead59 0%,#d7edc7 100%)';
-                    }
-
-                    if (percent >= 75) {
-                        return 'linear-gradient(90deg,#8fbe63 0%,#d7edc7 100%)';
-                    }
-
-                    if (percent >= 40) {
-                        return 'linear-gradient(90deg,#c2a84f 0%,#f4ecd0 100%)';
-                    }
-
+                    if (percent >= 100) return 'linear-gradient(90deg,#7ead59 0%,#d7edc7 100%)';
+                    if (percent >= 75) return 'linear-gradient(90deg,#8fbe63 0%,#d7edc7 100%)';
+                    if (percent >= 40) return 'linear-gradient(90deg,#c2a84f 0%,#f4ecd0 100%)';
                     return 'linear-gradient(90deg,#c65b3f 0%,#f0b29f 100%)';
                 };
 
@@ -293,8 +284,8 @@
                     const now = Date.now();
 
                     timers.forEach((timer) => {
-                        const buildStart = Date.parse(timer.dataset.buildStart || '');
-                        const buildComplete = Date.parse(timer.dataset.buildComplete || '');
+                        const buildStart = Date.parse(timer.getAttribute('data-build-start') || '');
+                        const buildComplete = Date.parse(timer.getAttribute('data-build-complete') || '');
 
                         if (!buildStart || !buildComplete || buildComplete <= buildStart) {
                             return;
@@ -309,11 +300,13 @@
                         const fill = timer.querySelector('[data-build-progress-fill]');
                         const percentLabel = timer.querySelector('[data-build-progress-percent]');
                         const remainingLabel = timer.querySelector('[data-build-progress-remaining]');
-                        const statusLabel = timer.parentElement?.querySelector('[data-build-status]') ?? timer.closest('[data-construction-timer]')?.querySelector('[data-build-status]');
+                        const statusRoot = timer.closest('.rounded-2xl') || timer.parentElement;
+                        const statusLabel = statusRoot ? statusRoot.querySelector('[data-build-status]') : null;
 
                         if (fill) {
                             fill.style.width = `${progressPercent}%`;
-                            fill.style.background = gradientForPercent(progressPercent);
+                            fill.style.backgroundColor = progressPercent >= 100 ? '#7ead59' : progressPercent >= 40 ? '#c2a84f' : '#c65b3f';
+                            fill.style.backgroundImage = gradientForPercent(progressPercent);
                         }
 
                         if (percentLabel) {
@@ -324,22 +317,22 @@
                             remainingLabel.textContent = isComplete ? '00:00:00' : formatDuration(remainingSeconds);
                         }
 
-                        const container = timer.closest('.rounded-2xl, .flex');
-                        const scopedStatus = container ? container.querySelector('[data-build-status]') : null;
-
-                        if (scopedStatus) {
-                            scopedStatus.textContent = isComplete ? 'Ready' : 'Building';
-                            scopedStatus.classList.toggle('text-[#7ead59]', isComplete);
-                            scopedStatus.classList.toggle('text-[#c2a84f]', !isComplete);
-                            scopedStatus.classList.toggle('text-[#d7edc7]', isComplete);
-                            scopedStatus.classList.toggle('text-[#f4ecd0]', !isComplete);
+                        if (statusLabel) {
+                            statusLabel.textContent = isComplete ? 'Ready' : 'Building';
+                            statusLabel.style.color = isComplete ? '#d7edc7' : '#f4ecd0';
                         }
                     });
                 };
 
                 updateTimers();
                 window.setInterval(updateTimers, 1000);
-            })();
-        </script>
-    @endpush
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initConstructionTimers, { once: true });
+            } else {
+                initConstructionTimers();
+            }
+        })();
+    </script>
 </x-app-layout>
