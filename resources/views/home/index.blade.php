@@ -143,16 +143,16 @@
                                 <div class="relative flex min-h-0 min-w-0 items-center justify-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
                                     <p class="absolute left-1 top-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-white/35 sm:left-1.5 sm:top-1.5">{{ $cell['x'] }},{{ $cell['y'] }}</p>
                                     @if ($cell['building'])
-                                        <div class="flex h-full w-full flex-col items-center justify-center p-2">
+                                        <div class="m-1 flex h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] flex-col items-center justify-center rounded-[0.7rem] border border-white/10 bg-black/15 p-2 sm:m-1.5 sm:h-[calc(100%-0.75rem)] sm:w-[calc(100%-0.75rem)] sm:rounded-[0.9rem]">
                                             @if ($cell['is_anchor'])
-                                                <i class="{{ $cell['building']->item->display_icon_class }} text-lg text-[#f4ecd0] sm:text-2xl"></i>
-                                                <p class="mt-1 line-clamp-2 text-center font-['Teko'] text-[10px] uppercase leading-none text-[#f4ecd0] sm:text-xs">{{ $cell['building']->item->name }}</p>
+                                                <i class="{{ $cell['building']->item->display_icon_class }} text-2xl text-[#f4ecd0] sm:text-3xl"></i>
+                                                <p class="mt-1 line-clamp-2 text-center font-['Teko'] text-xs uppercase leading-none text-[#f4ecd0] sm:text-sm">{{ $cell['building']->item->name }}</p>
                                                 <p class="mt-1 text-[9px] uppercase tracking-[0.14em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
                                             @endif
                                         </div>
                                     @else
-                                        <div class="flex h-full w-full items-center justify-center text-white/18">
-                                            <i class="fa-regular fa-square text-base sm:text-lg"></i>
+                                        <div class="m-1 flex h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] items-center justify-center rounded-[0.7rem] border border-white/10 bg-black/15 text-white/25 sm:m-1.5 sm:h-[calc(100%-0.75rem)] sm:w-[calc(100%-0.75rem)] sm:rounded-[0.9rem]">
+                                            <i class="fa-regular fa-square-full text-2xl sm:text-3xl"></i>
                                         </div>
                                     @endif
                                 </div>
