@@ -134,7 +134,7 @@
                 </div>
 
                 <div class="mt-5">
-                    <div class="mx-auto w-full max-w-[60rem] overflow-hidden rounded-[1.25rem] border border-[#d7edc7]/20 bg-[radial-gradient(circle_at_center,rgba(92,160,120,0.16),rgba(15,24,18,0.96)_70%)] p-4 shadow-inner shadow-black/40">
+                    <div class="mx-auto w-full max-w-[66rem] overflow-hidden rounded-[1.25rem] border border-[#d7edc7]/20 bg-[radial-gradient(circle_at_center,rgba(92,160,120,0.16),rgba(15,24,18,0.96)_70%)] p-4 shadow-inner shadow-black/40">
                         <div
                             class="grid w-full border border-[#d7edc7]/35 bg-[#d7edc7]/20"
                             style="grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(10, minmax(0, 1fr)); aspect-ratio: 1 / 1;"
@@ -165,35 +165,33 @@
                                                     <button
                                                         type="button"
                                                         onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'building-{{ $cell['building']->id }}' }))"
-                                                        class="flex h-full w-full flex-col items-center justify-center px-2 py-3 text-center transition hover:bg-black/10"
+                                                        class="flex h-full w-full flex-col items-center justify-center px-2 py-2 text-center transition hover:bg-black/10"
                                                     >
-                                                        <i class="{{ $cell['building']->item->display_icon_class }} text-3xl text-[#f4ecd0] sm:text-4xl"></i>
-                                                        <p class="mt-2 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
+                                                        <i class="{{ $cell['building']->item->display_icon_class }} text-[1.8rem] leading-none text-[#f4ecd0] sm:text-[2.15rem]"></i>
+                                                        <p class="mt-1.5 line-clamp-2 text-center font-['Teko'] text-[0.8rem] uppercase leading-none text-[#f4ecd0] sm:text-[0.95rem]">{{ $cell['building']->item->name }}</p>
                                                     </button>
                                                 @else
-                                                    <div class="flex h-full w-full flex-col items-center justify-center px-2 py-3 text-center">
-                                                        <div class="flex h-12 w-12 items-center justify-center rounded-lg border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-16 sm:w-16">
-                                                            <i class="{{ $cell['building']->item->display_icon_class }} text-2xl sm:text-3xl"></i>
-                                                        </div>
-                                                        <p class="mt-1.5 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
-                                                        <p class="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#f4ecd0]" data-build-status>Building</p>
+                                                    <div class="flex h-full w-full flex-col items-center justify-center px-2 py-2 text-center">
+                                                        <i class="{{ $cell['building']->item->display_icon_class }} text-[1.8rem] leading-none text-[#f4ecd0] sm:text-[2.15rem]"></i>
+                                                        <p class="mt-1 line-clamp-2 text-center font-['Teko'] text-[0.8rem] uppercase leading-none text-[#f4ecd0] sm:text-[0.95rem]">{{ $cell['building']->item->name }}</p>
+                                                        <p class="mt-1 text-[9px] uppercase tracking-[0.14em] text-[#f4ecd0]" data-build-status>Building</p>
                                                         <div
-                                                            class="mt-1.5 w-full max-w-[5.5rem] sm:max-w-[6.5rem]"
+                                                            class="mt-1 w-full max-w-[4.25rem] sm:max-w-[5rem]"
                                                             data-construction-timer
                                                             data-build-start="{{ $buildStartedAt?->toIso8601String() }}"
                                                             data-build-complete="{{ $buildCompleteAt?->toIso8601String() }}"
                                                         >
-                                                            <div class="h-1.5 overflow-hidden rounded-full bg-black/35 sm:h-2">
+                                                            <div class="h-1 overflow-hidden rounded-full bg-black/35 sm:h-1.5">
                                                                 <div
                                                                     class="block h-full rounded-full"
                                                                     data-build-progress-fill
                                                                     style="width: {{ max(0, min(100, $progressPercent)) }}%; background-color: #c2a84f; background-image: {{ $progressBarStyle }};"
                                                                 ></div>
                                                             </div>
-                                                            <p class="mt-1 text-center text-[9px] uppercase tracking-[0.14em] text-[#d7edc7]/75" data-build-progress-percent>
+                                                            <p class="mt-0.5 text-center text-[8px] uppercase tracking-[0.12em] text-[#d7edc7]/75" data-build-progress-percent>
                                                                 {{ $progressPercent.'%' }}
                                                             </p>
-                                                            <p class="mt-0.5 text-center text-[9px] uppercase tracking-[0.14em] text-[#f4ecd0]" data-build-progress-remaining>
+                                                            <p class="mt-0.5 text-center text-[8px] uppercase tracking-[0.12em] text-[#f4ecd0]" data-build-progress-remaining>
                                                                 {{ $remainingFormatted }}
                                                             </p>
                                                         </div>
