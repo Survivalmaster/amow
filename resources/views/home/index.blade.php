@@ -132,20 +132,20 @@
                     <span class="rounded-full border border-[#7ead59]/30 bg-[#7ead59]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">{{ $activeBuildings->count() }} placed</span>
                 </div>
 
-                <div class="mt-5 overflow-x-auto">
-                    <div class="min-w-[36rem] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a0f0c]">
-                        <div class="grid grid-cols-10 gap-px bg-white/10">
+                <div class="mt-5">
+                    <div class="mx-auto w-full max-w-[42rem] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a0f0c] shadow-inner shadow-black/40">
+                        <div class="grid aspect-square w-full grid-cols-10 gap-px bg-white/10">
                         @foreach ($gridRows as $row)
                             @foreach ($row as $cell)
-                                <div class="aspect-square p-1.5 text-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
+                                <div class="flex min-h-0 flex-col p-1.5 text-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
                                     <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">{{ $cell['x'] }},{{ $cell['y'] }}</p>
                                     @if ($cell['building'])
-                                        <div class="mt-1.5 flex h-[calc(100%-1rem)] flex-col justify-between">
-                                            <p class="font-['Teko'] text-base uppercase leading-none text-[#f4ecd0]">{{ $cell['is_anchor'] ? $cell['building']->item->name : '' }}</p>
+                                        <div class="mt-1.5 flex min-h-0 flex-1 flex-col justify-between">
+                                            <p class="font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['is_anchor'] ? $cell['building']->item->name : '' }}</p>
                                             <p class="text-[10px] uppercase tracking-[0.16em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
                                         </div>
                                     @else
-                                        <div class="mt-1.5 flex h-[calc(100%-1rem)] items-center justify-center text-white/15">
+                                        <div class="mt-1.5 flex min-h-0 flex-1 items-center justify-center text-white/15">
                                             <i class="fa-regular fa-square"></i>
                                         </div>
                                     @endif
