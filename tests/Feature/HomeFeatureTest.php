@@ -110,6 +110,42 @@ test('sleeping on land restores stamina to full once a building is complete', fu
     expect($character->fresh()->stamina_points)->toBe(100);
 });
 
+test('completed buildings can be moved and returned to inventory', function () {
+    $user = User::factory()->create();
+    $character = createHomeCharacter($user);
+    $land = Licence::query()->where('slug', 'land')->firstOrFail();
+    $tent = Item::query()->where('slug', 'salvaged-tent')->firstOrFail();
+
+    $character->licences()->attach($land->id);
+    $building = $character->landBuildings()->create([
+        'item_id' => $tent->id,
+        'grid_x' => 1,
+        'grid_y' => 1,
+        'build_started_at' => now()->subMinutes(30),
+        'build_complete_at' => now()->subMinutes(15),
+    ]);
+
+    $this->actingAs($user)
+        ->patch(route('home.buildings.move', $building), [
+            'grid_x' => 4,
+            'grid_y' => 5,
+        ])
+        ->assertRedirect();
+
+    $building->refresh();
+
+    expect($building->grid_x)->toBe(4);
+    expect($building->grid_y)->toBe(5);
+    expect($building->build_complete_at?->isFuture())->toBeTrue();
+
+    $this->actingAs($user)
+        ->delete(route('home.buildings.destroy', $building))
+        ->assertRedirect();
+
+    expect($character->fresh()->landBuildings()->count())->toBe(0);
+    expect((int) optional($character->fresh()->inventory()->where('items.id', $tent->id)->first())->pivot?->quantity)->toBe(1);
+});
+
 test('inventory page shows slot based inventory management', function () {
     $user = User::factory()->create();
     $character = createHomeCharacter($user);

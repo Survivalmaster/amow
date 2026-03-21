@@ -119,6 +119,77 @@ class HomeController extends Controller
         return back()->with('status', "{$item->name} is now under construction.");
     }
 
+    public function moveBuilding(Request $request, CharacterLandBuilding $characterLandBuilding): RedirectResponse
+    {
+        $character = $request->user()->character()->with(['inventory', 'licences', 'landBuildings.item'])->firstOrFail();
+
+        abort_unless($character->hasLand(), 404);
+        abort_unless($characterLandBuilding->character_id === $character->id, 404);
+
+        $validated = $request->validate([
+            'grid_x' => ['required', 'integer', 'min:1', 'max:10'],
+            'grid_y' => ['required', 'integer', 'min:1', 'max:10'],
+        ]);
+
+        $item = $characterLandBuilding->item;
+
+        if (! $this->canPlaceBuilding(
+            $character,
+            $item,
+            (int) $validated['grid_x'],
+            (int) $validated['grid_y'],
+            $characterLandBuilding
+        )) {
+            return back()->withErrors(['building' => 'That building cannot be moved there because the space is occupied or out of bounds.']);
+        }
+
+        $characterLandBuilding->forceFill([
+            'grid_x' => (int) $validated['grid_x'],
+            'grid_y' => (int) $validated['grid_y'],
+            'build_started_at' => now(),
+            'build_complete_at' => now()->addMinutes(max(0, (int) $item->build_time_minutes)),
+        ])->save();
+
+        CharacterActivity::recordTransaction(
+            $character,
+            'building_move',
+            0,
+            "Moved {$item->name} to {$validated['grid_x']}, {$validated['grid_y']} and restarted construction."
+        );
+
+        return back()->with('status', "{$item->name} is being rebuilt in its new position.");
+    }
+
+    public function destroyBuilding(Request $request, CharacterLandBuilding $characterLandBuilding): RedirectResponse
+    {
+        $character = $request->user()->character()->with(['inventory', 'licences', 'landBuildings.item'])->firstOrFail();
+
+        abort_unless($character->hasLand(), 404);
+        abort_unless($characterLandBuilding->character_id === $character->id, 404);
+
+        $item = $characterLandBuilding->item;
+
+        DB::transaction(function () use ($character, $characterLandBuilding, $item) {
+            $ownedItem = $character->inventory->firstWhere('id', $item->id);
+            $currentQuantity = (int) optional($ownedItem?->pivot)->quantity;
+
+            $character->inventory()->syncWithoutDetaching([
+                $item->id => ['quantity' => $currentQuantity + 1],
+            ]);
+
+            $characterLandBuilding->delete();
+
+            CharacterActivity::recordTransaction(
+                $character,
+                'building_remove',
+                0,
+                "Removed {$item->name} from land and returned it to inventory."
+            );
+        });
+
+        return back()->with('status', "{$item->name} removed from land.");
+    }
+
     protected function buildGridRows($character): array
     {
         $grid = [];
@@ -169,7 +240,7 @@ class HomeController extends Controller
         return $grid;
     }
 
-    protected function canPlaceBuilding($character, Item $item, int $gridX, int $gridY): bool
+    protected function canPlaceBuilding($character, Item $item, int $gridX, int $gridY, ?CharacterLandBuilding $ignoreBuilding = null): bool
     {
         $width = max(1, (int) $item->footprint_width);
         $height = max(1, (int) $item->footprint_height);
@@ -179,6 +250,10 @@ class HomeController extends Controller
         }
 
         foreach ($character->landBuildings as $placedBuilding) {
+            if ($ignoreBuilding && $placedBuilding->id === $ignoreBuilding->id) {
+                continue;
+            }
+
             $placedLeft = (int) $placedBuilding->grid_x;
             $placedTop = (int) $placedBuilding->grid_y;
             $placedRight = $placedLeft + max(1, (int) $placedBuilding->item->footprint_width) - 1;

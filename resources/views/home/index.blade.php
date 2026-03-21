@@ -167,7 +167,7 @@
                                                         onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'building-{{ $cell['building']->id }}' }))"
                                                         class="flex h-full w-full flex-col items-center justify-center px-2 py-3 text-center transition hover:bg-black/10"
                                                     >
-                                                        <i class="{{ $cell['building']->item->display_icon_class }} text-4xl text-[#f4ecd0] sm:text-5xl"></i>
+                                                        <i class="{{ $cell['building']->item->display_icon_class }} text-3xl text-[#f4ecd0] sm:text-4xl"></i>
                                                         <p class="mt-2 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
                                                     </button>
                                                 @else
@@ -301,13 +301,46 @@
                                     Sleep
                                 </button>
                             </form>
-                        @else
-                            <div class="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                                No actions yet
-                            </div>
                         @endif
+                        <form method="POST" action="{{ route('home.buildings.destroy', $building) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button class="rounded-full border border-[#c65b3f]/35 bg-[#c65b3f]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">
+                                Remove Building
+                            </button>
+                        </form>
                     </div>
                 </div>
+
+                <div class="mt-5 border-t border-white/10 pt-5">
+                    <p class="text-xs uppercase tracking-[0.2em] text-white/45">Move Building</p>
+                    <p class="mt-2 text-sm text-white/60">Moving the building restarts its construction timer.</p>
+                    <form method="POST" action="{{ route('home.buildings.move', $building) }}" class="mt-4 grid gap-3 sm:grid-cols-2">
+                        @csrf
+                        @method('PATCH')
+                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="grid_x">
+                            @foreach (range(1, 10) as $x)
+                                <option value="{{ $x }}" @selected($building->grid_x === $x)>X {{ $x }}</option>
+                            @endforeach
+                        </select>
+                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="grid_y">
+                            @foreach (range(1, 10) as $y)
+                                <option value="{{ $y }}" @selected($building->grid_y === $y)>Y {{ $y }}</option>
+                            @endforeach
+                        </select>
+                        <div class="sm:col-span-2 flex justify-end">
+                            <button class="rounded-full border border-[#d7edc7]/30 bg-[#d7edc7]/10 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f4ecd0]">
+                                Move And Rebuild
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                @if (! str_contains($building->item->slug, 'tent'))
+                    <div class="mt-5 rounded-full border border-white/10 bg-white/5 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/45 text-center">
+                        No special building actions yet
+                    </div>
+                @endif
             </div>
         </x-modal>
     @endforeach
