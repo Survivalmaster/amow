@@ -17,6 +17,7 @@ class HomeController extends Controller
     private const STARTER_OPEN_HEIGHT = 3;
     private const CLEAR_COST_BASE = 75;
     private const CLEAR_COST_STEP = 35;
+    private const CLEAR_DURATION_MINUTES = 10;
 
     public function index(Request $request): View
     {
@@ -32,6 +33,7 @@ class HomeController extends Controller
 
         abort_unless($character->hasLand(), 404);
         $this->ensureLandTilesInitialized($character);
+        $this->completeFinishedTileClears($character);
         $character->load(['landTiles', 'landBuildings.item']);
 
         return view('home.index', [
@@ -39,6 +41,7 @@ class HomeController extends Controller
             'buildingItems' => $character->buildingItems(),
             'gridRows' => $this->buildGridRows($character),
             'nextTileClearCost' => $this->nextTileClearCost($character),
+            'activeClearingTiles' => $character->landTiles->filter(fn (CharacterLandTile $tile) => $tile->isClearing())->values(),
         ]);
     }
 
@@ -47,6 +50,7 @@ class HomeController extends Controller
         $character = $request->user()->character()->with(['inventory', 'licences', 'landBuildings.item'])->firstOrFail();
 
         abort_unless($character->hasLand(), 404);
+        $this->completeFinishedTileClears($character);
 
         if (! $character->hasCompletedLandBuilding()) {
             return back()->withErrors(['home' => 'You need at least one completed building on your land before you can rest there.']);
@@ -78,6 +82,7 @@ class HomeController extends Controller
 
         abort_unless($character->hasLand(), 404);
         $this->ensureLandTilesInitialized($character);
+        $this->completeFinishedTileClears($character);
         $character->load(['landTiles', 'landBuildings.item']);
 
         $validated = $request->validate([
@@ -137,6 +142,7 @@ class HomeController extends Controller
 
         abort_unless($character->hasLand(), 404);
         $this->ensureLandTilesInitialized($character);
+        $this->completeFinishedTileClears($character);
         $character->load(['landTiles', 'landBuildings.item']);
 
         $validated = $request->validate([
@@ -150,8 +156,12 @@ class HomeController extends Controller
             ->where('grid_y', (int) $validated['grid_y'])
             ->firstOrFail();
 
-        if (! $tile->isBlocked()) {
+        if ($tile->isOpen()) {
             return back()->withErrors(['land' => 'That tile is already open.']);
+        }
+
+        if ($tile->isClearing()) {
+            return back()->withErrors(['land' => 'That tile is already being cleared.']);
         }
 
         $clearCost = $this->nextTileClearCost($character);
@@ -162,19 +172,19 @@ class HomeController extends Controller
 
         $character->decrement('plastic_credits', $clearCost);
         $tile->forceFill([
-            'state' => CharacterLandTile::STATE_OPEN,
-            'obstacle_type' => null,
-            'cleared_at' => now(),
+            'state' => CharacterLandTile::STATE_CLEARING,
+            'clear_started_at' => now(),
+            'clear_complete_at' => now()->addMinutes(self::CLEAR_DURATION_MINUTES),
         ])->save();
 
         CharacterActivity::recordTransaction(
             $character,
             'land_salvage',
             -$clearCost,
-            "Cleared land tile {$validated['grid_x']}, {$validated['grid_y']}."
+            "Started clearing land tile {$validated['grid_x']}, {$validated['grid_y']}."
         );
 
-        return back()->with('status', "Tile {$validated['grid_x']}, {$validated['grid_y']} cleared for {$clearCost} credits.");
+        return back()->with('status', "Salvage started on tile {$validated['grid_x']}, {$validated['grid_y']} for {$clearCost} credits.");
     }
 
     public function moveBuilding(Request $request, CharacterLandBuilding $characterLandBuilding): RedirectResponse
@@ -266,9 +276,11 @@ class HomeController extends Controller
                     'tile' => $tile,
                     'building' => null,
                     'label' => null,
-                    'status' => $tile?->isBlocked() ? 'blocked' : 'empty',
+                    'status' => $tile?->isClearing() ? 'clearing' : ($tile?->isBlocked() ? 'blocked' : 'empty'),
                     'obstacle_type' => $tile?->obstacle_type,
                     'clear_cost' => $tile?->isBlocked() ? $nextClearCost : null,
+                    'clear_started_at' => $tile?->clear_started_at,
+                    'clear_complete_at' => $tile?->clear_complete_at,
                     'is_anchor' => false,
                 ];
             }
@@ -321,6 +333,10 @@ class HomeController extends Controller
                 $tile = $tilesByCoordinate->get(($gridX + $offsetX).'-'.($gridY + $offsetY));
 
                 if (! $tile || $tile->isBlocked()) {
+                    return false;
+                }
+
+                if ($tile->isClearing()) {
                     return false;
                 }
             }
@@ -387,6 +403,8 @@ class HomeController extends Controller
                     'grid_y' => $y,
                     'state' => $isOpen ? CharacterLandTile::STATE_OPEN : CharacterLandTile::STATE_BLOCKED,
                     'obstacle_type' => $isOpen ? null : $this->obstacleTypeFor($x, $y),
+                    'clear_started_at' => null,
+                    'clear_complete_at' => null,
                     'cleared_at' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -406,8 +424,26 @@ class HomeController extends Controller
 
     protected function nextTileClearCost($character): int
     {
-        $clearedCount = $character->landTiles->whereNotNull('cleared_at')->count();
+        $clearedCount = $character->landTiles->filter(fn (CharacterLandTile $tile) => $tile->isClearing() || $tile->cleared_at !== null)->count();
 
         return self::CLEAR_COST_BASE + ($clearedCount * self::CLEAR_COST_STEP);
+    }
+
+    protected function completeFinishedTileClears($character): void
+    {
+        $character->landTiles()
+            ->where('state', CharacterLandTile::STATE_CLEARING)
+            ->whereNotNull('clear_complete_at')
+            ->where('clear_complete_at', '<=', now())
+            ->get()
+            ->each(function (CharacterLandTile $tile) {
+                $tile->forceFill([
+                    'state' => CharacterLandTile::STATE_OPEN,
+                    'obstacle_type' => null,
+                    'cleared_at' => now(),
+                    'clear_started_at' => null,
+                    'clear_complete_at' => null,
+                ])->save();
+            });
     }
 }

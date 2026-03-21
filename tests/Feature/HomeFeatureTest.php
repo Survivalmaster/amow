@@ -132,6 +132,17 @@ test('completed buildings can be moved and returned to inventory', function () {
         ])
         ->assertRedirect();
 
+    $character->landTiles()
+        ->where('grid_x', 4)
+        ->where('grid_y', 5)
+        ->update([
+            'state' => \App\Models\CharacterLandTile::STATE_OPEN,
+            'obstacle_type' => null,
+            'clear_started_at' => null,
+            'clear_complete_at' => null,
+            'cleared_at' => now(),
+        ]);
+
     $this->actingAs($user)
         ->patch(route('home.buildings.move', $building), [
             'grid_x' => 4,
