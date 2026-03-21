@@ -145,11 +145,28 @@
                                     @if ($cell['building'])
                                         <div class="flex h-full w-full flex-col items-center justify-center p-2">
                                             @if ($cell['is_anchor'])
-                                                <div class="flex h-10 w-10 items-center justify-center rounded-md border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-12 sm:w-12">
-                                                    <i class="{{ $cell['building']->item->display_icon_class }} text-xl sm:text-2xl"></i>
+                                                @php($buildStartedAt = $cell['building']->build_started_at)
+                                                @php($buildCompleteAt = $cell['building']->build_complete_at)
+                                                @php($buildDurationSeconds = max(1, (int) $buildStartedAt?->diffInSeconds($buildCompleteAt, true)))
+                                                @php($elapsedSeconds = $cell['building']->isComplete() ? $buildDurationSeconds : max(0, min($buildDurationSeconds, (int) $buildStartedAt?->diffInSeconds(now(), true))))
+                                                @php($progressPercent = (int) round(($elapsedSeconds / $buildDurationSeconds) * 100))
+
+                                                <div class="flex h-12 w-12 items-center justify-center rounded-lg border border-[#d7edc7]/35 bg-black/20 text-[#f4ecd0] sm:h-16 sm:w-16">
+                                                    <i class="{{ $cell['building']->item->display_icon_class }} text-2xl sm:text-3xl"></i>
                                                 </div>
-                                                <p class="mt-1 line-clamp-2 text-center font-['Teko'] text-xs uppercase leading-none text-[#f4ecd0] sm:text-sm">{{ $cell['building']->item->name }}</p>
-                                                <p class="mt-1 text-[9px] uppercase tracking-[0.14em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
+                                                <p class="mt-1.5 line-clamp-2 text-center font-['Teko'] text-sm uppercase leading-none text-[#f4ecd0] sm:text-base">{{ $cell['building']->item->name }}</p>
+                                                <p class="mt-1 text-[10px] uppercase tracking-[0.16em] {{ $cell['status'] === 'complete' ? 'text-[#d7edc7]' : 'text-[#f4ecd0]' }}">{{ $cell['status'] === 'complete' ? 'Ready' : 'Building' }}</p>
+                                                <div class="mt-1.5 w-full max-w-[5.5rem] sm:max-w-[6.5rem]">
+                                                    <div class="h-1.5 overflow-hidden rounded-full bg-black/35 sm:h-2">
+                                                        <div
+                                                            class="h-full rounded-full {{ $cell['status'] === 'complete' ? 'bg-[linear-gradient(90deg,#7ead59_0%,#d7edc7_100%)]' : 'bg-[linear-gradient(90deg,#c2a84f_0%,#f4ecd0_100%)]' }}"
+                                                            style="width: {{ max(0, min(100, $progressPercent)) }}%;"
+                                                        ></div>
+                                                    </div>
+                                                    <p class="mt-1 text-center text-[9px] uppercase tracking-[0.14em] text-[#d7edc7]/75">
+                                                        {{ $cell['status'] === 'complete' ? '100%' : $progressPercent.'%' }}
+                                                    </p>
+                                                </div>
                                             @endif
                                         </div>
                                     @else
