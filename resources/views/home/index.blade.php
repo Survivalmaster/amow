@@ -134,10 +134,13 @@
 
                 <div class="mt-5">
                     <div class="mx-auto w-full max-w-[42rem] overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0a0f0c] shadow-inner shadow-black/40">
-                        <div class="grid aspect-square w-full grid-cols-10 gap-px bg-white/10">
+                        <div
+                            class="grid w-full gap-px bg-white/10"
+                            style="grid-template-columns: repeat(10, minmax(0, 1fr)); aspect-ratio: 1 / 1;"
+                        >
                         @foreach ($gridRows as $row)
                             @foreach ($row as $cell)
-                                <div class="flex min-h-0 flex-col p-1.5 text-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
+                                <div class="flex min-h-0 min-w-0 flex-col p-1.5 text-center {{ $cell['status'] === 'complete' ? 'bg-[#1f3a22]' : ($cell['status'] === 'building' ? 'bg-[#4a3b19]' : 'bg-[#101713]') }}">
                                     <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">{{ $cell['x'] }},{{ $cell['y'] }}</p>
                                     @if ($cell['building'])
                                         <div class="mt-1.5 flex min-h-0 flex-1 flex-col justify-between">
