@@ -1,5 +1,5 @@
 <div
-    x-data="globalChatBox({
+    x-data="window.globalChatBox({
         stateUrl: @js(route('chat.state')),
         sendUrl: @js(route('chat.send')),
         csrfToken: @js(csrf_token()),

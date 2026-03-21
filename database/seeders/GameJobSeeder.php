@@ -18,7 +18,7 @@ class GameJobSeeder extends Seeder
                 'max_pay' => 30,
                 'required_level' => 0,
                 'work_cooldown_minutes' => 5,
-                'stamina_decrease' => 0,
+                'stamina_decrease' => 10,
                 'working_display_message' => 'Is begging in the city.',
                 'is_starter' => true,
                 'is_active' => true,
