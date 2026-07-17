@@ -89,11 +89,18 @@
                     @php($rank = $rankGroup['rank'])
                     <section class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-6 shadow-xl shadow-black/20">
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#e4edf8]">{{ $rankGroup['label'] }}</p>
-                                @if ($rank)
-                                    <p class="mt-1 text-xs text-white/45">Discord role position {{ $rank->position }}</p>
+                            <div class="flex min-w-0 items-center gap-3">
+                                @if ($rankGroup['badge_file'])
+                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/15 p-1.5">
+                                        <img src="{{ asset('images/Military_Rankings/'.$rankGroup['badge_file']) }}" alt="{{ $rankGroup['label'] }} insignia" class="max-h-full max-w-full object-contain">
+                                    </span>
                                 @endif
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-bold uppercase tracking-[0.12em] text-[#e4edf8]">{{ $rankGroup['label'] }}</p>
+                                    @if ($rank)
+                                        <p class="mt-1 text-xs text-white/45">Discord role position {{ $rank->position }}</p>
+                                    @endif
+                                </div>
                             </div>
                             <p class="text-sm font-semibold text-white/55">{{ number_format($rankGroup['members']->count()) }} members</p>
                         </div>
@@ -111,7 +118,14 @@
                                     </div>
                                     <div class="min-w-0">
                                         <p class="truncate text-base font-bold text-white">{{ $member->display_name ?? $member->username ?? 'Unknown member' }}</p>
-                                        <p class="mt-1 truncate text-sm text-white/45">{{ $rankGroup['label'] }}</p>
+                                        <p class="mt-1 flex min-w-0 items-center gap-2 truncate text-sm text-white/45">
+                                            @if ($rankGroup['badge_file'])
+                                                <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-black/20 p-0.5">
+                                                    <img src="{{ asset('images/Military_Rankings/'.$rankGroup['badge_file']) }}" alt="" class="max-h-full max-w-full object-contain">
+                                                </span>
+                                            @endif
+                                            <span class="truncate">{{ $rankGroup['label'] }}</span>
+                                        </p>
                                         <p class="mt-3 truncate text-xs text-white/80"><span class="font-bold text-white">Discord:</span> {{ $member->username ?? $member->discord_user_id }}</p>
                                     </div>
                                 </div>

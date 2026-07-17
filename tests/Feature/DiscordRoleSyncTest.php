@@ -296,5 +296,6 @@ test('admin can view nation roster ordered by rank roles', function () {
     $response->assertSee('Green');
     $response->assertDontSee('Green Nation Leadership');
     $response->assertSee('Leader User');
+    $response->assertSee('Military_Rankings/General.png');
     $response->assertSeeInOrder(['General', 'General User', 'Private', 'Private User']);
 });

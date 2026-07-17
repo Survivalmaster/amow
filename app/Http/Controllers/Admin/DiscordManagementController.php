@@ -100,6 +100,7 @@ class DiscordManagementController extends Controller
                     return [
                         'rank' => $rank,
                         'label' => $rank?->name ?? 'Unranked',
+                        'badge_file' => $this->rankBadgeFileForRole($rank),
                         'position' => $rank?->position ?? -1,
                         'members' => $rankMembers,
                     ];
@@ -371,5 +372,44 @@ class DiscordManagementController extends Controller
         $label = trim(preg_replace('/\s+/', ' ', str_replace(['-', '_', '|'], ' ', $label ?? '')));
 
         return $label !== '' ? $label : $role->name;
+    }
+
+    private function rankBadgeFileForRole(?DiscordRole $role): ?string
+    {
+        if (! $role) {
+            return null;
+        }
+
+        $rankName = strtolower($role->name);
+        $rankName = preg_replace('/\[[^\]]+\]|\([^)]*\)/', ' ', $rankName) ?? $rankName;
+        $rankName = preg_replace('/[^a-z0-9]+/', ' ', $rankName) ?? $rankName;
+        $rankName = trim(preg_replace('/\s+/', ' ', $rankName) ?? $rankName);
+
+        $rankFiles = [
+            ['file' => 'Lieutenant General.png', 'patterns' => ['lieutenant general', 'lt general', 'lt gen']],
+            ['file' => 'Major General.png', 'patterns' => ['major general', 'maj general', 'maj gen']],
+            ['file' => 'Brigadier General.png', 'patterns' => ['brigadier general', 'brig general', 'brig gen']],
+            ['file' => 'Lieutenant Colonel.png', 'patterns' => ['lieutenant colonel', 'lt colonel', 'lt col']],
+            ['file' => 'Staff Sergeant.png', 'patterns' => ['staff sergeant', 'ssgt', 'staff sgt']],
+            ['file' => 'Warrant Officer.png', 'patterns' => ['warrant officer']],
+            ['file' => 'General.png', 'patterns' => ['general', 'gen']],
+            ['file' => 'Colonel.png', 'patterns' => ['colonel', 'col']],
+            ['file' => 'Captain.png', 'patterns' => ['captain', 'cpt', 'capt']],
+            ['file' => 'Lieutenant.png', 'patterns' => ['lieutenant', 'lt']],
+            ['file' => 'Major.png', 'patterns' => ['major', 'maj']],
+            ['file' => 'Sergeant.png', 'patterns' => ['sergeant', 'sgt']],
+            ['file' => 'Corporal.png', 'patterns' => ['corporal', 'cpl']],
+            ['file' => 'Private.png', 'patterns' => ['private', 'pvt']],
+        ];
+
+        foreach ($rankFiles as $rankFile) {
+            foreach ($rankFile['patterns'] as $pattern) {
+                if (preg_match('/\b'.preg_quote($pattern, '/').'\b/', $rankName)) {
+                    return $rankFile['file'];
+                }
+            }
+        }
+
+        return null;
     }
 }
