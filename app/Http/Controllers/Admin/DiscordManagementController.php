@@ -65,8 +65,15 @@ class DiscordManagementController extends Controller
 
         $rankRoleIds = $rankRoles->pluck('id')->all();
 
-        $nations = $nationRoles->map(function (DiscordRole $nationRole) use ($rolesByMember, $rankRoleIds): array {
-            $members = $nationRole->members
+        $nations = $nationRoles
+            ->groupBy(fn (DiscordRole $role): string => $this->nationKeyForRole($role))
+            ->map(function (Collection $nationRoleGroup) use ($rolesByMember, $rankRoleIds): array {
+                $nationRoles = $nationRoleGroup->sortByDesc('position')->values();
+                $displayRole = $nationRoles->first();
+                $members = $nationRoles
+                    ->flatMap(fn (DiscordRole $nationRole): Collection => $nationRole->members)
+                    ->unique('discord_user_id')
+                    ->values()
                 ->map(function (DiscordRoleMember $member) use ($rolesByMember, $rankRoleIds): array {
                     $memberRankRoles = ($rolesByMember->get($member->discord_user_id) ?? collect())
                         ->filter(fn (DiscordRole $role): bool => in_array($role->id, $rankRoleIds, true))
@@ -101,15 +108,20 @@ class DiscordManagementController extends Controller
                 ->values();
 
             return [
-                'role' => $nationRole,
+                'key' => $this->nationKeyForRole($displayRole),
+                'label' => $this->nationLabelForRole($displayRole),
+                'color' => $displayRole->color ?: '#7ead59',
+                'roles' => $nationRoles,
                 'members' => $members,
                 'rank_groups' => $rankGroups,
             ];
-        });
+            })
+            ->sortBy('label')
+            ->values();
 
         return view('admin.discord-roster', [
             'nations' => $nations,
-            'nationRoleCount' => $nationRoles->count(),
+            'nationRoleCount' => $nations->count(),
             'rankRoleCount' => $rankRoles->count(),
             'memberCount' => $nations->sum(fn (array $nation): int => $nation['members']->count()),
             'lastSyncedAt' => $roles->max('synced_at'),
@@ -346,5 +358,18 @@ class DiscordManagementController extends Controller
         $key = $this->categoryForRole($role);
 
         return strtolower($definitions[$key]['label'] ?? $key);
+    }
+
+    private function nationKeyForRole(DiscordRole $role): string
+    {
+        return Str::slug($this->nationLabelForRole($role)) ?: $role->discord_id;
+    }
+
+    private function nationLabelForRole(DiscordRole $role): string
+    {
+        $label = preg_replace('/\b(high command|nation|leadership|leaders|leader|command|hq)\b/i', '', $role->name);
+        $label = trim(preg_replace('/\s+/', ' ', str_replace(['-', '_', '|'], ' ', $label ?? '')));
+
+        return $label !== '' ? $label : $role->name;
     }
 }

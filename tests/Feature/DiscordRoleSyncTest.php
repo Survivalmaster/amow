@@ -218,6 +218,17 @@ test('admin can view nation roster ordered by rank roles', function () {
         'synced_at' => now(),
     ]);
 
+    $greenLeadership = DiscordRole::query()->create([
+        'discord_id' => 'green-leadership',
+        'name' => 'Green Nation Leadership',
+        'color' => '#00ff66',
+        'position' => 44,
+        'is_managed' => false,
+        'category' => 'nation-roles',
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
     $general = DiscordRole::query()->create([
         'discord_id' => 'general',
         'name' => 'General',
@@ -254,6 +265,13 @@ test('admin can view nation roster ordered by rank roles', function () {
         'synced_at' => now(),
     ]);
 
+    $greenLeadership->members()->create([
+        'discord_user_id' => '400',
+        'username' => 'leader_user',
+        'display_name' => 'Leader User',
+        'synced_at' => now(),
+    ]);
+
     $general->members()->create([
         'discord_user_id' => '200',
         'username' => 'general_user',
@@ -274,6 +292,9 @@ test('admin can view nation roster ordered by rank roles', function () {
 
     $response->assertOk();
     $response->assertSee('Discord Roster');
+    $response->assertSee('Pick one nation');
     $response->assertSee('Green');
+    $response->assertDontSee('Green Nation Leadership');
+    $response->assertSee('Leader User');
     $response->assertSeeInOrder(['General', 'General User', 'Private', 'Private User']);
 });
