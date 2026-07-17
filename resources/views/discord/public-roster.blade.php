@@ -15,7 +15,7 @@
             <script src="https://cdn.tailwindcss.com"></script>
         @endif
     </head>
-    <body class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_32%),linear-gradient(180deg,_#102017_0%,_#07100c_58%,_#040806_100%)] font-sans text-[#f4ecd0] antialiased">
+    <body class="min-h-screen bg-[#040806] font-sans text-[#f4ecd0] antialiased">
         <main class="mx-auto min-h-screen w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
             <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,rgba(30,39,50,0.96),rgba(19,46,39,0.9))] p-5 shadow-2xl shadow-black/30 sm:p-7">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center">
