@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DiscordRole;
+use App\Models\DiscordRoleCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -22,18 +24,76 @@ class DiscordManagementController extends Controller
             ->get();
 
         $roleGroups = $this->categoriseRoles($roles);
+        $roleCategories = $this->categoryDefinitions();
 
         return view('admin.discord-management', [
             'roles' => $roles,
             'roleGroups' => $roleGroups,
-            'roleCategories' => $this->categoryDefinitions(),
+            'roleCategories' => $roleCategories,
             'categoryOverridesEnabled' => $this->categoryOverridesEnabled(),
+            'categoryManagementEnabled' => $this->categoryManagementEnabled(),
             'lastSyncedAt' => $roles->max('synced_at'),
             'memberAssignmentCount' => $roles->sum('member_count'),
         ]);
     }
 
-    public function updateCategory(Request $request, DiscordRole $discordRole): RedirectResponse
+    public function storeCategory(Request $request): RedirectResponse
+    {
+        if (! $this->categoryManagementEnabled()) {
+            return back()->withErrors([
+                'category_name' => 'Run the latest migrations before managing Discord role categories.',
+            ]);
+        }
+
+        $validated = $this->validateCategory($request);
+
+        DiscordRoleCategory::query()->create([
+            'name' => $validated['name'],
+            'slug' => $this->uniqueCategorySlug($validated['name']),
+            'description' => $validated['description'] ?: null,
+            'sort_order' => $validated['sort_order'] ?? $this->nextCategorySortOrder(),
+        ]);
+
+        return back()->with('status', 'Discord role category created.');
+    }
+
+    public function updateCategoryDefinition(Request $request, DiscordRoleCategory $discordRoleCategory): RedirectResponse
+    {
+        if (! $this->categoryManagementEnabled()) {
+            return back()->withErrors([
+                'category_name' => 'Run the latest migrations before managing Discord role categories.',
+            ]);
+        }
+
+        $validated = $this->validateCategory($request, $discordRoleCategory);
+
+        $discordRoleCategory->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?: null,
+            'sort_order' => $validated['sort_order'] ?? $discordRoleCategory->sort_order,
+        ]);
+
+        return back()->with('status', 'Discord role category updated.');
+    }
+
+    public function destroyCategory(DiscordRoleCategory $discordRoleCategory): RedirectResponse
+    {
+        if (! $this->categoryManagementEnabled()) {
+            return back()->withErrors([
+                'category_name' => 'Run the latest migrations before managing Discord role categories.',
+            ]);
+        }
+
+        DiscordRole::query()
+            ->where('category', $discordRoleCategory->slug)
+            ->update(['category' => null]);
+
+        $discordRoleCategory->delete();
+
+        return back()->with('status', 'Discord role category deleted.');
+    }
+
+    public function updateRoleCategory(Request $request, DiscordRole $discordRole): RedirectResponse
     {
         if (! $this->categoryOverridesEnabled()) {
             return back()->withErrors([
@@ -71,63 +131,63 @@ class DiscordManagementController extends Controller
 
     private function categoryDefinitions(): Collection
     {
+        if (! $this->categoryManagementEnabled()) {
+            return $this->fallbackCategoryDefinitions();
+        }
+
+        $categories = DiscordRoleCategory::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $definitions = $categories->keyBy('slug')->map(fn (DiscordRoleCategory $category): array => [
+            'label' => $category->name,
+            'description' => $category->description ?: 'Roles assigned to this category.',
+            'category' => $category,
+        ]);
+
+        if (! $definitions->has('uncategorized')) {
+            $definitions->put('uncategorized', [
+                'label' => 'Uncategorized',
+                'description' => 'Roles without a matching category.',
+                'category' => null,
+            ]);
+        }
+
+        return $definitions;
+    }
+
+    private function fallbackCategoryDefinitions(): Collection
+    {
         return collect([
-            'staff' => [
-                'label' => 'Staff & Community Team',
-                'description' => 'Admins, moderators, managers, creators, and other server team roles.',
-            ],
-            'nations' => [
-                'label' => 'Nations & Ranks',
-                'description' => 'Nation, faction, command, rank, and leadership roles.',
-            ],
-            'departments' => [
-                'label' => 'Departments & Teams',
-                'description' => 'Department, company, unit, job, and operational team roles.',
-            ],
-            'managed' => [
-                'label' => 'Managed & Bot Roles',
-                'description' => 'Discord-managed integration roles and bot-created roles.',
-            ],
-            'community' => [
-                'label' => 'Community Roles',
-                'description' => 'Personal, social, and general community roles.',
-            ],
-            'empty' => [
-                'label' => 'Empty Roles',
-                'description' => 'Roles that currently have no members assigned.',
-            ],
+            'staff' => ['label' => 'Staff & Community Team', 'description' => 'Admins, moderators, managers, creators, and other server team roles.', 'category' => null],
+            'nations' => ['label' => 'Nations & Ranks', 'description' => 'Nation, faction, command, rank, and leadership roles.', 'category' => null],
+            'departments' => ['label' => 'Departments & Teams', 'description' => 'Department, company, unit, job, and operational team roles.', 'category' => null],
+            'managed' => ['label' => 'Managed & Bot Roles', 'description' => 'Discord-managed integration roles and bot-created roles.', 'category' => null],
+            'community' => ['label' => 'Community Roles', 'description' => 'Personal, social, and general community roles.', 'category' => null],
+            'empty' => ['label' => 'Empty Roles', 'description' => 'Roles that currently have no members assigned.', 'category' => null],
         ]);
     }
 
     private function categoryForRole(DiscordRole $role): string
     {
-        if ($role->category && $this->categoryDefinitions()->has($role->category)) {
+        $definitions = $this->categoryDefinitions();
+
+        if ($role->category && $definitions->has($role->category)) {
             return $role->category;
         }
 
         $name = strtolower($role->name);
+        $guessedCategory = match (true) {
+            $role->is_managed || $this->containsAny($name, ['bot', 'integration', 'webhook']) => 'managed',
+            $this->containsAny($name, ['admin', 'moderator', 'mod', 'staff', 'manager', 'owner', 'founder', 'developer', 'content creator']) => 'staff',
+            $this->containsAny($name, ['nation', 'faction', 'leader', 'leadership', 'command', 'rank', 'general', 'officer']) => 'nations',
+            $this->containsAny($name, ['department', 'police', 'fire', 'ems', 'team', 'unit', 'company', 'job', 'division']) => 'departments',
+            $role->member_count === 0 => 'empty',
+            default => 'community',
+        };
 
-        if ($role->is_managed || $this->containsAny($name, ['bot', 'integration', 'webhook'])) {
-            return 'managed';
-        }
-
-        if ($this->containsAny($name, ['admin', 'moderator', 'mod', 'staff', 'manager', 'owner', 'founder', 'developer', 'content creator'])) {
-            return 'staff';
-        }
-
-        if ($this->containsAny($name, ['nation', 'faction', 'leader', 'leadership', 'command', 'rank', 'general', 'officer'])) {
-            return 'nations';
-        }
-
-        if ($this->containsAny($name, ['department', 'police', 'fire', 'ems', 'team', 'unit', 'company', 'job', 'division'])) {
-            return 'departments';
-        }
-
-        if ($role->member_count === 0) {
-            return 'empty';
-        }
-
-        return 'community';
+        return $definitions->has($guessedCategory) ? $guessedCategory : 'uncategorized';
     }
 
     private function containsAny(string $value, array $needles): bool
@@ -144,5 +204,38 @@ class DiscordManagementController extends Controller
     private function categoryOverridesEnabled(): bool
     {
         return Schema::hasColumn('discord_roles', 'category');
+    }
+
+    private function categoryManagementEnabled(): bool
+    {
+        return Schema::hasTable('discord_role_categories');
+    }
+
+    private function validateCategory(Request $request, ?DiscordRoleCategory $ignoreCategory = null): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('discord_role_categories', 'name')->ignore($ignoreCategory?->id)],
+            'description' => ['nullable', 'string', 'max:255'],
+            'sort_order' => ['nullable', 'integer', 'min:0', 'max:65535'],
+        ]);
+    }
+
+    private function uniqueCategorySlug(string $name): string
+    {
+        $baseSlug = Str::slug($name) ?: 'category';
+        $slug = $baseSlug;
+        $count = 2;
+
+        while (DiscordRoleCategory::query()->where('slug', $slug)->exists()) {
+            $slug = "{$baseSlug}-{$count}";
+            $count++;
+        }
+
+        return $slug;
+    }
+
+    private function nextCategorySortOrder(): int
+    {
+        return ((int) DiscordRoleCategory::query()->max('sort_order')) + 10;
     }
 }

@@ -145,7 +145,10 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::patch('/discord/commands/{discordCommand}', [DiscordWebhookAdminController::class, 'updateCommand'])->middleware('admin.section:discord')->name('discord.commands.update');
         Route::delete('/discord/commands/{discordCommand}', [DiscordWebhookAdminController::class, 'destroyCommand'])->middleware('admin.section:discord')->name('discord.commands.destroy');
         Route::get('/discord-management', [DiscordManagementController::class, 'index'])->middleware('admin.section:discord_management')->name('discord-management.index');
-        Route::patch('/discord-management/roles/{discordRole}/category', [DiscordManagementController::class, 'updateCategory'])->middleware('admin.section:discord_management')->name('discord-management.roles.category.update');
+        Route::post('/discord-management/categories', [DiscordManagementController::class, 'storeCategory'])->middleware('admin.section:discord_management')->name('discord-management.categories.store');
+        Route::patch('/discord-management/categories/{discordRoleCategory}', [DiscordManagementController::class, 'updateCategoryDefinition'])->middleware('admin.section:discord_management')->name('discord-management.categories.update');
+        Route::delete('/discord-management/categories/{discordRoleCategory}', [DiscordManagementController::class, 'destroyCategory'])->middleware('admin.section:discord_management')->name('discord-management.categories.destroy');
+        Route::patch('/discord-management/roles/{discordRole}/category', [DiscordManagementController::class, 'updateRoleCategory'])->middleware('admin.section:discord_management')->name('discord-management.roles.category.update');
         Route::get('/nation-requisitions', [NationRequisitionAdminController::class, 'index'])->middleware('admin.section:nation_requisitions')->name('nation-requisitions.index');
         Route::patch('/nation-requisitions/{nationRequisition}', [NationRequisitionAdminController::class, 'update'])->middleware('admin.section:nation_requisitions')->name('nation-requisitions.update');
         Route::get('/stock-market', [StockMarketAdminController::class, 'index'])->middleware('admin.section:stock_market')->name('stock-market.index');

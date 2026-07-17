@@ -34,6 +34,100 @@
             </div>
         @endif
 
+        @if ($errors->has('category_name'))
+            <div class="rounded-[1.5rem] border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-5 py-4 text-sm text-[#f0b29f]">
+                {{ $errors->first('category_name') }}
+            </div>
+        @endif
+
+        @if ($errors->has('name'))
+            <div class="rounded-[1.5rem] border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-5 py-4 text-sm text-[#f0b29f]">
+                {{ $errors->first('name') }}
+            </div>
+        @endif
+
+        @if (session('status'))
+            <div class="rounded-[1.5rem] border border-[#7ead59]/30 bg-[#7ead59]/10 px-5 py-4 text-sm text-[#d7edc7]">
+                {{ session('status') }}
+            </div>
+        @endif
+
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30" x-data="{ openCategoryId: null }">
+            <div class="flex flex-col gap-3 border-b border-white/10 pb-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Role Categories</p>
+                    <p class="mt-1 text-sm text-white/55">Create, rename, reorder, or delete the groups used by Discord Management.</p>
+                </div>
+            </div>
+
+            @if ($categoryManagementEnabled)
+                <form method="POST" action="{{ route('admin.discord-management.categories.store') }}" class="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_7rem_auto]">
+                    @csrf
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Name</span>
+                        <input class="rounded-xl border border-white/10 bg-black/25 px-3 py-2" name="name" placeholder="Leadership Roles" required>
+                    </label>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Description</span>
+                        <input class="rounded-xl border border-white/10 bg-black/25 px-3 py-2" name="description" placeholder="Roles used by leadership and command teams.">
+                    </label>
+                    <label class="grid gap-2 text-sm text-white/70">
+                        <span class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Order</span>
+                        <input class="rounded-xl border border-white/10 bg-black/25 px-3 py-2" type="number" min="0" max="65535" name="sort_order" placeholder="70">
+                    </label>
+                    <div class="flex items-end">
+                        <button class="rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">Create</button>
+                    </div>
+                </form>
+
+                <div class="mt-5 divide-y divide-white/10 overflow-hidden rounded-[1.25rem] border border-white/10">
+                    @foreach ($roleCategories as $categoryKey => $category)
+                        @continue(! $category['category'])
+                        <div class="bg-black/10">
+                            <div class="grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_7rem_auto] md:items-center">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-white">{{ $category['label'] }}</p>
+                                    <p class="mt-1 truncate text-xs text-white/45">{{ $category['description'] }}</p>
+                                    <p class="mt-1 text-[11px] uppercase tracking-[0.16em] text-white/30">{{ $categoryKey }}</p>
+                                </div>
+                                <div class="text-sm text-white/45">Order {{ $category['category']->sort_order }}</div>
+                                <div class="flex gap-2 md:justify-end">
+                                    <button type="button" @click="openCategoryId = openCategoryId === {{ $category['category']->id }} ? null : {{ $category['category']->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                    <form method="POST" action="{{ route('admin.discord-management.categories.destroy', $category['category']) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <form x-show="openCategoryId === {{ $category['category']->id }}" x-cloak method="POST" action="{{ route('admin.discord-management.categories.update', $category['category']) }}" class="grid gap-3 border-t border-white/10 bg-black/15 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_7rem_auto]">
+                                @csrf
+                                @method('PATCH')
+                                <label class="grid gap-2 text-sm text-white/70">
+                                    <span class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Name</span>
+                                    <input class="rounded-xl border border-white/10 bg-black/25 px-3 py-2" name="name" value="{{ $category['category']->name }}" required>
+                                </label>
+                                <label class="grid gap-2 text-sm text-white/70">
+                                    <span class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Description</span>
+                                    <input class="rounded-xl border border-white/10 bg-black/25 px-3 py-2" name="description" value="{{ $category['category']->description }}">
+                                </label>
+                                <label class="grid gap-2 text-sm text-white/70">
+                                    <span class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Order</span>
+                                    <input class="rounded-xl border border-white/10 bg-black/25 px-3 py-2" type="number" min="0" max="65535" name="sort_order" value="{{ $category['category']->sort_order }}">
+                                </label>
+                                <div class="flex items-end">
+                                    <button class="rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="mt-5 text-sm text-white/55">Run <span class="font-semibold text-[#f4d77a]">php artisan migrate</span> to enable category management.</p>
+            @endif
+        </section>
+
         <section
             class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30"
             x-data="{

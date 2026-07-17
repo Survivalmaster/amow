@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\DiscordRole;
+use App\Models\DiscordRoleCategory;
 use App\Models\Permission;
 use App\Models\User;
 
@@ -126,4 +127,63 @@ test('admin can manually change a discord role category', function () {
         ->assertOk();
 
     expect($role->fresh()->category)->toBe('staff');
+});
+
+test('admin can create update and delete discord role categories', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
+
+    $response = $this
+        ->actingAs($admin)
+        ->post('/admin/discord-management/categories', [
+            'name' => 'Leadership Roles',
+            'description' => 'Roles used by command staff.',
+            'sort_order' => 15,
+        ]);
+
+    $response->assertRedirect();
+
+    $category = DiscordRoleCategory::query()->where('slug', 'leadership-roles')->firstOrFail();
+
+    expect($category->name)->toBe('Leadership Roles');
+    expect($category->description)->toBe('Roles used by command staff.');
+    expect($category->sort_order)->toBe(15);
+
+    $role = DiscordRole::query()->create([
+        'discord_id' => '100',
+        'name' => 'General',
+        'color' => '#7EAD59',
+        'position' => 12,
+        'is_managed' => false,
+        'category' => $category->slug,
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
+    $response = $this
+        ->actingAs($admin)
+        ->patch("/admin/discord-management/categories/{$category->id}", [
+            'name' => 'Command Roles',
+            'description' => 'Ranks used by command staff.',
+            'sort_order' => 18,
+        ]);
+
+    $response->assertRedirect();
+
+    $category->refresh();
+
+    expect($category->slug)->toBe('leadership-roles');
+    expect($category->name)->toBe('Command Roles');
+    expect($category->description)->toBe('Ranks used by command staff.');
+    expect($category->sort_order)->toBe(18);
+
+    $response = $this
+        ->actingAs($admin)
+        ->delete("/admin/discord-management/categories/{$category->id}");
+
+    $response->assertRedirect();
+
+    expect(DiscordRoleCategory::query()->whereKey($category->id)->exists())->toBeFalse();
+    expect($role->fresh()->category)->toBeNull();
 });
