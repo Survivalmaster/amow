@@ -101,6 +101,7 @@ class DiscordManagementController extends Controller
                         'rank' => $rank,
                         'label' => $rank?->name ?? 'Unranked',
                         'badge_file' => $this->rankBadgeFileForRole($rank),
+                        'is_nation_leadership' => $this->isNationLeadershipRank($rank),
                         'position' => $rank?->position ?? -1,
                         'members' => $rankMembers,
                     ];
@@ -376,14 +377,11 @@ class DiscordManagementController extends Controller
 
     private function rankBadgeFileForRole(?DiscordRole $role): ?string
     {
-        if (! $role) {
+        $rankName = $this->normalizedRankName($role);
+
+        if ($rankName === '') {
             return null;
         }
-
-        $rankName = strtolower($role->name);
-        $rankName = preg_replace('/\[[^\]]+\]|\([^)]*\)/', ' ', $rankName) ?? $rankName;
-        $rankName = preg_replace('/[^a-z0-9]+/', ' ', $rankName) ?? $rankName;
-        $rankName = trim(preg_replace('/\s+/', ' ', $rankName) ?? $rankName);
 
         $rankFiles = [
             ['file' => 'Lieutenant General.png', 'patterns' => ['lieutenant general', 'lt general', 'lt gen']],
@@ -404,12 +402,53 @@ class DiscordManagementController extends Controller
 
         foreach ($rankFiles as $rankFile) {
             foreach ($rankFile['patterns'] as $pattern) {
-                if (preg_match('/\b'.preg_quote($pattern, '/').'\b/', $rankName)) {
+                if ($this->rankNameMatches($rankName, $pattern)) {
                     return $rankFile['file'];
                 }
             }
         }
 
         return null;
+    }
+
+    private function isNationLeadershipRank(?DiscordRole $role): bool
+    {
+        $rankName = $this->normalizedRankName($role);
+
+        if ($rankName === '') {
+            return false;
+        }
+
+        foreach (['lieutenant colonel', 'lt colonel', 'lt col'] as $excludedPattern) {
+            if ($this->rankNameMatches($rankName, $excludedPattern)) {
+                return false;
+            }
+        }
+
+        foreach (['colonel', 'col', 'brigadier general', 'brig general', 'brig gen', 'major general', 'maj general', 'maj gen', 'lieutenant general', 'lt general', 'lt gen', 'general', 'gen'] as $leadershipPattern) {
+            if ($this->rankNameMatches($rankName, $leadershipPattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function normalizedRankName(?DiscordRole $role): string
+    {
+        if (! $role) {
+            return '';
+        }
+
+        $rankName = strtolower($role->name);
+        $rankName = preg_replace('/\[[^\]]+\]|\([^)]*\)/', ' ', $rankName) ?? $rankName;
+        $rankName = preg_replace('/[^a-z0-9]+/', ' ', $rankName) ?? $rankName;
+
+        return trim(preg_replace('/\s+/', ' ', $rankName) ?? $rankName);
+    }
+
+    private function rankNameMatches(string $rankName, string $pattern): bool
+    {
+        return (bool) preg_match('/\b'.preg_quote($pattern, '/').'\b/', $rankName);
     }
 }
