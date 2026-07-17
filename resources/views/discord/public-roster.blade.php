@@ -18,7 +18,7 @@
     <body class="min-h-screen bg-[#08090b] font-sans text-[#f4ecd0] antialiased" style="background-color: #08090b; background-image: none;">
         <main class="mx-auto min-h-screen w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
             <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#111317] p-5 shadow-2xl shadow-black/30 sm:p-7">
-                <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center">
+                <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
                     <div class="min-w-0">
                         <div class="flex flex-wrap gap-2">
                             <span class="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-white/80">
@@ -30,20 +30,88 @@
 
                         <h1 class="mt-5 font-['Teko'] text-5xl uppercase leading-none tracking-[0.1em] text-[#f4ecd0] sm:text-6xl">{{ $nation['label'] }}</h1>
                         <p class="mt-3 max-w-3xl text-sm leading-6 text-white/60 sm:text-base">Active Discord personnel grouped by rank, ordered from highest command down through the nation structure.</p>
+
+                        <div class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                            <div class="rounded-[1.1rem] border border-white/10 bg-black/15 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Personnel</p>
+                                <p class="mt-2 font-['Teko'] text-4xl uppercase tracking-[0.08em] text-white">{{ number_format($stats['personnel_count']) }}</p>
+                            </div>
+                            <div class="rounded-[1.1rem] border border-white/10 bg-black/15 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Filled Ranks</p>
+                                <p class="mt-2 font-['Teko'] text-4xl uppercase tracking-[0.08em] text-white">{{ number_format($stats['filled_rank_count']) }}<span class="text-xl text-white/35">/{{ number_format($stats['tracked_rank_count']) }}</span></p>
+                            </div>
+                            <div class="rounded-[1.1rem] border border-white/10 bg-black/15 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Leadership</p>
+                                <p class="mt-2 font-['Teko'] text-4xl uppercase tracking-[0.08em] text-white">{{ number_format($stats['leadership_count']) }}</p>
+                            </div>
+                            <div class="rounded-[1.1rem] border border-white/10 bg-black/15 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Linked AMOW</p>
+                                <p class="mt-2 font-['Teko'] text-4xl uppercase tracking-[0.08em] text-white">{{ number_format($stats['linked_account_count']) }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                            <div class="rounded-[1.1rem] border border-white/10 bg-black/15 px-4 py-3">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">Top Rank</p>
+                                <p class="mt-1 truncate text-sm font-bold text-white/85">{{ $stats['top_rank'] }}</p>
+                            </div>
+                            <div class="rounded-[1.1rem] border border-white/10 bg-black/15 px-4 py-3">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">Unranked</p>
+                                <p class="mt-1 text-sm font-bold text-white/85">{{ number_format($stats['unranked_count']) }} members</p>
+                            </div>
+                            <div class="rounded-[1.1rem] border border-white/10 bg-black/15 px-4 py-3">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">Last Sync</p>
+                                <p class="mt-1 text-sm font-bold text-white/85">{{ $lastSyncedAt ? $lastSyncedAt->diffForHumans() : 'Not synced yet' }}</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                    <div class="space-y-3">
                         <div class="rounded-[1.25rem] border border-white/10 bg-black/15 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Personnel</p>
-                            <p class="mt-2 font-['Teko'] text-4xl uppercase tracking-[0.08em] text-white">{{ number_format($nation['members']->count()) }}</p>
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Rank Strength</p>
+                                <p class="text-xs font-semibold text-white/45">{{ number_format($stats['personnel_count']) }} total</p>
+                            </div>
+                            <div class="mt-4 space-y-3">
+                                @foreach ($stats['rank_distribution']->take(7) as $rankStat)
+                                    <div>
+                                        <div class="flex items-center justify-between gap-3 text-sm">
+                                            <span class="min-w-0 truncate font-semibold text-white/82">{{ $rankStat['label'] }}</span>
+                                            <span class="shrink-0 text-white/55">{{ number_format($rankStat['count']) }}</span>
+                                        </div>
+                                        <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
+                                            <div class="h-full rounded-full bg-white/55" style="width: {{ max(4, min(100, $rankStat['percent'])) }}%"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
+
                         <div class="rounded-[1.25rem] border border-white/10 bg-black/15 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Ranks</p>
-                            <p class="mt-2 font-['Teko'] text-4xl uppercase tracking-[0.08em] text-white">{{ number_format($nation['rank_groups']->count()) }}</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Unfilled Ranks</p>
+                            @if ($stats['unfilled_ranks']->isNotEmpty())
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @foreach ($stats['unfilled_ranks']->take(8) as $unfilledRank)
+                                        <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70">{{ $unfilledRank->name }}</span>
+                                    @endforeach
+                                    @if ($stats['unfilled_rank_count'] > 8)
+                                        <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/45">+{{ number_format($stats['unfilled_rank_count'] - 8) }} more</span>
+                                    @endif
+                                </div>
+                            @else
+                                <p class="mt-2 text-sm text-white/55">Every tracked rank currently has at least one member.</p>
+                            @endif
                         </div>
-                        <div class="col-span-2 rounded-[1.25rem] border border-white/10 bg-black/15 p-4 sm:col-span-1 lg:col-span-1">
-                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Last Sync</p>
-                            <p class="mt-3 text-sm font-semibold text-white/85">{{ $lastSyncedAt ? $lastSyncedAt->diffForHumans() : 'Not synced yet' }}</p>
+
+                        <div class="rounded-[1.25rem] border border-white/10 bg-black/15 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Newest Synced Member</p>
+                            @if ($stats['newest_member'])
+                                @php($newest = $stats['newest_member']['member'])
+                                <p class="mt-2 truncate text-sm font-bold text-white/85">{{ $newest->display_name ?? $newest->username ?? 'Unknown member' }}</p>
+                                <p class="mt-1 text-xs text-white/45">Joined Discord {{ $newest->joined_at->diffForHumans() }}</p>
+                            @else
+                                <p class="mt-2 text-sm text-white/55">Join dates have not been synced yet.</p>
+                            @endif
                         </div>
                     </div>
                 </div>
