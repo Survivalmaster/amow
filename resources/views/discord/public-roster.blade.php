@@ -15,9 +15,9 @@
             <script src="https://cdn.tailwindcss.com"></script>
         @endif
     </head>
-    <body class="min-h-screen bg-[#040806] font-sans text-[#f4ecd0] antialiased">
+    <body class="min-h-screen bg-[#08090b] font-sans text-[#f4ecd0] antialiased">
         <main class="mx-auto min-h-screen w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-            <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0b1510] p-5 shadow-2xl shadow-black/30 sm:p-7">
+            <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#111317] p-5 shadow-2xl shadow-black/30 sm:p-7">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center">
                     <div class="min-w-0">
                         <div class="flex flex-wrap gap-2">
@@ -43,7 +43,7 @@
                         </div>
                         <div class="col-span-2 rounded-[1.25rem] border border-white/10 bg-black/15 p-4 sm:col-span-1 lg:col-span-1">
                             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Last Sync</p>
-                            <p class="mt-3 text-sm font-semibold text-[#d7edc7]">{{ $lastSyncedAt ? $lastSyncedAt->diffForHumans() : 'Not synced yet' }}</p>
+                            <p class="mt-3 text-sm font-semibold text-white/85">{{ $lastSyncedAt ? $lastSyncedAt->diffForHumans() : 'Not synced yet' }}</p>
                         </div>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
                     @foreach ($nations as $optionNation)
                         <a
                             href="{{ route('discord-roster.show', $optionNation['key']) }}"
-                            class="inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition {{ $optionNation['key'] === $nation['key'] ? 'border-[#7ead59]/45 bg-[#7ead59]/15 text-[#d7edc7]' : 'border-white/10 bg-white/5 text-white/65 hover:bg-white/10' }}"
+                            class="inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition {{ $optionNation['key'] === $nation['key'] ? 'border-white/55 bg-white/10 text-white' : 'border-white/10 bg-white/5 text-white/65 hover:bg-white/10' }}"
                         >
                             <span class="h-2.5 w-2.5 rounded-full border border-white/15" style="background-color: {{ $optionNation['color'] }}"></span>
                             {{ $optionNation['label'] }}
@@ -66,7 +66,7 @@
             <div class="mt-6 space-y-5 sm:space-y-6">
                 @forelse ($nation['rank_groups'] as $rankGroup)
                     @php($rank = $rankGroup['rank'])
-                    <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.06] shadow-xl shadow-black/20">
+                    <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#111317] shadow-xl shadow-black/20">
                         <div class="border-b border-white/10 p-4 sm:p-5">
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div class="flex min-w-0 items-center gap-3">
@@ -79,7 +79,7 @@
                                         <p class="break-words text-lg font-bold uppercase tracking-[0.12em] text-[#e4edf8] sm:text-xl">{{ $rankGroup['label'] }}</p>
                                         <div class="mt-2 flex flex-wrap items-center gap-2">
                                             @if ($rankGroup['is_nation_leadership'])
-                                                <span class="inline-flex rounded-md border border-[#7ead59]/25 bg-[#7ead59]/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#d7edc7]">Nation Leadership</span>
+                                                <span class="inline-flex rounded-md border border-white/15 bg-white/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/85">Nation Leadership</span>
                                             @endif
                                             @if ($rank)
                                                 <span class="text-xs text-white/45">Discord role position {{ $rank->position }}</span>
@@ -95,7 +95,7 @@
                             @foreach ($rankGroup['members'] as $entry)
                                 @php($member = $entry['member'])
                                 <article class="flex min-w-0 items-center gap-3 rounded-[1.25rem] border border-white/10 bg-black/15 p-3 sm:gap-4 sm:p-4">
-                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#17271e] text-lg font-bold text-[#f4ecd0] shadow-lg shadow-black/20 sm:h-16 sm:w-16">
+                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#181b20] text-lg font-bold text-[#f4ecd0] shadow-lg shadow-black/20 sm:h-16 sm:w-16">
                                         @if ($member->avatar_url)
                                             <img src="{{ $member->avatar_url }}" alt="{{ $member->display_name ?? $member->username ?? 'Discord member' }} avatar" class="h-full w-full object-cover">
                                         @else
