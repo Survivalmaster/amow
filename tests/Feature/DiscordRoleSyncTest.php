@@ -463,6 +463,7 @@ test('public nation roster can be viewed without authentication', function () {
         ->assertOk()
         ->assertSee('Green')
         ->assertSee('Nation Roster')
+        ->assertSee('background-image: none', false)
         ->assertSee('military_rankings/General.png')
         ->assertSeeInOrder(['General', 'General User', 'Private', 'Private User']);
 

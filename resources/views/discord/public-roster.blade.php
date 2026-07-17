@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" style="background-color: #08090b; background-image: none;">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,7 +15,7 @@
             <script src="https://cdn.tailwindcss.com"></script>
         @endif
     </head>
-    <body class="min-h-screen bg-[#08090b] font-sans text-[#f4ecd0] antialiased">
+    <body class="min-h-screen bg-[#08090b] font-sans text-[#f4ecd0] antialiased" style="background-color: #08090b; background-image: none;">
         <main class="mx-auto min-h-screen w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
             <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#111317] p-5 shadow-2xl shadow-black/30 sm:p-7">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center">
