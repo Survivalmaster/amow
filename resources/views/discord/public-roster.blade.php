@@ -17,7 +17,7 @@
     </head>
     <body class="min-h-screen bg-[#040806] font-sans text-[#f4ecd0] antialiased">
         <main class="mx-auto min-h-screen w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-            <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,rgba(30,39,50,0.96),rgba(19,46,39,0.9))] p-5 shadow-2xl shadow-black/30 sm:p-7">
+            <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#0b1510] p-5 shadow-2xl shadow-black/30 sm:p-7">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center">
                     <div class="min-w-0">
                         <div class="flex flex-wrap gap-2">
