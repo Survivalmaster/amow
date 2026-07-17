@@ -76,6 +76,7 @@ test('admin can view synced discord management page', function () {
 
     $response->assertOk();
     $response->assertSee('Discord Management');
+    $response->assertSee('Nations &amp; Ranks', false);
     $response->assertSee('Nation Leader');
     $response->assertSee('Leader');
 });
