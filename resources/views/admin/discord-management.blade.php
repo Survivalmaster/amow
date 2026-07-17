@@ -66,7 +66,7 @@
                             <div class="divide-y divide-white/10">
                                 @foreach ($group['roles'] as $role)
                                     <details class="group/role">
-                                        <summary class="grid cursor-pointer gap-3 px-5 py-3 transition hover:bg-white/[0.03] md:grid-cols-[minmax(0,1fr)_7rem_7rem_2rem] md:items-center">
+                                        <summary class="grid cursor-pointer gap-3 px-5 py-3 transition hover:bg-white/[0.03] md:grid-cols-[minmax(0,1fr)_7rem_11rem_7rem_2rem] md:items-center">
                                             <div class="min-w-0">
                                                 <div class="flex min-w-0 items-center gap-3">
                                                     <span class="h-3.5 w-3.5 shrink-0 rounded-full border border-white/15" style="background-color: {{ $role->color ?: '#7ead59' }}"></span>
@@ -78,6 +78,22 @@
                                                 <p class="mt-1 truncate text-xs text-white/35">Role ID {{ $role->discord_id }}</p>
                                             </div>
                                             <div class="text-sm text-white/65">{{ number_format($role->member_count) }} members</div>
+                                            <form method="POST" action="{{ route('admin.discord-management.roles.category.update', $role) }}" onclick="event.stopPropagation()" class="min-w-0">
+                                                @csrf
+                                                @method('PATCH')
+                                                <label class="sr-only" for="discord-role-category-{{ $role->id }}">Category for {{ $role->name }}</label>
+                                                <select
+                                                    id="discord-role-category-{{ $role->id }}"
+                                                    name="category"
+                                                    onchange="this.form.submit()"
+                                                    class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-xs font-semibold text-white/75"
+                                                >
+                                                    <option value="">Auto category</option>
+                                                    @foreach ($roleCategories as $categoryKey => $category)
+                                                        <option value="{{ $categoryKey }}" @selected($role->category === $categoryKey)>{{ $category['label'] }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </form>
                                             <div class="text-sm text-white/45">Position {{ $role->position }}</div>
                                             <i class="fa-solid fa-chevron-down text-right text-xs text-white/45 transition group-open/role:rotate-180"></i>
                                         </summary>

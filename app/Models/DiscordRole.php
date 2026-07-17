@@ -13,6 +13,7 @@ class DiscordRole extends Model
         'color',
         'position',
         'is_managed',
+        'category',
         'member_count',
         'synced_at',
     ];

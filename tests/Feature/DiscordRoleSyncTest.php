@@ -80,3 +80,50 @@ test('admin can view synced discord management page', function () {
     $response->assertSee('Nation Leader');
     $response->assertSee('Leader');
 });
+
+test('admin can manually change a discord role category', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
+
+    $role = DiscordRole::query()->create([
+        'discord_id' => '100',
+        'name' => 'Nation Leader',
+        'color' => '#7EAD59',
+        'position' => 12,
+        'is_managed' => false,
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
+    $response = $this
+        ->actingAs($admin)
+        ->patch("/admin/discord-management/roles/{$role->id}/category", [
+            'category' => 'staff',
+        ]);
+
+    $response->assertRedirect();
+
+    expect($role->fresh()->category)->toBe('staff');
+
+    config()->set('services.discord.bot_sync_secret', 'sync-secret');
+
+    $this
+        ->withHeader('X-Discord-Sync-Secret', 'sync-secret')
+        ->postJson('/api/discord/roles/sync', [
+            'guild_id' => '805822469012586497',
+            'roles' => [
+                [
+                    'id' => '100',
+                    'name' => 'Nation Leader',
+                    'color' => '#7EAD59',
+                    'position' => 12,
+                    'managed' => false,
+                    'members' => [],
+                ],
+            ],
+        ])
+        ->assertOk();
+
+    expect($role->fresh()->category)->toBe('staff');
+});

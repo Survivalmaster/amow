@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DiscordRole;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class DiscordManagementController extends Controller
@@ -22,14 +25,45 @@ class DiscordManagementController extends Controller
         return view('admin.discord-management', [
             'roles' => $roles,
             'roleGroups' => $roleGroups,
+            'roleCategories' => $this->categoryDefinitions(),
             'lastSyncedAt' => $roles->max('synced_at'),
             'memberAssignmentCount' => $roles->sum('member_count'),
         ]);
     }
 
+    public function updateCategory(Request $request, DiscordRole $discordRole): RedirectResponse
+    {
+        $validated = $request->validate([
+            'category' => ['nullable', Rule::in($this->categoryDefinitions()->keys()->all())],
+        ]);
+
+        $discordRole->update([
+            'category' => $validated['category'] ?: null,
+        ]);
+
+        return back()->with('status', 'Discord role category updated.');
+    }
+
     private function categoriseRoles(Collection $roles): Collection
     {
-        $definitions = collect([
+        $definitions = $this->categoryDefinitions();
+
+        return $roles
+            ->groupBy(fn (DiscordRole $role): string => $this->categoryForRole($role))
+            ->sortBy(fn (Collection $group, string $key): int => $definitions->keys()->search($key))
+            ->map(fn (Collection $group, string $key): array => [
+                'key' => $key,
+                'label' => $definitions[$key]['label'],
+                'description' => $definitions[$key]['description'],
+                'roles' => $group,
+                'role_count' => $group->count(),
+                'member_count' => $group->sum('member_count'),
+            ]);
+    }
+
+    private function categoryDefinitions(): Collection
+    {
+        return collect([
             'staff' => [
                 'label' => 'Staff & Community Team',
                 'description' => 'Admins, moderators, managers, creators, and other server team roles.',
@@ -55,22 +89,14 @@ class DiscordManagementController extends Controller
                 'description' => 'Roles that currently have no members assigned.',
             ],
         ]);
-
-        return $roles
-            ->groupBy(fn (DiscordRole $role): string => $this->categoryForRole($role))
-            ->sortBy(fn (Collection $group, string $key): int => $definitions->keys()->search($key))
-            ->map(fn (Collection $group, string $key): array => [
-                'key' => $key,
-                'label' => $definitions[$key]['label'],
-                'description' => $definitions[$key]['description'],
-                'roles' => $group,
-                'role_count' => $group->count(),
-                'member_count' => $group->sum('member_count'),
-            ]);
     }
 
     private function categoryForRole(DiscordRole $role): string
     {
+        if ($role->category && $this->categoryDefinitions()->has($role->category)) {
+            return $role->category;
+        }
+
         $name = strtolower($role->name);
 
         if ($role->is_managed || $this->containsAny($name, ['bot', 'integration', 'webhook'])) {
