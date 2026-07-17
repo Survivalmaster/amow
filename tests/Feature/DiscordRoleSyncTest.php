@@ -292,7 +292,7 @@ test('admin can view nation roster ordered by rank roles', function () {
 
     $response->assertOk();
     $response->assertSee('Discord Roster');
-    $response->assertSee('Pick one nation');
+    $response->assertSee('Active synced members');
     $response->assertSee('Green');
     $response->assertDontSee('Green Nation Leadership');
     $response->assertSee('Leader User');
