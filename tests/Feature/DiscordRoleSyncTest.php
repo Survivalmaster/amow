@@ -187,3 +187,93 @@ test('admin can create update and delete discord role categories', function () {
     expect(DiscordRoleCategory::query()->whereKey($category->id)->exists())->toBeFalse();
     expect($role->fresh()->category)->toBeNull();
 });
+
+test('admin can view nation roster ordered by rank roles', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
+
+    DiscordRoleCategory::query()->create([
+        'name' => 'Nation Roles',
+        'slug' => 'nation-roles',
+        'description' => 'Nation membership roles.',
+        'sort_order' => 10,
+    ]);
+
+    DiscordRoleCategory::query()->create([
+        'name' => 'Rank Roles',
+        'slug' => 'rank-roles',
+        'description' => 'Nation rank roles.',
+        'sort_order' => 20,
+    ]);
+
+    $green = DiscordRole::query()->create([
+        'discord_id' => 'green',
+        'name' => 'Green',
+        'color' => '#00ff66',
+        'position' => 43,
+        'is_managed' => false,
+        'category' => 'nation-roles',
+        'member_count' => 2,
+        'synced_at' => now(),
+    ]);
+
+    $general = DiscordRole::query()->create([
+        'discord_id' => 'general',
+        'name' => 'General',
+        'color' => '#00ff66',
+        'position' => 60,
+        'is_managed' => false,
+        'category' => 'rank-roles',
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
+    $private = DiscordRole::query()->create([
+        'discord_id' => 'private',
+        'name' => 'Private',
+        'color' => '#00ff66',
+        'position' => 20,
+        'is_managed' => false,
+        'category' => 'rank-roles',
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
+    $green->members()->create([
+        'discord_user_id' => '200',
+        'username' => 'general_user',
+        'display_name' => 'General User',
+        'synced_at' => now(),
+    ]);
+
+    $green->members()->create([
+        'discord_user_id' => '300',
+        'username' => 'private_user',
+        'display_name' => 'Private User',
+        'synced_at' => now(),
+    ]);
+
+    $general->members()->create([
+        'discord_user_id' => '200',
+        'username' => 'general_user',
+        'display_name' => 'General User',
+        'synced_at' => now(),
+    ]);
+
+    $private->members()->create([
+        'discord_user_id' => '300',
+        'username' => 'private_user',
+        'display_name' => 'Private User',
+        'synced_at' => now(),
+    ]);
+
+    $response = $this
+        ->actingAs($admin)
+        ->get('/admin/discord-management/roster');
+
+    $response->assertOk();
+    $response->assertSee('Discord Roster');
+    $response->assertSee('Green');
+    $response->assertSeeInOrder(['General', 'General User', 'Private', 'Private User']);
+});

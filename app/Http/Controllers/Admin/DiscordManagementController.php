@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DiscordRole;
 use App\Models\DiscordRoleCategory;
+use App\Models\DiscordRoleMember;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -34,6 +35,84 @@ class DiscordManagementController extends Controller
             'categoryManagementEnabled' => $this->categoryManagementEnabled(),
             'lastSyncedAt' => $roles->max('synced_at'),
             'memberAssignmentCount' => $roles->sum('member_count'),
+        ]);
+    }
+
+    public function roster(): View
+    {
+        $roles = DiscordRole::query()
+            ->with(['members' => fn ($query) => $query->orderBy('display_name')->orderBy('username')])
+            ->orderByDesc('position')
+            ->orderBy('name')
+            ->get();
+
+        $nationRoles = $roles
+            ->filter(fn (DiscordRole $role): bool => $this->isNationRole($role))
+            ->values();
+
+        $rankRoles = $roles
+            ->filter(fn (DiscordRole $role): bool => $this->isRankRole($role) && ! $this->isNationRole($role))
+            ->sortByDesc('position')
+            ->values();
+
+        $rolesByMember = $roles
+            ->flatMap(fn (DiscordRole $role) => $role->members->map(fn (DiscordRoleMember $member): array => [
+                'member_id' => $member->discord_user_id,
+                'role' => $role,
+            ]))
+            ->groupBy('member_id')
+            ->map(fn (Collection $items): Collection => $items->pluck('role'));
+
+        $rankRoleIds = $rankRoles->pluck('id')->all();
+
+        $nations = $nationRoles->map(function (DiscordRole $nationRole) use ($rolesByMember, $rankRoleIds): array {
+            $members = $nationRole->members
+                ->map(function (DiscordRoleMember $member) use ($rolesByMember, $rankRoleIds): array {
+                    $memberRankRoles = ($rolesByMember->get($member->discord_user_id) ?? collect())
+                        ->filter(fn (DiscordRole $role): bool => in_array($role->id, $rankRoleIds, true))
+                        ->sortByDesc('position')
+                        ->values();
+
+                    return [
+                        'member' => $member,
+                        'rank' => $memberRankRoles->first(),
+                        'rank_roles' => $memberRankRoles,
+                    ];
+                })
+                ->sortBy([
+                    fn (array $left, array $right): int => ($right['rank']?->position ?? -1) <=> ($left['rank']?->position ?? -1),
+                    fn (array $left, array $right): int => strnatcasecmp($left['member']->display_name ?? $left['member']->username ?? '', $right['member']->display_name ?? $right['member']->username ?? ''),
+                ])
+                ->values();
+
+            $rankGroups = $members
+                ->groupBy(fn (array $item): string => $item['rank']?->discord_id ?? 'unranked')
+                ->map(function (Collection $rankMembers): array {
+                    $rank = $rankMembers->first()['rank'];
+
+                    return [
+                        'rank' => $rank,
+                        'label' => $rank?->name ?? 'Unranked',
+                        'position' => $rank?->position ?? -1,
+                        'members' => $rankMembers,
+                    ];
+                })
+                ->sortByDesc('position')
+                ->values();
+
+            return [
+                'role' => $nationRole,
+                'members' => $members,
+                'rank_groups' => $rankGroups,
+            ];
+        });
+
+        return view('admin.discord-roster', [
+            'nations' => $nations,
+            'nationRoleCount' => $nationRoles->count(),
+            'rankRoleCount' => $rankRoles->count(),
+            'memberCount' => $nations->sum(fn (array $nation): int => $nation['members']->count()),
+            'lastSyncedAt' => $roles->max('synced_at'),
         ]);
     }
 
@@ -237,5 +316,35 @@ class DiscordManagementController extends Controller
     private function nextCategorySortOrder(): int
     {
         return ((int) DiscordRoleCategory::query()->max('sort_order')) + 10;
+    }
+
+    private function isNationRole(DiscordRole $role): bool
+    {
+        $roleName = strtolower($role->name);
+        $categoryName = $this->categoryNameForRole($role);
+
+        if ($this->containsAny($categoryName, ['nation'])) {
+            return ! $this->containsAny($roleName, ['rank', 'general', 'colonel', 'captain', 'cpt', 'lieutenant', 'lt', 'sergeant', 'sgt', 'major', 'private', 'officer', 'commander']);
+        }
+
+        return str_ends_with($roleName, ' nation')
+            || $this->containsAny($roleName, ['green nation', 'blue nation', 'red nation', 'yellow nation', 'purple nation', 'orange nation']);
+    }
+
+    private function isRankRole(DiscordRole $role): bool
+    {
+        $roleName = strtolower($role->name);
+        $categoryName = $this->categoryNameForRole($role);
+
+        return $this->containsAny($categoryName, ['rank', 'command', 'leadership'])
+            || $this->containsAny($roleName, ['rank', 'general', 'colonel', 'captain', 'cpt', 'lieutenant', 'lt', 'sergeant', 'sgt', 'major', 'private', 'officer', 'commander']);
+    }
+
+    private function categoryNameForRole(DiscordRole $role): string
+    {
+        $definitions = $this->categoryDefinitions();
+        $key = $this->categoryForRole($role);
+
+        return strtolower($definitions[$key]['label'] ?? $key);
     }
 }
