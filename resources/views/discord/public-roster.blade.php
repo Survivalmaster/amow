@@ -117,7 +117,7 @@
                 </div>
             </section>
 
-            @if ($nations->count() > 1)
+            @if ($nations->count() > 1 && $canSwitchNationRosters)
                 <nav class="mt-5 flex gap-2 overflow-x-auto pb-2" aria-label="Nation rosters">
                     @foreach ($nations as $optionNation)
                         <a

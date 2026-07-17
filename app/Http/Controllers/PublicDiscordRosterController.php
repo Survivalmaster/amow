@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\DiscordRole;
 use App\Models\User;
 use App\Support\DiscordRosterBuilder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PublicDiscordRosterController extends Controller
 {
-    public function show(string $nation, DiscordRosterBuilder $rosterBuilder): View
+    public function show(string $nation, DiscordRosterBuilder $rosterBuilder, Request $request): View
     {
         $roster = $rosterBuilder->build();
         $selectedNation = $roster['nations']->firstWhere('key', Str::slug($nation));
@@ -50,11 +51,13 @@ class PublicDiscordRosterController extends Controller
         $unfilledRanks = $roster['rank_roles']
             ->reject(fn (DiscordRole $role): bool => $filledRankDiscordIds->contains($role->discord_id))
             ->values();
+        $viewer = $request->user();
 
         return view('discord.public-roster', [
             'nation' => $selectedNation,
             'nations' => $roster['nations'],
             'lastSyncedAt' => $roster['last_synced_at'],
+            'canSwitchNationRosters' => $viewer && ($viewer->is_admin || $viewer->load('permissions')->canAccessAdmin()),
             'stats' => [
                 'personnel_count' => $selectedNation['members']->count(),
                 'filled_rank_count' => $filledRankDiscordIds->count(),

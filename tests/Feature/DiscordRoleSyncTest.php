@@ -408,6 +408,17 @@ test('public nation roster can be viewed without authentication', function () {
         'synced_at' => now(),
     ]);
 
+    $blue = DiscordRole::query()->create([
+        'discord_id' => 'blue',
+        'name' => 'Blue Nation',
+        'color' => '#3498db',
+        'position' => 42,
+        'is_managed' => false,
+        'category' => 'nation-roles',
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
     $general = DiscordRole::query()->create([
         'discord_id' => 'general',
         'name' => 'General',
@@ -458,6 +469,13 @@ test('public nation roster can be viewed without authentication', function () {
         'synced_at' => now(),
     ]);
 
+    $blue->members()->create([
+        'discord_user_id' => '400',
+        'username' => 'blue_user',
+        'display_name' => 'Blue User',
+        'synced_at' => now(),
+    ]);
+
     $this
         ->get('/discord-roster/green')
         ->assertOk()
@@ -467,8 +485,19 @@ test('public nation roster can be viewed without authentication', function () {
         ->assertSee('Rank Strength')
         ->assertSee('Unfilled Ranks')
         ->assertSee('Linked AMOW')
+        ->assertDontSee('/discord-roster/blue')
         ->assertSee('military_rankings/General.png')
         ->assertSeeInOrder(['General', 'General User', 'Private', 'Private User']);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
+
+    $this
+        ->actingAs($admin)
+        ->get('/discord-roster/green')
+        ->assertOk()
+        ->assertSee('/discord-roster/blue');
 
     $this
         ->get('/discord-roster/not-a-nation')
