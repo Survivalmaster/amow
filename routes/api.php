@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\DiscordLinkCompletionController;
+use App\Http\Controllers\Api\DiscordBulkDefaultRankPlanController;
 use App\Http\Controllers\Api\DiscordProfileController;
 use App\Http\Controllers\Api\DiscordCommandConfigController;
 use App\Http\Controllers\Api\DiscordPrayerController;
@@ -25,3 +26,6 @@ Route::post('/discord/pray', DiscordPrayerController::class)
 
 Route::post('/discord/roles/sync', DiscordRoleSyncController::class)
     ->name('api.discord.roles.sync');
+
+Route::post('/discord/ranks/default-plan', DiscordBulkDefaultRankPlanController::class)
+    ->name('api.discord.ranks.default-plan');

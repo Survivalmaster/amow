@@ -1,6 +1,7 @@
 require('./loadEnv');
 
 const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
+const { handleRankToolsCommand } = require('./bulkRank');
 const {
   handleRoleButton,
   handleRolePanelCommand,
@@ -67,6 +68,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isChatInputCommand() && interaction.commandName === 'rank-panel') {
       await handleRankPanelCommand(interaction);
+      return;
+    }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === 'rank-tools') {
+      await handleRankToolsCommand(interaction);
       return;
     }
 

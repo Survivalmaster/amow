@@ -22,6 +22,7 @@
         <div class="flex flex-wrap gap-3">
             <a href="{{ route('admin.discord-management.index') }}" class="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">Roles</a>
             <a href="{{ route('admin.discord-management.roster') }}" class="rounded-full border border-[#7ead59]/40 bg-[#7ead59]/15 px-5 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Roster</a>
+            <a href="{{ route('admin.discord-management.commands') }}" class="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">Commands</a>
         </div>
 
         @if ($nations->isNotEmpty())

@@ -300,3 +300,84 @@ test('admin can view nation roster ordered by rank roles', function () {
     $response->assertSee('military_rankings/General.png');
     $response->assertSeeInOrder(['General', 'General User', 'Private', 'Private User']);
 });
+
+test('admin can preview and bot can fetch bulk default rank plan', function () {
+    config()->set('services.discord.bot_sync_secret', 'sync-secret');
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
+
+    DiscordRoleCategory::query()->create([
+        'name' => 'Nation Roles',
+        'slug' => 'nation-roles',
+        'description' => 'Nation membership roles.',
+        'sort_order' => 10,
+    ]);
+
+    DiscordRoleCategory::query()->create([
+        'name' => 'Rank Roles',
+        'slug' => 'rank-roles',
+        'description' => 'Nation rank roles.',
+        'sort_order' => 20,
+    ]);
+
+    $green = DiscordRole::query()->create([
+        'discord_id' => 'green',
+        'name' => 'Green',
+        'color' => '#00ff66',
+        'position' => 43,
+        'is_managed' => false,
+        'category' => 'nation-roles',
+        'member_count' => 2,
+        'synced_at' => now(),
+    ]);
+
+    $private = DiscordRole::query()->create([
+        'discord_id' => 'private',
+        'name' => 'Private',
+        'color' => '#00ff66',
+        'position' => 20,
+        'is_managed' => false,
+        'category' => 'rank-roles',
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
+    $green->members()->create([
+        'discord_user_id' => '200',
+        'username' => 'missing_rank',
+        'display_name' => 'Missing Rank',
+        'synced_at' => now(),
+    ]);
+
+    $green->members()->create([
+        'discord_user_id' => '300',
+        'username' => 'already_private',
+        'display_name' => 'Already Private',
+        'synced_at' => now(),
+    ]);
+
+    $private->members()->create([
+        'discord_user_id' => '300',
+        'username' => 'already_private',
+        'display_name' => 'Already Private',
+        'synced_at' => now(),
+    ]);
+
+    $this
+        ->actingAs($admin)
+        ->get('/admin/discord-management/commands')
+        ->assertOk()
+        ->assertSee('Default Rank Automation')
+        ->assertSee('Missing Rank')
+        ->assertDontSee('Already Private</p>', false);
+
+    $this
+        ->withHeader('X-Discord-Sync-Secret', 'sync-secret')
+        ->postJson('/api/discord/ranks/default-plan')
+        ->assertOk()
+        ->assertJsonPath('default_rank_role.id', 'private')
+        ->assertJsonPath('assignment_count', 1)
+        ->assertJsonPath('assignments.0.member_id', '200');
+});

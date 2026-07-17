@@ -455,8 +455,34 @@ const rankPanelCommand = new SlashCommandBuilder()
       )
   );
 
+const rankToolsCommand = new SlashCommandBuilder()
+  .setName('rank-tools')
+  .setDescription('Bulk rank helpers for nation membership.')
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
+  .addSubcommand((subcommand) =>
+    subcommand
+      .setName('default-rank')
+      .setDescription('Give the default rank to nation members who are missing a rank.')
+      .addRoleOption((option) =>
+        option
+          .setName('rank')
+          .setDescription('Rank to assign. Defaults to the website-detected Private role.')
+      )
+      .addRoleOption((option) =>
+        option
+          .setName('nation')
+          .setDescription('Limit the run to one nation role.')
+      )
+      .addBooleanOption((option) =>
+        option
+          .setName('apply')
+          .setDescription('Actually assign roles. If false or omitted, only preview the changes.')
+      )
+  );
+
 module.exports = [
   rolePanelCommand.toJSON(),
   loggingCommand.toJSON(),
-  rankPanelCommand.toJSON()
+  rankPanelCommand.toJSON(),
+  rankToolsCommand.toJSON()
 ];

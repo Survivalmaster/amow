@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DiscordRole;
 use App\Models\DiscordRoleCategory;
 use App\Models\DiscordRoleMember;
+use App\Support\DiscordBulkRankPlanner;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -127,6 +128,20 @@ class DiscordManagementController extends Controller
             'rankRoleCount' => $rankRoles->count(),
             'memberCount' => $nations->sum(fn (array $nation): int => $nation['members']->count()),
             'lastSyncedAt' => $roles->max('synced_at'),
+        ]);
+    }
+
+    public function commands(DiscordBulkRankPlanner $bulkRankPlanner): View
+    {
+        $plan = $bulkRankPlanner->plan();
+
+        return view('admin.discord-commands', [
+            'rankRoles' => $plan['rank_roles'],
+            'nationRoles' => $plan['nation_roles'],
+            'defaultRankRole' => $plan['default_rank_role'],
+            'nationGroups' => $plan['nation_groups'],
+            'assignmentCount' => $plan['assignments']->count(),
+            'lastSyncedAt' => $plan['roles']->max('synced_at'),
         ]);
     }
 

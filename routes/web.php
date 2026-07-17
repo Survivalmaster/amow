@@ -146,6 +146,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::delete('/discord/commands/{discordCommand}', [DiscordWebhookAdminController::class, 'destroyCommand'])->middleware('admin.section:discord')->name('discord.commands.destroy');
         Route::get('/discord-management', [DiscordManagementController::class, 'index'])->middleware('admin.section:discord_management')->name('discord-management.index');
         Route::get('/discord-management/roster', [DiscordManagementController::class, 'roster'])->middleware('admin.section:discord_management')->name('discord-management.roster');
+        Route::get('/discord-management/commands', [DiscordManagementController::class, 'commands'])->middleware('admin.section:discord_management')->name('discord-management.commands');
         Route::post('/discord-management/categories', [DiscordManagementController::class, 'storeCategory'])->middleware('admin.section:discord_management')->name('discord-management.categories.store');
         Route::patch('/discord-management/categories/{discordRoleCategory}', [DiscordManagementController::class, 'updateCategoryDefinition'])->middleware('admin.section:discord_management')->name('discord-management.categories.update');
         Route::delete('/discord-management/categories/{discordRoleCategory}', [DiscordManagementController::class, 'destroyCategory'])->middleware('admin.section:discord_management')->name('discord-management.categories.destroy');
