@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\PermissionAdminController;
 use App\Http\Controllers\Admin\GameMasterAdminController;
 use App\Http\Controllers\Admin\StockMarketAdminController;
 use App\Http\Controllers\Admin\DiscordWebhookAdminController;
+use App\Http\Controllers\Admin\DiscordManagementController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\BannedAccountController;
 use App\Http\Controllers\CharacterController;
@@ -143,6 +144,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::post('/discord/commands', [DiscordWebhookAdminController::class, 'storeCommand'])->middleware('admin.section:discord')->name('discord.commands.store');
         Route::patch('/discord/commands/{discordCommand}', [DiscordWebhookAdminController::class, 'updateCommand'])->middleware('admin.section:discord')->name('discord.commands.update');
         Route::delete('/discord/commands/{discordCommand}', [DiscordWebhookAdminController::class, 'destroyCommand'])->middleware('admin.section:discord')->name('discord.commands.destroy');
+        Route::get('/discord-management', [DiscordManagementController::class, 'index'])->middleware('admin.section:discord_management')->name('discord-management.index');
         Route::get('/nation-requisitions', [NationRequisitionAdminController::class, 'index'])->middleware('admin.section:nation_requisitions')->name('nation-requisitions.index');
         Route::patch('/nation-requisitions/{nationRequisition}', [NationRequisitionAdminController::class, 'update'])->middleware('admin.section:nation_requisitions')->name('nation-requisitions.update');
         Route::get('/stock-market', [StockMarketAdminController::class, 'index'])->middleware('admin.section:stock_market')->name('stock-market.index');

@@ -12,6 +12,7 @@ return [
     'permissions' => ['label' => 'Permissions', 'route' => 'admin.permissions.index'],
     'map_markers' => ['label' => 'Map Markers', 'route' => 'admin.map-markers.index'],
     'discord' => ['label' => 'Discord', 'route' => 'admin.discord.index'],
+    'discord_management' => ['label' => 'Discord Management', 'route' => 'admin.discord-management.index'],
     'nation_requisitions' => ['label' => 'Nation Requisitions', 'route' => 'admin.nation-requisitions.index'],
     'stock_market' => ['label' => 'Stock Market', 'route' => 'admin.stock-market.index'],
     'game_master' => ['label' => 'Game Master', 'route' => 'admin.game-master.index'],

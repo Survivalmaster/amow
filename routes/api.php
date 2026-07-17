@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\DiscordLinkCompletionController;
 use App\Http\Controllers\Api\DiscordProfileController;
 use App\Http\Controllers\Api\DiscordCommandConfigController;
 use App\Http\Controllers\Api\DiscordPrayerController;
+use App\Http\Controllers\Api\DiscordRoleSyncController;
 use App\Http\Controllers\Api\DiscordWpnnController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,3 +22,6 @@ Route::post('/discord/wpnn', DiscordWpnnController::class)
 
 Route::post('/discord/pray', DiscordPrayerController::class)
     ->name('api.discord.pray.store');
+
+Route::post('/discord/roles/sync', DiscordRoleSyncController::class)
+    ->name('api.discord.roles.sync');

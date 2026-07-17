@@ -42,6 +42,7 @@ return [
         'guild_id' => env('DISCORD_GUILD_ID'),
         'default_channel_id' => env('DISCORD_DEFAULT_CHANNEL_ID'),
         'linking_secret' => env('DISCORD_LINKING_SECRET'),
+        'bot_sync_secret' => env('DISCORD_BOT_SYNC_SECRET'),
         'link_url' => env('DISCORD_LINK_URL'),
     ],
 
