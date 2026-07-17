@@ -22,6 +22,18 @@
             </div>
         </section>
 
+        @if (! $categoryOverridesEnabled)
+            <div class="rounded-[1.5rem] border border-[#c2a84f]/25 bg-[#c2a84f]/10 px-5 py-4 text-sm text-[#f4d77a]">
+                Run <span class="font-semibold">php artisan migrate</span> to enable manual Discord role categories.
+            </div>
+        @endif
+
+        @if ($errors->has('category'))
+            <div class="rounded-[1.5rem] border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-5 py-4 text-sm text-[#f0b29f]">
+                {{ $errors->first('category') }}
+            </div>
+        @endif
+
         <section
             class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30"
             x-data="{
@@ -78,22 +90,26 @@
                                                 <p class="mt-1 truncate text-xs text-white/35">Role ID {{ $role->discord_id }}</p>
                                             </div>
                                             <div class="text-sm text-white/65">{{ number_format($role->member_count) }} members</div>
-                                            <form method="POST" action="{{ route('admin.discord-management.roles.category.update', $role) }}" onclick="event.stopPropagation()" class="min-w-0">
-                                                @csrf
-                                                @method('PATCH')
-                                                <label class="sr-only" for="discord-role-category-{{ $role->id }}">Category for {{ $role->name }}</label>
-                                                <select
-                                                    id="discord-role-category-{{ $role->id }}"
-                                                    name="category"
-                                                    onchange="this.form.submit()"
-                                                    class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-xs font-semibold text-white/75"
-                                                >
-                                                    <option value="">Auto category</option>
-                                                    @foreach ($roleCategories as $categoryKey => $category)
-                                                        <option value="{{ $categoryKey }}" @selected($role->category === $categoryKey)>{{ $category['label'] }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </form>
+                                            @if ($categoryOverridesEnabled)
+                                                <form method="POST" action="{{ route('admin.discord-management.roles.category.update', $role) }}" onclick="event.stopPropagation()" class="min-w-0">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <label class="sr-only" for="discord-role-category-{{ $role->id }}">Category for {{ $role->name }}</label>
+                                                    <select
+                                                        id="discord-role-category-{{ $role->id }}"
+                                                        name="category"
+                                                        onchange="this.form.submit()"
+                                                        class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2 text-xs font-semibold text-white/75"
+                                                    >
+                                                        <option value="">Auto category</option>
+                                                        @foreach ($roleCategories as $categoryKey => $category)
+                                                            <option value="{{ $categoryKey }}" @selected($role->category === $categoryKey)>{{ $category['label'] }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </form>
+                                            @else
+                                                <div class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs font-semibold text-white/35">Auto category</div>
+                                            @endif
                                             <div class="text-sm text-white/45">Position {{ $role->position }}</div>
                                             <i class="fa-solid fa-chevron-down text-right text-xs text-white/45 transition group-open/role:rotate-180"></i>
                                         </summary>

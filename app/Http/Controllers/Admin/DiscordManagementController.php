@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DiscordRole;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -26,6 +27,7 @@ class DiscordManagementController extends Controller
             'roles' => $roles,
             'roleGroups' => $roleGroups,
             'roleCategories' => $this->categoryDefinitions(),
+            'categoryOverridesEnabled' => $this->categoryOverridesEnabled(),
             'lastSyncedAt' => $roles->max('synced_at'),
             'memberAssignmentCount' => $roles->sum('member_count'),
         ]);
@@ -33,6 +35,12 @@ class DiscordManagementController extends Controller
 
     public function updateCategory(Request $request, DiscordRole $discordRole): RedirectResponse
     {
+        if (! $this->categoryOverridesEnabled()) {
+            return back()->withErrors([
+                'category' => 'Run the latest migrations before changing Discord role categories.',
+            ]);
+        }
+
         $validated = $request->validate([
             'category' => ['nullable', Rule::in($this->categoryDefinitions()->keys()->all())],
         ]);
@@ -131,5 +139,10 @@ class DiscordManagementController extends Controller
         }
 
         return false;
+    }
+
+    private function categoryOverridesEnabled(): bool
+    {
+        return Schema::hasColumn('discord_roles', 'category');
     }
 }
