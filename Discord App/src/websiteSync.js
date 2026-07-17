@@ -6,7 +6,7 @@ let syncAgain = false;
 
 function syncConfig() {
   return {
-    baseUrl: process.env.WEBSITE_BASE_URL || process.env.APP_URL,
+    baseUrl: process.env.WEBSITE_BASE_URL || process.env.AMOW_API_URL || process.env.APP_URL,
     secret: process.env.WEBSITE_DISCORD_SYNC_SECRET || process.env.DISCORD_BOT_SYNC_SECRET,
     guildId: process.env.GUILD_ID || process.env.DISCORD_GUILD_ID
   };

@@ -6,8 +6,6 @@
         </div>
     </x-slot>
 
-    @include('admin.partials.nav')
-
     <div class="space-y-6">
         <section class="grid gap-4 md:grid-cols-3">
             <div class="rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
@@ -72,7 +70,9 @@
                         </div>
                     </details>
                 @empty
-                    <div class="px-5 py-10 text-center text-sm text-white/55">No Discord roles have been synced yet.</div>
+                    <div class="px-5 py-10 text-center text-sm text-white/55">
+                        No Discord roles have been synced yet. Start or restart the Discord bot after setting the website sync URL and secret.
+                    </div>
                 @endforelse
             </div>
         </section>

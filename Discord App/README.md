@@ -21,7 +21,7 @@ A small Node.js Discord bot with admin-configurable button panels for self-assig
    ```
 
    `GUILD_ID` is optional, but recommended while developing because command updates appear in that server almost instantly.
-   The website sync values are optional for local bot-only testing, but required if you want Discord roles and role members to appear under **Admin > Discord Management**.
+   The website sync values are optional for local bot-only testing, but required if you want Discord roles and role members to appear under **Admin > Discord Management**. If you already use `AMOW_API_URL`, the bot will use that as the website base URL too.
 
 3. Register slash commands:
 
