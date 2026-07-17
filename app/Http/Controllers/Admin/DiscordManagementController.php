@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DiscordRole;
 use App\Models\DiscordRoleCategory;
-use App\Models\DiscordRoleMember;
 use App\Support\DiscordBulkRankPlanner;
+use App\Support\DiscordRosterBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -39,95 +39,17 @@ class DiscordManagementController extends Controller
         ]);
     }
 
-    public function roster(): View
+    public function roster(DiscordRosterBuilder $rosterBuilder): View
     {
-        $roles = DiscordRole::query()
-            ->with(['members' => fn ($query) => $query->orderBy('display_name')->orderBy('username')])
-            ->orderByDesc('position')
-            ->orderBy('name')
-            ->get();
-
-        $nationRoles = $roles
-            ->filter(fn (DiscordRole $role): bool => $this->isNationRole($role))
-            ->values();
-
-        $rankRoles = $roles
-            ->filter(fn (DiscordRole $role): bool => $this->isRankRole($role) && ! $this->isNationRole($role))
-            ->sortByDesc('position')
-            ->values();
-
-        $rolesByMember = $roles
-            ->flatMap(fn (DiscordRole $role) => $role->members->map(fn (DiscordRoleMember $member): array => [
-                'member_id' => $member->discord_user_id,
-                'role' => $role,
-            ]))
-            ->groupBy('member_id')
-            ->map(fn (Collection $items): Collection => $items->pluck('role'));
-
-        $rankRoleIds = $rankRoles->pluck('id')->all();
-
-        $nations = $nationRoles
-            ->groupBy(fn (DiscordRole $role): string => $this->nationKeyForRole($role))
-            ->map(function (Collection $nationRoleGroup) use ($rolesByMember, $rankRoleIds): array {
-                $nationRoles = $nationRoleGroup->sortByDesc('position')->values();
-                $displayRole = $nationRoles->first();
-                $members = $nationRoles
-                    ->flatMap(fn (DiscordRole $nationRole): Collection => $nationRole->members)
-                    ->unique('discord_user_id')
-                    ->values()
-                ->map(function (DiscordRoleMember $member) use ($rolesByMember, $rankRoleIds): array {
-                    $memberRankRoles = ($rolesByMember->get($member->discord_user_id) ?? collect())
-                        ->filter(fn (DiscordRole $role): bool => in_array($role->id, $rankRoleIds, true))
-                        ->sortByDesc('position')
-                        ->values();
-
-                    return [
-                        'member' => $member,
-                        'rank' => $memberRankRoles->first(),
-                        'rank_roles' => $memberRankRoles,
-                    ];
-                })
-                ->sortBy([
-                    fn (array $left, array $right): int => ($right['rank']?->position ?? -1) <=> ($left['rank']?->position ?? -1),
-                    fn (array $left, array $right): int => strnatcasecmp($left['member']->display_name ?? $left['member']->username ?? '', $right['member']->display_name ?? $right['member']->username ?? ''),
-                ])
-                ->values();
-
-            $rankGroups = $members
-                ->groupBy(fn (array $item): string => $item['rank']?->discord_id ?? 'unranked')
-                ->map(function (Collection $rankMembers): array {
-                    $rank = $rankMembers->first()['rank'];
-
-                    return [
-                        'rank' => $rank,
-                        'label' => $rank?->name ?? 'Unranked',
-                        'badge_file' => $this->rankBadgeFileForRole($rank),
-                        'is_nation_leadership' => $this->isNationLeadershipRank($rank),
-                        'position' => $rank?->position ?? -1,
-                        'members' => $rankMembers,
-                    ];
-                })
-                ->sortByDesc('position')
-                ->values();
-
-            return [
-                'key' => $this->nationKeyForRole($displayRole),
-                'label' => $this->nationLabelForRole($displayRole),
-                'color' => $displayRole->color ?: '#7ead59',
-                'roles' => $nationRoles,
-                'members' => $members,
-                'rank_groups' => $rankGroups,
-            ];
-            })
-            ->sortBy('label')
-            ->values();
+        $roster = $rosterBuilder->build();
+        $nations = $roster['nations'];
 
         return view('admin.discord-roster', [
             'nations' => $nations,
             'nationRoleCount' => $nations->count(),
-            'rankRoleCount' => $rankRoles->count(),
+            'rankRoleCount' => $roster['rank_roles']->count(),
             'memberCount' => $nations->sum(fn (array $nation): int => $nation['members']->count()),
-            'lastSyncedAt' => $roles->max('synced_at'),
+            'lastSyncedAt' => $roster['last_synced_at'],
         ]);
     }
 

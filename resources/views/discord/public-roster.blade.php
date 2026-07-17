@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>{{ $nation['label'] }} Roster - {{ config('app.name', 'AMOW') }}</title>
+
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=rajdhani:500,600,700|teko:500,600,700&display=swap" rel="stylesheet" />
+
+        @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @else
+            <script src="https://cdn.tailwindcss.com"></script>
+        @endif
+    </head>
+    <body class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_32%),linear-gradient(180deg,_#102017_0%,_#07100c_58%,_#040806_100%)] font-sans text-[#f4ecd0] antialiased">
+        <main class="mx-auto min-h-screen w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+            <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,rgba(30,39,50,0.96),rgba(19,46,39,0.9))] p-5 shadow-2xl shadow-black/30 sm:p-7">
+                <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-center">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap gap-2">
+                            <span class="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-white/80">
+                                <span class="h-2.5 w-2.5 rounded-full border border-white/20" style="background-color: {{ $nation['color'] }}"></span>
+                                Nation Roster
+                            </span>
+                            <span class="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-white/80">Discord Sync</span>
+                        </div>
+
+                        <h1 class="mt-5 font-['Teko'] text-5xl uppercase leading-none tracking-[0.1em] text-[#f4ecd0] sm:text-6xl">{{ $nation['label'] }}</h1>
+                        <p class="mt-3 max-w-3xl text-sm leading-6 text-white/60 sm:text-base">Active Discord personnel grouped by rank, ordered from highest command down through the nation structure.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                        <div class="rounded-[1.25rem] border border-white/10 bg-black/15 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Personnel</p>
+                            <p class="mt-2 font-['Teko'] text-4xl uppercase tracking-[0.08em] text-white">{{ number_format($nation['members']->count()) }}</p>
+                        </div>
+                        <div class="rounded-[1.25rem] border border-white/10 bg-black/15 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Ranks</p>
+                            <p class="mt-2 font-['Teko'] text-4xl uppercase tracking-[0.08em] text-white">{{ number_format($nation['rank_groups']->count()) }}</p>
+                        </div>
+                        <div class="col-span-2 rounded-[1.25rem] border border-white/10 bg-black/15 p-4 sm:col-span-1 lg:col-span-1">
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Last Sync</p>
+                            <p class="mt-3 text-sm font-semibold text-[#d7edc7]">{{ $lastSyncedAt ? $lastSyncedAt->diffForHumans() : 'Not synced yet' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @if ($nations->count() > 1)
+                <nav class="mt-5 flex gap-2 overflow-x-auto pb-2" aria-label="Nation rosters">
+                    @foreach ($nations as $optionNation)
+                        <a
+                            href="{{ route('discord-roster.show', $optionNation['key']) }}"
+                            class="inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] transition {{ $optionNation['key'] === $nation['key'] ? 'border-[#7ead59]/45 bg-[#7ead59]/15 text-[#d7edc7]' : 'border-white/10 bg-white/5 text-white/65 hover:bg-white/10' }}"
+                        >
+                            <span class="h-2.5 w-2.5 rounded-full border border-white/15" style="background-color: {{ $optionNation['color'] }}"></span>
+                            {{ $optionNation['label'] }}
+                        </a>
+                    @endforeach
+                </nav>
+            @endif
+
+            <div class="mt-6 space-y-5 sm:space-y-6">
+                @forelse ($nation['rank_groups'] as $rankGroup)
+                    @php($rank = $rankGroup['rank'])
+                    <section class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.06] shadow-xl shadow-black/20">
+                        <div class="border-b border-white/10 p-4 sm:p-5">
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex min-w-0 items-center gap-3">
+                                    @if ($rankGroup['badge_file'])
+                                        <span class="flex h-12 w-12 shrink-0 items-center justify-center p-1 sm:h-14 sm:w-14">
+                                            <img src="{{ asset('images/military_rankings/'.$rankGroup['badge_file']) }}" alt="{{ $rankGroup['label'] }} insignia" class="max-h-full max-w-full object-contain" onerror="this.hidden = true">
+                                        </span>
+                                    @endif
+                                    <div class="min-w-0">
+                                        <p class="break-words text-lg font-bold uppercase tracking-[0.12em] text-[#e4edf8] sm:text-xl">{{ $rankGroup['label'] }}</p>
+                                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                                            @if ($rankGroup['is_nation_leadership'])
+                                                <span class="inline-flex rounded-md border border-[#7ead59]/25 bg-[#7ead59]/10 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#d7edc7]">Nation Leadership</span>
+                                            @endif
+                                            @if ($rank)
+                                                <span class="text-xs text-white/45">Discord role position {{ $rank->position }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-sm font-semibold text-white/55">{{ number_format($rankGroup['members']->count()) }} members</p>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-3 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3">
+                            @foreach ($rankGroup['members'] as $entry)
+                                @php($member = $entry['member'])
+                                <article class="flex min-w-0 items-center gap-3 rounded-[1.25rem] border border-white/10 bg-black/15 p-3 sm:gap-4 sm:p-4">
+                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#17271e] text-lg font-bold text-[#f4ecd0] shadow-lg shadow-black/20 sm:h-16 sm:w-16">
+                                        @if ($member->avatar_url)
+                                            <img src="{{ $member->avatar_url }}" alt="{{ $member->display_name ?? $member->username ?? 'Discord member' }} avatar" class="h-full w-full object-cover">
+                                        @else
+                                            {{ Str::upper(Str::substr($member->display_name ?? $member->username ?? '?', 0, 1)) }}
+                                        @endif
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="break-words text-base font-bold leading-tight text-white">{{ $member->display_name ?? $member->username ?? 'Unknown member' }}</p>
+                                        <p class="mt-1 text-sm text-white/45">{{ $rankGroup['label'] }}</p>
+                                        <p class="mt-2 break-words text-xs text-white/75"><span class="font-bold text-white">Discord:</span> {{ $member->username ?? $member->discord_user_id }}</p>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </section>
+                @empty
+                    <section class="rounded-[1.5rem] border border-white/10 bg-white/5 px-5 py-10 text-center text-sm text-white/55">
+                        No synced personnel were found for this nation.
+                    </section>
+                @endforelse
+            </div>
+        </main>
+    </body>
+</html>

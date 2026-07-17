@@ -381,3 +381,92 @@ test('admin can preview and bot can fetch bulk default rank plan', function () {
         ->assertJsonPath('assignment_count', 1)
         ->assertJsonPath('assignments.0.member_id', '200');
 });
+
+test('public nation roster can be viewed without authentication', function () {
+    DiscordRoleCategory::query()->create([
+        'name' => 'Nation Roles',
+        'slug' => 'nation-roles',
+        'description' => 'Nation membership roles.',
+        'sort_order' => 10,
+    ]);
+
+    DiscordRoleCategory::query()->create([
+        'name' => 'Rank Roles',
+        'slug' => 'rank-roles',
+        'description' => 'Nation rank roles.',
+        'sort_order' => 20,
+    ]);
+
+    $green = DiscordRole::query()->create([
+        'discord_id' => 'green',
+        'name' => 'Green',
+        'color' => '#00ff66',
+        'position' => 43,
+        'is_managed' => false,
+        'category' => 'nation-roles',
+        'member_count' => 2,
+        'synced_at' => now(),
+    ]);
+
+    $general = DiscordRole::query()->create([
+        'discord_id' => 'general',
+        'name' => 'General',
+        'color' => '#00ff66',
+        'position' => 60,
+        'is_managed' => false,
+        'category' => 'rank-roles',
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
+    $private = DiscordRole::query()->create([
+        'discord_id' => 'private',
+        'name' => 'Private',
+        'color' => '#00ff66',
+        'position' => 20,
+        'is_managed' => false,
+        'category' => 'rank-roles',
+        'member_count' => 1,
+        'synced_at' => now(),
+    ]);
+
+    $green->members()->create([
+        'discord_user_id' => '200',
+        'username' => 'general_user',
+        'display_name' => 'General User',
+        'synced_at' => now(),
+    ]);
+
+    $green->members()->create([
+        'discord_user_id' => '300',
+        'username' => 'private_user',
+        'display_name' => 'Private User',
+        'synced_at' => now(),
+    ]);
+
+    $general->members()->create([
+        'discord_user_id' => '200',
+        'username' => 'general_user',
+        'display_name' => 'General User',
+        'synced_at' => now(),
+    ]);
+
+    $private->members()->create([
+        'discord_user_id' => '300',
+        'username' => 'private_user',
+        'display_name' => 'Private User',
+        'synced_at' => now(),
+    ]);
+
+    $this
+        ->get('/discord-roster/green')
+        ->assertOk()
+        ->assertSee('Green')
+        ->assertSee('Nation Roster')
+        ->assertSee('military_rankings/General.png')
+        ->assertSeeInOrder(['General', 'General User', 'Private', 'Private User']);
+
+    $this
+        ->get('/discord-roster/not-a-nation')
+        ->assertNotFound();
+});

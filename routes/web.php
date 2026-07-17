@@ -37,11 +37,13 @@ use App\Http\Controllers\NationController;
 use App\Http\Controllers\NationRequisitionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\PublicDiscordRosterController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\WorkController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [GameController::class, 'home'])->name('home');
+Route::get('/discord-roster/{nation}', [PublicDiscordRosterController::class, 'show'])->name('discord-roster.show');
 
 Route::middleware(['auth', 'not_banned'])->group(function () {
     Route::get('/dashboard', [GameController::class, 'dashboard'])->name('dashboard');
