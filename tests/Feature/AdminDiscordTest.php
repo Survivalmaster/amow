@@ -4,6 +4,7 @@ use App\Models\DiscordCommand;
 use App\Models\DiscordWebhook;
 use App\Models\Permission;
 use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 test('admin can view discord settings page', function () {
     $admin = User::factory()->create(['is_admin' => true]);
@@ -139,4 +140,38 @@ test('admin can create a pray command without a webhook', function () {
     expect($command->access_mode)->toBe('anyone');
     expect($command->allow_any_channel)->toBeTrue();
     expect($command->command_options)->toBeArray();
+});
+
+test('resaving unchanged pray command does not create noisy discord audit update', function () {
+    config()->set('services.discord.bot_token', 'test-token');
+    DiscordCommand::query()->where('command_name', 'amowpray')->delete();
+
+    Http::fake([
+        'https://discord.com/api/v10/channels/1483335218944282685/messages' => Http::response(['id' => '1'], 200),
+    ]);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
+
+    $payload = [
+        'name' => 'Temple Prayer',
+        'command_name' => 'templepray',
+        'command_description' => 'Ask Marble or Obsidian to bless or smite you.',
+        'handler_key' => 'pray_to_deity',
+        'access_mode' => 'anyone',
+        'allow_any_channel' => '1',
+        'is_active' => '1',
+    ];
+
+    $this->actingAs($admin)->post('/admin/discord/commands', $payload)->assertRedirect();
+    $this->actingAs($admin)->post('/admin/discord/commands', $payload)->assertRedirect();
+
+    Http::assertSentCount(1);
+    Http::assertSent(function ($request) {
+        $embed = ($request->data()['embeds'][0] ?? []);
+
+        return ($embed['title'] ?? null) === 'Discord Command Created'
+            && str_contains($embed['description'] ?? '', 'Pray to Marble or Obsidian');
+    });
 });

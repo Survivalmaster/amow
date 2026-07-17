@@ -92,7 +92,7 @@
                             <div class="flex min-w-0 items-center gap-3">
                                 @if ($rankGroup['badge_file'])
                                     <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/15 p-1.5">
-                                        <img src="{{ asset('images/Military_Rankings/'.$rankGroup['badge_file']) }}" alt="{{ $rankGroup['label'] }} insignia" class="max-h-full max-w-full object-contain">
+                                        <img src="{{ asset('images/military_rankings/'.$rankGroup['badge_file']) }}" alt="{{ $rankGroup['label'] }} insignia" class="max-h-full max-w-full object-contain" onerror="this.hidden = true">
                                     </span>
                                 @endif
                                 <div class="min-w-0">
@@ -121,7 +121,7 @@
                                         <p class="mt-1 flex min-w-0 items-center gap-2 truncate text-sm text-white/45">
                                             @if ($rankGroup['badge_file'])
                                                 <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-black/20 p-0.5">
-                                                    <img src="{{ asset('images/Military_Rankings/'.$rankGroup['badge_file']) }}" alt="" class="max-h-full max-w-full object-contain">
+                                                    <img src="{{ asset('images/military_rankings/'.$rankGroup['badge_file']) }}" alt="" class="max-h-full max-w-full object-contain" onerror="this.hidden = true">
                                                 </span>
                                             @endif
                                             <span class="truncate">{{ $rankGroup['label'] }}</span>

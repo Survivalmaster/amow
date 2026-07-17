@@ -59,10 +59,14 @@ class AdminActionLogger
         $afterSnapshot = $this->snapshot($after);
         $changes = $this->diffSnapshots($beforeSnapshot, $afterSnapshot);
 
+        if ($changes === []) {
+            return;
+        }
+
         $this->send($actor, 'updated', $resource, $afterSnapshot, [
             [
                 'name' => 'Changed Fields',
-                'value' => $this->formatCodeBlock($changes === [] ? ['note' => 'No visible field changes captured.'] : $changes),
+                'value' => $this->formatCodeBlock($changes),
                 'inline' => false,
             ],
             [
@@ -133,8 +137,13 @@ class AdminActionLogger
     private function diffSnapshots(array $before, array $after): array
     {
         $changes = [];
+        $ignoredKeys = ['updated_at'];
 
         foreach (array_keys($before + $after) as $key) {
+            if (in_array($key, $ignoredKeys, true)) {
+                continue;
+            }
+
             $beforeValue = $before[$key] ?? null;
             $afterValue = $after[$key] ?? null;
 

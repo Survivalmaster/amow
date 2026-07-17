@@ -81,14 +81,16 @@ class DiscordWebhookAdminController extends Controller
         ];
 
         if ($validated['handler_key'] === 'pray_to_deity') {
-            $discordCommand = DiscordCommand::query()->updateOrCreate(
-                ['command_name' => $validated['command_name']],
-                $payload
-            );
-            if ($discordCommand->wasRecentlyCreated) {
-                $adminActionLogger->created($request->user(), 'Discord Command', $discordCommand);
+            $discordCommand = DiscordCommand::query()->where('command_name', $validated['command_name'])->first();
+
+            if ($discordCommand) {
+                $before = $adminActionLogger->snapshot($discordCommand);
+                $discordCommand->fill($payload);
+                $discordCommand->save();
+                $adminActionLogger->updated($request->user(), 'Discord Command', $before, $discordCommand);
             } else {
-                $adminActionLogger->updated($request->user(), 'Discord Command', ['command_name' => $validated['command_name']], $discordCommand);
+                $discordCommand = DiscordCommand::query()->create($payload);
+                $adminActionLogger->created($request->user(), 'Discord Command', $discordCommand);
             }
         } else {
             $discordCommand = DiscordCommand::query()->create($payload);
