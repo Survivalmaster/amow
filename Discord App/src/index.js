@@ -63,7 +63,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return;
     }
 
-    if (interaction.isChatInputCommand() && interaction.commandName === 'link') {
+    if (interaction.isChatInputCommand() && interaction.commandName === 'amow-link') {
       await handleLinkCommand(interaction);
       return;
     }

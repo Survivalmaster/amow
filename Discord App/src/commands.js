@@ -481,7 +481,7 @@ const rankToolsCommand = new SlashCommandBuilder()
   );
 
 const linkCommand = new SlashCommandBuilder()
-  .setName('link')
+  .setName('amow-link')
   .setDescription('Link your Discord account to your AMOW account.')
   .addStringOption((option) =>
     option

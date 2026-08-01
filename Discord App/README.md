@@ -22,7 +22,7 @@ A small Node.js Discord bot with admin-configurable button panels for self-assig
    ```
 
    `GUILD_ID` is optional, but recommended while developing because command updates appear in that server almost instantly.
-   The website link value is required for `/link`. The website sync values are optional for local bot-only testing, but required if you want Discord roles and role members to appear under **Admin > Discord Management**. If you already use `AMOW_API_URL`, the bot will use that as the website base URL too.
+   The website link value is required for `/amow-link`. The website sync values are optional for local bot-only testing, but required if you want Discord roles and role members to appear under **Admin > Discord Management**. If you already use `AMOW_API_URL`, the bot will use that as the website base URL too.
 
 3. Register slash commands:
 
@@ -104,7 +104,7 @@ Cooldown durations support minutes, hours, days, and weeks, such as `30m`, `24h`
 Users can generate a Discord link code from their AMOW profile, then run:
 
 ```text
-/link code:ABCDEF123456
+/amow-link code:ABCDEF123456
 ```
 
 The bot sends that code to the website and links the Discord user ID to the AMOW account. The bot needs `WEBSITE_BASE_URL` or `AMOW_API_URL`, plus `WEBSITE_DISCORD_LINK_SECRET` matching Laravel's `DISCORD_LINKING_SECRET`.
