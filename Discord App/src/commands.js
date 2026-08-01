@@ -480,7 +480,20 @@ const rankToolsCommand = new SlashCommandBuilder()
       )
   );
 
+const linkCommand = new SlashCommandBuilder()
+  .setName('link')
+  .setDescription('Link your Discord account to your AMOW account.')
+  .addStringOption((option) =>
+    option
+      .setName('code')
+      .setDescription('The 12-character link code from your AMOW profile.')
+      .setRequired(true)
+      .setMinLength(12)
+      .setMaxLength(12)
+  );
+
 module.exports = [
+  linkCommand.toJSON(),
   rolePanelCommand.toJSON(),
   loggingCommand.toJSON(),
   rankPanelCommand.toJSON(),

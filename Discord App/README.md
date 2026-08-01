@@ -17,11 +17,12 @@ A small Node.js Discord bot with admin-configurable button panels for self-assig
    CLIENT_ID=your_application_client_id_here
    GUILD_ID=your_test_server_id_here
    WEBSITE_BASE_URL=https://your-site.example
+   WEBSITE_DISCORD_LINK_SECRET=match_your_laravel_DISCORD_LINKING_SECRET
    WEBSITE_DISCORD_SYNC_SECRET=match_your_laravel_DISCORD_BOT_SYNC_SECRET
    ```
 
    `GUILD_ID` is optional, but recommended while developing because command updates appear in that server almost instantly.
-   The website sync values are optional for local bot-only testing, but required if you want Discord roles and role members to appear under **Admin > Discord Management**. If you already use `AMOW_API_URL`, the bot will use that as the website base URL too.
+   The website link value is required for `/link`. The website sync values are optional for local bot-only testing, but required if you want Discord roles and role members to appear under **Admin > Discord Management**. If you already use `AMOW_API_URL`, the bot will use that as the website base URL too.
 
 3. Register slash commands:
 
@@ -97,6 +98,16 @@ Other admin commands:
 Deleting a panel removes the bot's panel message and deletes the saved config.
 Role panels show live role counts and refresh after each button click.
 Cooldown durations support minutes, hours, days, and weeks, such as `30m`, `24h`, `7d`, or `2w`.
+
+## AMOW Account Linking
+
+Users can generate a Discord link code from their AMOW profile, then run:
+
+```text
+/link code:ABCDEF123456
+```
+
+The bot sends that code to the website and links the Discord user ID to the AMOW account. The bot needs `WEBSITE_BASE_URL` or `AMOW_API_URL`, plus `WEBSITE_DISCORD_LINK_SECRET` matching Laravel's `DISCORD_LINKING_SECRET`.
 
 ## Leadership Rank Panels
 

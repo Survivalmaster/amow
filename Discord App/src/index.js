@@ -2,6 +2,7 @@ require('./loadEnv');
 
 const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const { handleRankToolsCommand } = require('./bulkRank');
+const { handleLinkCommand } = require('./linking');
 const {
   handleRoleButton,
   handleRolePanelCommand,
@@ -14,7 +15,8 @@ const {
   handleRankUserSelect,
   isRankPanelMemberSelect,
   isRankPanelRankSelect,
-  isRankPanelUserSelect
+  isRankPanelUserSelect,
+  refreshRankPanelsForTeamRoles
 } = require('./rankPanels');
 const {
   handleLoggingCommand,
@@ -58,6 +60,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
   try {
     if (interaction.isChatInputCommand() && interaction.commandName === 'role-panel') {
       await handleRolePanelCommand(interaction);
+      return;
+    }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === 'link') {
+      await handleLinkCommand(interaction);
       return;
     }
 
@@ -117,6 +124,16 @@ client.on(Events.MessageDelete, async (message) => {
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
   try {
     await logRoleChanges(oldMember, newMember);
+    const changedRoleIds = [
+      ...oldMember.roles.cache
+        .filter((role) => !newMember.roles.cache.has(role.id))
+        .keys(),
+      ...newMember.roles.cache
+        .filter((role) => !oldMember.roles.cache.has(role.id))
+        .keys()
+    ];
+
+    await refreshRankPanelsForTeamRoles(newMember.client, newMember.guild.id, changedRoleIds);
     scheduleDiscordRoleSync(newMember.client);
   } catch (error) {
     console.error('Failed to process member update log:', error);

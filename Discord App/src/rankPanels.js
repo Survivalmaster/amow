@@ -9,6 +9,7 @@ const {
 const {
   deleteRankPanel,
   getRankPanel,
+  readRankPanels,
   saveRankPanel
 } = require('./storage');
 
@@ -69,20 +70,22 @@ async function ensureMemberCache(guild, allowFetch = false) {
     return false;
   }
 
-  const lastRefresh = memberCacheRefreshes.get(guild.id) ?? 0;
-  const cacheLooksComplete = guild.memberCount ? guild.members.cache.size >= guild.memberCount : false;
-  if (cacheLooksComplete || !allowFetch || Date.now() - lastRefresh < MEMBER_CACHE_REFRESH_MS) {
-    return cacheLooksComplete;
+  if (!allowFetch) {
+    return guild.memberCount ? guild.members.cache.size >= guild.memberCount : false;
   }
 
+  const lastRefresh = memberCacheRefreshes.get(guild.id) ?? 0;
   try {
-    await guild.members.fetch();
-    memberCacheRefreshes.set(guild.id, Date.now());
-    return true;
+    if (Date.now() - lastRefresh >= MEMBER_CACHE_REFRESH_MS) {
+      await guild.members.fetch();
+      memberCacheRefreshes.set(guild.id, Date.now());
+    }
+
+    return guild.memberCount ? guild.members.cache.size >= guild.memberCount : true;
   } catch (error) {
     console.error('Failed to refresh member cache for rank panel:', error);
     memberCacheRefreshes.set(guild.id, Date.now());
-    return false;
+    return guild.memberCount ? guild.members.cache.size >= guild.memberCount : false;
   }
 }
 
@@ -161,7 +164,7 @@ async function teamMemberOptions(guild, panel, allowMemberFetch = false) {
   return { cacheReady, members };
 }
 
-async function rankPanelComponents(panel, guild, allowMemberFetch = false) {
+async function rankPanelComponents(panel, guild, allowMemberFetch = true) {
   const { cacheReady, members } = await teamMemberOptions(guild, panel, allowMemberFetch);
 
   if (cacheReady && members.length && members.length <= MAX_MEMBER_OPTIONS) {
@@ -245,7 +248,7 @@ async function fetchRankPanelMessage(interaction, messageId) {
 async function refreshRankPanelMessage(message, panel, options = {}) {
   await message.edit({
     embeds: [rankPanelEmbed(panel)],
-    components: await rankPanelComponents(panel, message.guild, options.allowMemberFetch ?? false)
+    components: await rankPanelComponents(panel, message.guild, options.allowMemberFetch ?? true)
   });
 }
 
@@ -256,6 +259,37 @@ async function tryRefreshRankPanelMessage(message, panel, options = {}) {
   } catch (error) {
     console.error('Failed to refresh rank panel message:', error);
     return false;
+  }
+}
+
+async function refreshRankPanelsForTeamRoles(client, guildId, roleIds) {
+  if (!roleIds.length) {
+    return;
+  }
+
+  const roleIdSet = new Set(roleIds);
+  const data = await readRankPanels();
+  const panels = Object.values(data.panels ?? {})
+    .filter((panel) => panel.guildId === guildId && roleIdSet.has(panel.teamRoleId));
+
+  if (!panels.length) {
+    return;
+  }
+
+  const guild = await client.guilds.fetch(guildId);
+
+  for (const panel of panels) {
+    try {
+      const channel = await guild.channels.fetch(panel.channelId);
+      if (!channel?.isTextBased()) {
+        continue;
+      }
+
+      const message = await channel.messages.fetch(panel.messageId);
+      await refreshRankPanelMessage(message, panel, { allowMemberFetch: true });
+    } catch (error) {
+      console.error('Failed to refresh rank panel after team role change:', error);
+    }
   }
 }
 
@@ -742,6 +776,7 @@ module.exports = {
   handleRankPanelCommand,
   handleRankSelect,
   handleRankUserSelect,
+  refreshRankPanelsForTeamRoles,
   isRankPanelMemberSelect,
   isRankPanelRankSelect,
   isRankPanelUserSelect
