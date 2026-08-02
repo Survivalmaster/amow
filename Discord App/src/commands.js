@@ -492,8 +492,28 @@ const linkCommand = new SlashCommandBuilder()
       .setMaxLength(12)
   );
 
+const amowBankCommand = new SlashCommandBuilder()
+  .setName('amow-bank')
+  .setDescription('Show the Plastic Credit balance for your linked AMOW character.');
+
+const amowWorkCommand = new SlashCommandBuilder()
+  .setName('amow-work')
+  .setDescription('Work the current job for your linked AMOW character.');
+
+const amowJobsCommand = new SlashCommandBuilder()
+  .setName('amow-jobs')
+  .setDescription('Browse and change jobs for your linked AMOW character.');
+
+const amowStoreCommand = new SlashCommandBuilder()
+  .setName('amow-store')
+  .setDescription('Browse and buy from the AMOW store with your linked character.');
+
 module.exports = [
   linkCommand.toJSON(),
+  amowBankCommand.toJSON(),
+  amowWorkCommand.toJSON(),
+  amowJobsCommand.toJSON(),
+  amowStoreCommand.toJSON(),
   rolePanelCommand.toJSON(),
   loggingCommand.toJSON(),
   rankPanelCommand.toJSON(),

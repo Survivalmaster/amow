@@ -4,6 +4,16 @@ const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const { handleRankToolsCommand } = require('./bulkRank');
 const { handleLinkCommand } = require('./linking');
 const {
+  handleBankCommand,
+  handleJobPickSelect,
+  handleJobsCommand,
+  handleStoreCommand,
+  handleStorePurchaseSelect,
+  handleWorkCommand,
+  isJobPickSelect,
+  isStorePurchaseSelect
+} = require('./amowGame');
+const {
   handleRoleButton,
   handleRolePanelCommand,
   isRolePanelButton
@@ -68,6 +78,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
       return;
     }
 
+    if (interaction.isChatInputCommand() && interaction.commandName === 'amow-bank') {
+      await handleBankCommand(interaction);
+      return;
+    }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === 'amow-work') {
+      await handleWorkCommand(interaction);
+      return;
+    }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === 'amow-jobs') {
+      await handleJobsCommand(interaction);
+      return;
+    }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === 'amow-store') {
+      await handleStoreCommand(interaction);
+      return;
+    }
+
     if (interaction.isChatInputCommand() && interaction.commandName === 'logging') {
       await handleLoggingCommand(interaction);
       return;
@@ -85,6 +115,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (isRolePanelButton(interaction)) {
       await handleRoleButton(interaction);
+      return;
+    }
+
+    if (isStorePurchaseSelect(interaction)) {
+      await handleStorePurchaseSelect(interaction);
+      return;
+    }
+
+    if (isJobPickSelect(interaction)) {
+      await handleJobPickSelect(interaction);
       return;
     }
 
