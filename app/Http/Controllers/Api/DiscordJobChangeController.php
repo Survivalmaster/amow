@@ -23,7 +23,7 @@ class DiscordJobChangeController extends Controller
             'job_id' => ['required', 'integer'],
         ]);
 
-        $character = $this->linkedCharacter($payload['discord_user_id'], ['currentJob']);
+        $character = $this->linkedCharacter($payload['discord_user_id'], ['currentJob', 'faction']);
 
         if (! $character) {
             return response()->json([
@@ -52,6 +52,8 @@ class DiscordJobChangeController extends Controller
             'job_change_cooldown_ends_at' => $result['cooldown_ends_at']?->toIso8601String(),
             'character' => [
                 'name' => $result['character']->name,
+                'faction' => $result['character']->faction?->name,
+                'faction_color' => $result['character']->faction?->color,
                 'level' => $result['character']->level,
                 'current_job_id' => $result['character']->current_job_id,
                 'current_job' => $result['character']->displayed_job_name,

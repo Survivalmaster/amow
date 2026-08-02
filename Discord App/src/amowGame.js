@@ -32,9 +32,13 @@ async function websiteRequest(path, options = {}) {
   const body = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const error = new Error(body.message || `Website request failed with ${response.status}.`);
+    const message = response.status === 404 && body.linked === false
+      ? `${body.message || 'No AMOW character is linked to this Discord user.'} Generate a Discord link code from your AMOW profile, then run \`/amow-link\` with that code.`
+      : body.message || `Website request failed with ${response.status}.`;
+    const error = new Error(message);
     error.status = response.status;
     error.body = body;
+    error.publicReply = true;
     throw error;
   }
 
@@ -55,11 +59,21 @@ function trimText(value, maxLength) {
   return `${text.slice(0, Math.max(0, maxLength - 3))}...`;
 }
 
+function embedColor(character, fallback = 0x7ead59) {
+  const hex = String(character?.faction_color || '').replace('#', '').trim();
+
+  if (!/^[0-9a-f]{6}$/i.test(hex)) {
+    return fallback;
+  }
+
+  return Number.parseInt(hex, 16);
+}
+
 function buildBankEmbed(body) {
   const character = body.character;
 
   return new EmbedBuilder()
-    .setColor(0x7ead59)
+    .setColor(embedColor(character))
     .setTitle(`${character.name}'s Bank`)
     .setDescription(`**${credits(character.credits)}** Plastic Credits`)
     .addFields(
@@ -69,7 +83,7 @@ function buildBankEmbed(body) {
 }
 
 async function handleBankCommand(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply();
 
   const body = await websiteRequest(`/api/discord/bank/${interaction.user.id}`);
 
@@ -88,7 +102,7 @@ async function handleWorkCommand(interaction) {
 
   const character = body.character;
   const embed = new EmbedBuilder()
-    .setColor(0xc2a84f)
+    .setColor(embedColor(character, 0xc2a84f))
     .setTitle(`${character.name} completed a shift`)
     .setDescription(`Earned **${credits(body.earnings)}** Plastic Credits and **${body.experience_earned} XP**.`)
     .addFields(
@@ -132,7 +146,7 @@ function buildJobsEmbed(body, entries) {
   );
 
   const embed = new EmbedBuilder()
-    .setColor(0x7ead59)
+    .setColor(embedColor(character))
     .setTitle('AMOW Jobs')
     .setDescription(preview.length ? preview.join('\n') : 'No jobs are configured yet.')
     .addFields(
@@ -215,7 +229,7 @@ function buildStoreEmbed(body, entries) {
   );
 
   return new EmbedBuilder()
-    .setColor(0x7ead59)
+    .setColor(embedColor(character))
     .setTitle('AMOW Store')
     .setDescription(preview.length ? preview.join('\n') : 'The store is empty.')
     .addFields(
@@ -248,7 +262,7 @@ function buildStoreComponents(userId, entries) {
 }
 
 async function handleStoreCommand(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply();
 
   const body = await websiteRequest(`/api/discord/store/${interaction.user.id}`);
   const entries = storeEntries(body);
@@ -286,7 +300,7 @@ async function handleJobPickSelect(interaction) {
   });
 
   const embed = new EmbedBuilder()
-    .setColor(0xc2a84f)
+    .setColor(embedColor(body.character, 0xc2a84f))
     .setTitle(body.message)
     .setDescription(`${body.character.name} is now working as **${body.character.current_job}**.`)
     .addFields(
@@ -320,7 +334,7 @@ async function handleStorePurchaseSelect(interaction) {
   });
 
   const embed = new EmbedBuilder()
-    .setColor(0xc2a84f)
+    .setColor(embedColor(body.character, 0xc2a84f))
     .setTitle(body.message)
     .setDescription(`Balance: **${credits(body.character.credits)}** Plastic Credits`)
     .addFields({

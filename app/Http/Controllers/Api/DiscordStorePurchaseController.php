@@ -23,7 +23,7 @@ class DiscordStorePurchaseController extends Controller
             'id' => ['required', 'integer'],
         ]);
 
-        $character = $this->linkedCharacter($payload['discord_user_id'], ['rank', 'licences', 'inventory']);
+        $character = $this->linkedCharacter($payload['discord_user_id'], ['faction', 'rank', 'licences', 'inventory']);
 
         if (! $character) {
             return response()->json([
@@ -42,6 +42,8 @@ class DiscordStorePurchaseController extends Controller
             ], 422);
         }
 
+        $result['character']->loadMissing('faction');
+
         return response()->json([
             'linked' => true,
             'purchased' => true,
@@ -52,6 +54,8 @@ class DiscordStorePurchaseController extends Controller
             ],
             'character' => [
                 'name' => $result['character']->name,
+                'faction' => $result['character']->faction?->name,
+                'faction_color' => $result['character']->faction?->color,
                 'credits' => $result['character']->plastic_credits,
                 'inventory_slots_used' => $result['character']->inventorySlotsUsed(),
                 'inventory_slot_capacity' => $result['character']->inventorySlotCapacity(),

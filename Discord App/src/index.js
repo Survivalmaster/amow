@@ -145,7 +145,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
     console.error(error);
 
     const content = error.message || 'Something went wrong while handling that interaction.';
-    if (interaction.replied || interaction.deferred) {
+    if (error.publicReply && interaction.deferred && !interaction.replied) {
+      await interaction.editReply({ content, embeds: [], components: [] });
+    } else if (interaction.replied || interaction.deferred) {
       await interaction.followUp({ content, ephemeral: true });
     } else {
       await interaction.reply({ content, ephemeral: true });

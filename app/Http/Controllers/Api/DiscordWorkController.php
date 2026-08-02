@@ -51,6 +51,8 @@ class DiscordWorkController extends Controller
             'cooldown_ends_at' => $result['cooldown_ends_at']?->toIso8601String(),
             'character' => [
                 'name' => $result['character']->name,
+                'faction' => $result['character']->faction?->name,
+                'faction_color' => $result['character']->faction?->color,
                 'job' => $result['job']->name,
                 'credits' => $result['character']->plastic_credits,
                 'level' => $result['character']->level,

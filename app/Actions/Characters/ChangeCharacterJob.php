@@ -39,7 +39,7 @@ class ChangeCharacterJob
         });
 
         return [
-            'character' => $character->fresh('currentJob'),
+            'character' => $character->fresh(['currentJob', 'faction']),
             'job' => $gameJob,
             'message' => "Job changed to {$gameJob->name}.",
             'cooldown_ends_at' => now()->addDay(),

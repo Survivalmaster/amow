@@ -16,7 +16,7 @@ class DiscordJobsController extends Controller
     {
         $this->authorizeDiscordRequest($request);
 
-        $character = $this->linkedCharacter($discordUserId, ['currentJob']);
+        $character = $this->linkedCharacter($discordUserId, ['currentJob', 'faction']);
 
         if (! $character) {
             return response()->json([
@@ -32,6 +32,8 @@ class DiscordJobsController extends Controller
             'linked' => true,
             'character' => [
                 'name' => $character->name,
+                'faction' => $character->faction?->name,
+                'faction_color' => $character->faction?->color,
                 'level' => $character->level,
                 'current_job_id' => $character->current_job_id,
                 'current_job' => $character->displayed_job_name,

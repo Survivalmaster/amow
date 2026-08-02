@@ -17,7 +17,7 @@ class DiscordStoreController extends Controller
     {
         $this->authorizeDiscordRequest($request);
 
-        $character = $this->linkedCharacter($discordUserId, ['rank', 'licences', 'inventory']);
+        $character = $this->linkedCharacter($discordUserId, ['faction', 'rank', 'licences', 'inventory']);
 
         if (! $character) {
             return response()->json([
@@ -33,6 +33,8 @@ class DiscordStoreController extends Controller
             'linked' => true,
             'character' => [
                 'name' => $character->name,
+                'faction' => $character->faction?->name,
+                'faction_color' => $character->faction?->color,
                 'credits' => $character->plastic_credits,
                 'inventory_slots_used' => $character->inventorySlotsUsed(),
                 'inventory_slot_capacity' => $character->inventorySlotCapacity(),

@@ -29,6 +29,7 @@ class DiscordBankController extends Controller
             'character' => [
                 'name' => $character->name,
                 'faction' => $character->faction?->name,
+                'faction_color' => $character->faction?->color,
                 'rank' => $character->rank?->name,
                 'credits' => $character->plastic_credits,
             ],
