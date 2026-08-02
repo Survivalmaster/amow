@@ -19,6 +19,24 @@ test('authenticated user can generate a discord link token', function () {
     expect($user->discord_link_token_expires_at)->not->toBeNull();
 });
 
+test('user without a character or permissions can generate a discord link token', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+
+    $response = $this
+        ->actingAs($user)
+        ->post('/profile/discord-link');
+
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect('/profile');
+
+    $user->refresh();
+
+    expect($user->permissions)->toHaveCount(0);
+    expect($user->character)->toBeNull();
+    expect($user->discord_link_token)->not->toBeNull();
+});
+
 test('discord bot endpoint can complete a link with a valid secret and token', function () {
     config()->set('services.discord.linking_secret', 'test-secret');
 
@@ -50,6 +68,31 @@ test('discord bot endpoint can complete a link with a valid secret and token', f
     expect($user->discord_avatar)->toBe('avatar-hash');
     expect($user->discord_linked_at)->not->toBeNull();
     expect($user->discord_link_token)->toBeNull();
+});
+
+test('discord bot endpoint can complete a link for a user without permissions', function () {
+    config()->set('services.discord.linking_secret', 'test-secret');
+
+    $user = User::factory()->create([
+        'is_admin' => false,
+        'discord_link_token' => 'ABCDEF123456',
+        'discord_link_token_expires_at' => now()->addMinutes(10),
+    ]);
+
+    $response = $this
+        ->withHeader('X-Discord-Link-Secret', 'test-secret')
+        ->postJson('/api/discord/link/complete', [
+            'token' => 'ABCDEF123456',
+            'discord_user_id' => '123456789012345678',
+            'discord_username' => 'TestUser#1234',
+        ]);
+
+    $response->assertOk();
+
+    $user->refresh();
+
+    expect($user->permissions)->toHaveCount(0);
+    expect($user->discord_user_id)->toBe('123456789012345678');
 });
 
 test('authenticated user can unlink discord', function () {
