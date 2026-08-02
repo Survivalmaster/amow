@@ -4,16 +4,47 @@
     @include('admin.partials.nav')
 
     <div x-data="{ openId: null }" class="space-y-6">
+        @php($fieldClass = 'rounded-2xl border border-white/10 bg-black/25 px-4 py-3')
+        @php($labelClass = 'space-y-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/45')
+
         <form method="POST" action="{{ route('admin.jobs.store') }}" class="grid gap-4 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30 lg:grid-cols-2 xl:grid-cols-4">
             @csrf
-            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Job name" required>
-            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="job-slug" required>
-            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="min_pay" type="number" min="0" placeholder="Min pay" required>
-            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="max_pay" type="number" min="0" placeholder="Max pay" required>
-            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_level" type="number" min="0" placeholder="Required level" required>
-            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="work_cooldown_minutes" type="number" min="1" placeholder="Cooldown minutes" required>
-            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stamina_decrease" type="number" min="0" max="100" placeholder="Stamina decrease" value="0" required>
-            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 xl:col-span-2" name="working_display_message" placeholder="Working display message (e.g. Is begging in the city.)">
+            <label class="{{ $labelClass }}">
+                <span>Job Name</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="name" placeholder="Begger" required>
+            </label>
+            <label class="{{ $labelClass }}">
+                <span>Slug</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="slug" placeholder="begger" required>
+            </label>
+            <label class="{{ $labelClass }}">
+                <span>Minimum Pay</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="min_pay" type="number" min="0" placeholder="5" required>
+            </label>
+            <label class="{{ $labelClass }}">
+                <span>Maximum Pay</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="max_pay" type="number" min="0" placeholder="25" required>
+            </label>
+            <label class="{{ $labelClass }}">
+                <span>Required Level</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="required_level" type="number" min="0" placeholder="0" required>
+            </label>
+            <label class="{{ $labelClass }}">
+                <span>Cooldown Minutes</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="work_cooldown_minutes" type="number" min="1" placeholder="2" required>
+            </label>
+            <label class="{{ $labelClass }}">
+                <span>Stamina Decrease</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="stamina_decrease" type="number" min="0" max="100" placeholder="15" value="0" required>
+            </label>
+            <label class="{{ $labelClass }}">
+                <span>XP Reward</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="experience_reward" type="number" min="0" placeholder="5" value="5" required>
+            </label>
+            <label class="{{ $labelClass }} xl:col-span-2">
+                <span>Activity Message</span>
+                <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="working_display_message" placeholder="Begging in the city.">
+            </label>
             <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                 <input type="checkbox" name="is_starter" value="1">
                 Starter job
@@ -22,7 +53,10 @@
                 <input type="checkbox" name="is_active" value="1" checked>
                 Active
             </label>
-            <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 xl:col-span-4" name="description" placeholder="Job description"></textarea>
+            <label class="{{ $labelClass }} xl:col-span-4">
+                <span>Description</span>
+                <textarea class="{{ $fieldClass }} min-h-24 w-full normal-case tracking-normal text-white" name="description" placeholder="The most simple job in Plastica. Beg for money."></textarea>
+            </label>
             <div class="xl:col-span-4 flex justify-end">
                 <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Job</button>
             </div>
@@ -36,6 +70,7 @@
                             <th class="px-5 py-4 text-left">Name</th>
                             <th class="px-5 py-4 text-left">Level</th>
                             <th class="px-5 py-4 text-left">Pay</th>
+                            <th class="px-5 py-4 text-left">XP</th>
                             <th class="px-5 py-4 text-left">Cooldown</th>
                             <th class="px-5 py-4 text-left">Stamina</th>
                             <th class="px-5 py-4 text-left">Activity</th>
@@ -49,6 +84,7 @@
                                 <td class="px-5 py-4 font-semibold text-white">{{ $job->name }}</td>
                                 <td class="px-5 py-4">Level {{ $job->required_level }}</td>
                                 <td class="px-5 py-4">{{ number_format($job->min_pay) }} - {{ number_format($job->max_pay) }}</td>
+                                <td class="px-5 py-4">{{ number_format($job->experience_reward) }}</td>
                                 <td class="px-5 py-4">{{ $job->work_cooldown_minutes }} min</td>
                                 <td class="px-5 py-4">-{{ $job->stamina_decrease }}</td>
                                 <td class="px-5 py-4 text-white/60">{{ $job->working_display_message ?: 'No live activity set.' }}</td>
@@ -70,18 +106,46 @@
                                 </td>
                             </tr>
                             <tr x-show="openId === {{ $job->id }}" x-cloak>
-                                <td colspan="8" class="px-5 pb-5">
+                                <td colspan="9" class="px-5 pb-5">
                                     <form method="POST" action="{{ route('admin.jobs.update', $job) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2 xl:grid-cols-4">
                                         @csrf
                                         @method('PATCH')
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $job->name }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" value="{{ $job->slug }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="min_pay" type="number" min="0" value="{{ $job->min_pay }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="max_pay" type="number" min="0" value="{{ $job->max_pay }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_level" type="number" min="0" value="{{ $job->required_level }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="work_cooldown_minutes" type="number" min="1" value="{{ $job->work_cooldown_minutes }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="stamina_decrease" type="number" min="0" max="100" value="{{ $job->stamina_decrease }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 xl:col-span-2" name="working_display_message" value="{{ $job->working_display_message }}" placeholder="Working display message">
+                                        <label class="{{ $labelClass }}">
+                                            <span>Job Name</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="name" value="{{ $job->name }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span>Slug</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="slug" value="{{ $job->slug }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span>Minimum Pay</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="min_pay" type="number" min="0" value="{{ $job->min_pay }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span>Maximum Pay</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="max_pay" type="number" min="0" value="{{ $job->max_pay }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span>Required Level</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="required_level" type="number" min="0" value="{{ $job->required_level }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span>Cooldown Minutes</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="work_cooldown_minutes" type="number" min="1" value="{{ $job->work_cooldown_minutes }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span>Stamina Decrease</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="stamina_decrease" type="number" min="0" max="100" value="{{ $job->stamina_decrease }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span>XP Reward</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="experience_reward" type="number" min="0" value="{{ $job->experience_reward }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }} xl:col-span-2">
+                                            <span>Activity Message</span>
+                                            <input class="{{ $fieldClass }} w-full normal-case tracking-normal text-white" name="working_display_message" value="{{ $job->working_display_message }}" placeholder="Working display message">
+                                        </label>
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                                             <input type="checkbox" name="is_starter" value="1" @checked($job->is_starter)>
                                             Starter job
@@ -90,7 +154,10 @@
                                             <input type="checkbox" name="is_active" value="1" @checked($job->is_active)>
                                             Active
                                         </label>
-                                        <textarea class="min-h-24 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 xl:col-span-4" name="description">{{ $job->description }}</textarea>
+                                        <label class="{{ $labelClass }} xl:col-span-4">
+                                            <span>Description</span>
+                                            <textarea class="{{ $fieldClass }} min-h-24 w-full normal-case tracking-normal text-white" name="description">{{ $job->description }}</textarea>
+                                        </label>
                                         <div class="xl:col-span-4 flex justify-end">
                                             <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
                                         </div>

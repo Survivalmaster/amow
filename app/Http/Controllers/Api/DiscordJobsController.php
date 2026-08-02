@@ -52,6 +52,7 @@ class DiscordJobsController extends Controller
                     'max_pay' => $job->max_pay,
                     'required_level' => $job->required_level,
                     'work_cooldown_minutes' => $job->work_cooldown_minutes,
+                    'experience_reward' => $job->experience_reward,
                     'is_active' => $job->is_active,
                     'is_current' => $character->current_job_id === $job->id,
                     'can_choose' => $job->is_active

@@ -64,6 +64,7 @@ class DiscordJobChangeController extends Controller
                 'min_pay' => $result['job']->min_pay,
                 'max_pay' => $result['job']->max_pay,
                 'work_cooldown_minutes' => $result['job']->work_cooldown_minutes,
+                'experience_reward' => $result['job']->experience_reward,
             ],
         ]);
     }

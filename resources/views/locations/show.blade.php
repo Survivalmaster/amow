@@ -67,7 +67,7 @@
                     <div data-work-panel class="mt-6 rounded-[1.5rem] border border-[#7ead59]/20 bg-black/20 p-5">
                         <p class="text-xs uppercase tracking-[0.2em] text-white/45">Assigned Job</p>
                         <p class="mt-2 font-['Teko'] text-4xl uppercase" data-character-field="displayed_job_name">{{ $character->displayed_job_name }}</p>
-                        <p class="mt-2 text-sm text-white/70">Complete the shift timer to earn {{ number_format($character->currentJob?->min_pay ?? 10) }}-{{ number_format($character->currentJob?->max_pay ?? 30) }} credits and 5 XP.</p>
+                        <p class="mt-2 text-sm text-white/70">Complete the shift timer to earn {{ number_format($character->currentJob?->min_pay ?? 10) }}-{{ number_format($character->currentJob?->max_pay ?? 30) }} credits and {{ number_format($character->currentJob?->experience_reward ?? 5) }} XP.</p>
                         <p class="mt-2 text-xs uppercase tracking-[0.18em] text-white/45">Cooldown: {{ $character->currentJob?->work_cooldown_minutes ?? 5 }} minutes</p>
                         <form method="POST" action="{{ route('work.store', $location) }}" class="mt-5">
                             @csrf

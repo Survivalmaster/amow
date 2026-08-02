@@ -142,7 +142,7 @@ function jobEntries(body) {
 function buildJobsEmbed(body, entries) {
   const character = body.character;
   const preview = entries.slice(0, 12).map((job) =>
-    `**${job.name}** - ${credits(job.min_pay)}-${credits(job.max_pay)} credits, ${job.work_cooldown_minutes}m work cooldown (${job.status})`
+    `**${job.name}** - ${credits(job.min_pay)}-${credits(job.max_pay)} credits, ${job.experience_reward || 0} XP, ${job.work_cooldown_minutes}m work cooldown (${job.status})`
   );
 
   const embed = new EmbedBuilder()
@@ -305,6 +305,7 @@ async function handleJobPickSelect(interaction) {
     .setDescription(`${body.character.name} is now working as **${body.character.current_job}**.`)
     .addFields(
       { name: 'Pay Range', value: `${credits(body.job.min_pay)}-${credits(body.job.max_pay)}`, inline: true },
+      { name: 'XP Reward', value: `${body.job.experience_reward || 0} XP`, inline: true },
       { name: 'Work Cooldown', value: `${body.job.work_cooldown_minutes}m`, inline: true }
     )
     .setFooter({ text: `Next job switch available ${new Date(body.job_change_cooldown_ends_at).toLocaleString('en-GB')}` });

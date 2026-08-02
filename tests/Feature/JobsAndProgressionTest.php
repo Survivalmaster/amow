@@ -56,6 +56,7 @@ test('work awards credits and experience based on the active job', function () {
     $character = createCharacterForUser($user);
     $character->currentJob()->update([
         'stamina_decrease' => 12,
+        'experience_reward' => 8,
         'working_display_message' => 'Is begging in the city.',
     ]);
     $location = Location::query()->where('slug', 'go-to-work')->firstOrFail();
@@ -70,7 +71,7 @@ test('work awards credits and experience based on the active job', function () {
     $character->refresh();
 
     expect($character->plastic_credits)->toBeGreaterThan(100);
-    expect($character->experience_points)->toBe(5);
+    expect($character->experience_points)->toBe(8);
     expect($character->stamina_points)->toBe(88);
     expect($character->last_worked_at)->not->toBeNull();
 

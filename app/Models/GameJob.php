@@ -16,6 +16,7 @@ class GameJob extends Model
         'required_level',
         'work_cooldown_minutes',
         'stamina_decrease',
+        'experience_reward',
         'working_display_message',
         'is_starter',
         'is_active',

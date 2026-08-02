@@ -32,7 +32,7 @@ class WorkCharacter
         }
 
         $earnings = random_int($job->min_pay, $job->max_pay);
-        $experienceEarned = 5;
+        $experienceEarned = max(0, (int) ($job->experience_reward ?? 5));
         $staminaDecrease = max(0, (int) ($job->stamina_decrease ?? 0));
         $levelsGained = 0;
 

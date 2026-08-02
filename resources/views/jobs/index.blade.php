@@ -71,8 +71,8 @@
                 <div class="mt-4 space-y-3 text-sm leading-7 text-white/70">
                     <p>Each character can only hold one job at a time.</p>
                     <p>Changing jobs has a 24-hour cooldown unless an admin overrides it.</p>
-                    <p>Finishing a work cycle currently awards 5 XP.</p>
-                    <p>Pay and work cooldown are controlled per job in the admin panel.</p>
+                    <p>Finishing a work cycle awards the XP set for your current job.</p>
+                    <p>Pay, XP, stamina use, and work cooldown are controlled per job in the admin panel.</p>
                 </div>
             </div>
         </section>
@@ -98,6 +98,10 @@
                         <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
                             <p class="text-xs uppercase tracking-[0.18em] text-white/45">Work Cooldown</p>
                             <p class="mt-2 font-['Teko'] text-3xl uppercase">{{ $job->work_cooldown_minutes }}m</p>
+                        </div>
+                        <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                            <p class="text-xs uppercase tracking-[0.18em] text-white/45">XP Reward</p>
+                            <p class="mt-2 font-['Teko'] text-3xl uppercase">{{ number_format($job->experience_reward) }}</p>
                         </div>
                     </div>
                     <div class="mt-6">
