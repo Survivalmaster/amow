@@ -51,8 +51,8 @@
         class="space-y-5"
     >
         <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
-            <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                <div class="grid gap-3 md:grid-cols-4 xl:min-w-[42rem]">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div class="grid flex-1 gap-3 md:grid-cols-4">
                     <label class="{{ $labelClass }} md:col-span-2">
                         <span>Search</span>
                         <div class="relative">
@@ -83,7 +83,7 @@
                 <button
                     type="button"
                     @click="showCreate = !showCreate"
-                    class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c] transition hover:bg-[#d7edc7]"
+                    class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c] transition hover:bg-[#d7edc7] lg:mb-0.5"
                 >
                     <i class="fa-solid" :class="showCreate ? 'fa-minus' : 'fa-plus'"></i>
                     <span x-text="showCreate ? 'Close Create' : 'Create Job'"></span>
@@ -150,160 +150,170 @@
         </section>
 
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
-            <div class="grid grid-cols-[minmax(16rem,1.2fr)_repeat(6,minmax(7rem,0.55fr))_minmax(10rem,0.75fr)] gap-3 border-b border-white/10 bg-black/30 px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40 max-xl:hidden">
-                <p>Job</p>
-                <p>Level</p>
-                <p>Pay</p>
-                <p>XP</p>
-                <p>Cooldown</p>
-                <p>Stamina</p>
-                <p>Assigned</p>
-                <p class="text-right">Actions</p>
-            </div>
-
-            <div x-ref="jobsList" class="divide-y divide-white/10">
-                @forelse ($jobs as $job)
-                    @php($averagePay = (int) round(($job->min_pay + $job->max_pay) / 2))
-                    @php($levelBucket = $job->required_level <= 1 ? 'starter' : ($job->required_level <= 5 ? 'mid' : 'late'))
-                    @php($status = $job->is_starter ? 'starter' : ($job->is_active ? 'active' : 'hidden'))
-                    <article
-                        data-job-row
-                        data-status="{{ $status }}"
-                        data-level-bucket="{{ $levelBucket }}"
-                        data-search="{{ str($job->name.' '.$job->slug.' '.$job->description.' '.$job->working_display_message)->lower() }}"
-                    >
-                        <div class="grid gap-4 px-5 py-4 transition hover:bg-white/[0.035] xl:grid-cols-[minmax(16rem,1.2fr)_repeat(6,minmax(7rem,0.55fr))_minmax(10rem,0.75fr)] xl:items-center">
-                            <div class="min-w-0">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <p class="truncate font-['Teko'] text-2xl uppercase leading-none tracking-[0.06em] text-white">{{ $job->name }}</p>
-                                    @if ($job->is_starter)
-                                        <span class="rounded-full border border-[#f4d77a]/30 bg-[#f4d77a]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f4d77a]">Starter</span>
-                                    @endif
-                                    <span class="rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] {{ $job->is_active ? 'border-[#7ead59]/30 bg-[#7ead59]/10 text-[#d7edc7]' : 'border-white/10 bg-black/20 text-white/45' }}">
-                                        {{ $job->is_active ? 'Active' : 'Hidden' }}
-                                    </span>
-                                </div>
-                                <p class="mt-1 truncate font-mono text-xs text-white/38">{{ $job->slug }}</p>
-                                <p class="mt-2 line-clamp-1 text-sm text-white/58">{{ $job->working_display_message ?: $job->description ?: 'No activity message set.' }}</p>
-                            </div>
-
-                            <div>
-                                <p class="text-[10px] uppercase tracking-[0.16em] text-white/35 xl:hidden">Level</p>
-                                <p class="font-semibold text-white">Lv {{ number_format($job->required_level) }}</p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] uppercase tracking-[0.16em] text-white/35 xl:hidden">Pay</p>
-                                <p class="font-semibold text-white">{{ number_format($job->min_pay) }}-{{ number_format($job->max_pay) }}</p>
-                                <p class="text-xs text-white/38">Avg {{ number_format($averagePay) }}</p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] uppercase tracking-[0.16em] text-white/35 xl:hidden">XP</p>
-                                <p class="font-semibold text-[#d7edc7]">{{ number_format($job->experience_reward) }}</p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] uppercase tracking-[0.16em] text-white/35 xl:hidden">Cooldown</p>
-                                <p class="font-semibold text-white">{{ number_format($job->work_cooldown_minutes) }} min</p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] uppercase tracking-[0.16em] text-white/35 xl:hidden">Stamina</p>
-                                <p class="font-semibold {{ $job->stamina_decrease > 50 ? 'text-[#f0b29f]' : 'text-white' }}">-{{ number_format($job->stamina_decrease) }}</p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] uppercase tracking-[0.16em] text-white/35 xl:hidden">Assigned</p>
-                                <p class="font-semibold text-white">{{ number_format($job->characters_count) }}</p>
-                            </div>
-
-                            <div class="flex justify-end gap-2">
-                                <button
-                                    type="button"
-                                    @click="openId = openId === {{ $job->id }} ? null : {{ $job->id }}"
-                                    class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/75 transition hover:border-[#7ead59]/35 hover:text-[#d7edc7]"
-                                    title="Edit"
-                                >
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <form method="POST" action="{{ route('admin.jobs.destroy', $job) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button
-                                        class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#c65b3f]/35 bg-[#c65b3f]/10 text-[#f0b29f] transition hover:bg-[#c65b3f]/20 disabled:cursor-not-allowed disabled:opacity-40"
-                                        title="{{ $job->characters_count > 0 ? 'Assigned jobs cannot be deleted' : 'Delete' }}"
-                                        @disabled($job->characters_count > 0)
-                                    >
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div x-show="openId === {{ $job->id }}" x-cloak class="border-t border-white/10 bg-black/20 px-5 py-5">
-                            <form method="POST" action="{{ route('admin.jobs.update', $job) }}" class="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-                                @csrf
-                                @method('PATCH')
-                                <label class="{{ $labelClass }} xl:col-span-2">
-                                    <span>Job Name</span>
-                                    <input class="{{ $fieldClass }} w-full" name="name" value="{{ $job->name }}" required>
-                                </label>
-                                <label class="{{ $labelClass }} xl:col-span-2">
-                                    <span>Slug</span>
-                                    <input class="{{ $fieldClass }} w-full" name="slug" value="{{ $job->slug }}" required>
-                                </label>
-                                <label class="{{ $labelClass }}">
-                                    <span>Min Pay</span>
-                                    <input class="{{ $fieldClass }} w-full" name="min_pay" type="number" min="0" value="{{ $job->min_pay }}" required>
-                                </label>
-                                <label class="{{ $labelClass }}">
-                                    <span>Max Pay</span>
-                                    <input class="{{ $fieldClass }} w-full" name="max_pay" type="number" min="0" value="{{ $job->max_pay }}" required>
-                                </label>
-                                <label class="{{ $labelClass }}">
-                                    <span>Level</span>
-                                    <input class="{{ $fieldClass }} w-full" name="required_level" type="number" min="0" value="{{ $job->required_level }}" required>
-                                </label>
-                                <label class="{{ $labelClass }}">
-                                    <span>Cooldown</span>
-                                    <input class="{{ $fieldClass }} w-full" name="work_cooldown_minutes" type="number" min="1" value="{{ $job->work_cooldown_minutes }}" required>
-                                </label>
-                                <label class="{{ $labelClass }}">
-                                    <span>Stamina</span>
-                                    <input class="{{ $fieldClass }} w-full" name="stamina_decrease" type="number" min="0" max="100" value="{{ $job->stamina_decrease }}" required>
-                                </label>
-                                <label class="{{ $labelClass }}">
-                                    <span>XP</span>
-                                    <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="{{ $job->experience_reward }}" required>
-                                </label>
-                                <label class="{{ $labelClass }} md:col-span-2">
-                                    <span>Activity</span>
-                                    <input class="{{ $fieldClass }} w-full" name="working_display_message" value="{{ $job->working_display_message }}" placeholder="Working display message">
-                                </label>
-                                <label class="{{ $toggleClass }}">
-                                    <input type="checkbox" name="is_starter" value="1" class="accent-[#7ead59]" @checked($job->is_starter)>
-                                    Starter
-                                </label>
-                                <label class="{{ $toggleClass }}">
-                                    <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" @checked($job->is_active)>
-                                    Active
-                                </label>
-                                <label class="{{ $labelClass }} md:col-span-2 xl:col-span-6">
-                                    <span>Description</span>
-                                    <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description">{{ $job->description }}</textarea>
-                                </label>
-                                <div class="flex justify-end gap-2 md:col-span-2 xl:col-span-6">
-                                    <button type="button" @click="openId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
-                                        Cancel
-                                    </button>
-                                    <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
-                                        <i class="fa-solid fa-check"></i>
-                                        Save
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </article>
-                @empty
-                    <div class="px-5 py-10 text-center text-sm text-white/55">No jobs created yet.</div>
-                @endforelse
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-white/75">
+                    <thead class="bg-black/30 text-[11px] uppercase tracking-[0.18em] text-white/40">
+                        <tr>
+                            <th class="px-5 py-3 text-left">Job</th>
+                            <th class="px-4 py-3 text-left">Level</th>
+                            <th class="px-4 py-3 text-left">Pay</th>
+                            <th class="px-4 py-3 text-left">XP</th>
+                            <th class="px-4 py-3 text-left">Cooldown</th>
+                            <th class="px-4 py-3 text-left">Stamina</th>
+                            <th class="px-4 py-3 text-left">Assigned</th>
+                            <th class="px-5 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody x-ref="jobsList" class="divide-y divide-white/10">
+                        @forelse ($jobs as $job)
+                            @php($averagePay = (int) round(($job->min_pay + $job->max_pay) / 2))
+                            @php($levelBucket = $job->required_level <= 1 ? 'starter' : ($job->required_level <= 5 ? 'mid' : 'late'))
+                            @php($status = $job->is_starter ? 'starter' : ($job->is_active ? 'active' : 'hidden'))
+                            <tr
+                                data-job-row
+                                data-status="{{ $status }}"
+                                data-level-bucket="{{ $levelBucket }}"
+                                data-search="{{ str($job->name.' '.$job->slug.' '.$job->description.' '.$job->working_display_message)->lower() }}"
+                                class="transition hover:bg-white/[0.035]"
+                            >
+                                <td class="min-w-[18rem] px-5 py-4">
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <p class="font-['Teko'] text-2xl uppercase leading-none tracking-[0.06em] text-white">{{ $job->name }}</p>
+                                        @if ($job->is_starter)
+                                            <span class="rounded-full border border-[#f4d77a]/30 bg-[#f4d77a]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f4d77a]">Starter</span>
+                                        @endif
+                                        <span class="rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] {{ $job->is_active ? 'border-[#7ead59]/30 bg-[#7ead59]/10 text-[#d7edc7]' : 'border-white/10 bg-black/20 text-white/45' }}">
+                                            {{ $job->is_active ? 'Active' : 'Hidden' }}
+                                        </span>
+                                    </div>
+                                    <p class="mt-1 font-mono text-xs text-white/38">{{ $job->slug }}</p>
+                                    <p class="mt-1 max-w-xl truncate text-xs text-white/50">{{ $job->working_display_message ?: $job->description ?: 'No activity message set.' }}</p>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-4 font-semibold text-white">Lv {{ number_format($job->required_level) }}</td>
+                                <td class="whitespace-nowrap px-4 py-4">
+                                    <p class="font-semibold text-white">{{ number_format($job->min_pay) }}-{{ number_format($job->max_pay) }}</p>
+                                    <p class="text-xs text-white/38">Avg {{ number_format($averagePay) }}</p>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-4 font-semibold text-[#d7edc7]">{{ number_format($job->experience_reward) }}</td>
+                                <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->work_cooldown_minutes) }} min</td>
+                                <td class="whitespace-nowrap px-4 py-4 font-semibold {{ $job->stamina_decrease > 50 ? 'text-[#f0b29f]' : 'text-white' }}">-{{ number_format($job->stamina_decrease) }}</td>
+                                <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->characters_count) }}</td>
+                                <td class="px-5 py-4 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        <button
+                                            type="button"
+                                            @click="openId = {{ $job->id }}"
+                                            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/75 transition hover:border-[#7ead59]/35 hover:text-[#d7edc7]"
+                                            title="Edit"
+                                        >
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        <form method="POST" action="{{ route('admin.jobs.destroy', $job) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button
+                                                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#c65b3f]/35 bg-[#c65b3f]/10 text-[#f0b29f] transition hover:bg-[#c65b3f]/20 disabled:cursor-not-allowed disabled:opacity-40"
+                                                title="{{ $job->characters_count > 0 ? 'Assigned jobs cannot be deleted' : 'Delete' }}"
+                                                @disabled($job->characters_count > 0)
+                                            >
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="px-5 py-10 text-center text-sm text-white/55">No jobs created yet.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </section>
+
+        @foreach ($jobs as $job)
+            <div
+                x-show="openId === {{ $job->id }}"
+                x-cloak
+                x-transition.opacity
+                @keydown.escape.window="openId = null"
+                class="fixed inset-0 z-[80] flex items-end justify-center bg-black/65 p-4 sm:items-center"
+            >
+                <div @click.outside="openId = null" class="max-h-[92vh] w-full max-w-5xl overflow-y-auto rounded-[1.5rem] border border-white/10 bg-[linear-gradient(180deg,rgba(17,31,23,0.98),rgba(7,14,10,0.98))] shadow-2xl shadow-black/50">
+                    <div class="flex items-start justify-between gap-4 border-b border-white/10 px-6 py-5">
+                        <div>
+                            <p class="font-['Teko'] text-4xl uppercase leading-none tracking-[0.08em] text-white">Edit {{ $job->name }}</p>
+                            <p class="mt-1 text-sm text-white/50">{{ $job->slug }} | {{ number_format($job->characters_count) }} assigned</p>
+                        </div>
+                        <button type="button" @click="openId = null" class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:text-white" title="Close">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.jobs.update', $job) }}" class="grid gap-3 p-6 md:grid-cols-2 xl:grid-cols-6">
+                        @csrf
+                        @method('PATCH')
+                        <label class="{{ $labelClass }} xl:col-span-2">
+                            <span>Job Name</span>
+                            <input class="{{ $fieldClass }} w-full" name="name" value="{{ $job->name }}" required>
+                        </label>
+                        <label class="{{ $labelClass }} xl:col-span-2">
+                            <span>Slug</span>
+                            <input class="{{ $fieldClass }} w-full" name="slug" value="{{ $job->slug }}" required>
+                        </label>
+                        <label class="{{ $labelClass }}">
+                            <span>Min Pay</span>
+                            <input class="{{ $fieldClass }} w-full" name="min_pay" type="number" min="0" value="{{ $job->min_pay }}" required>
+                        </label>
+                        <label class="{{ $labelClass }}">
+                            <span>Max Pay</span>
+                            <input class="{{ $fieldClass }} w-full" name="max_pay" type="number" min="0" value="{{ $job->max_pay }}" required>
+                        </label>
+                        <label class="{{ $labelClass }}">
+                            <span>Level</span>
+                            <input class="{{ $fieldClass }} w-full" name="required_level" type="number" min="0" value="{{ $job->required_level }}" required>
+                        </label>
+                        <label class="{{ $labelClass }}">
+                            <span>Cooldown</span>
+                            <input class="{{ $fieldClass }} w-full" name="work_cooldown_minutes" type="number" min="1" value="{{ $job->work_cooldown_minutes }}" required>
+                        </label>
+                        <label class="{{ $labelClass }}">
+                            <span>Stamina</span>
+                            <input class="{{ $fieldClass }} w-full" name="stamina_decrease" type="number" min="0" max="100" value="{{ $job->stamina_decrease }}" required>
+                        </label>
+                        <label class="{{ $labelClass }}">
+                            <span>XP</span>
+                            <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="{{ $job->experience_reward }}" required>
+                        </label>
+                        <label class="{{ $labelClass }} md:col-span-2 xl:col-span-4">
+                            <span>Activity</span>
+                            <input class="{{ $fieldClass }} w-full" name="working_display_message" value="{{ $job->working_display_message }}" placeholder="Working display message">
+                        </label>
+                        <label class="{{ $toggleClass }}">
+                            <input type="checkbox" name="is_starter" value="1" class="accent-[#7ead59]" @checked($job->is_starter)>
+                            Starter
+                        </label>
+                        <label class="{{ $toggleClass }}">
+                            <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" @checked($job->is_active)>
+                            Active
+                        </label>
+                        <label class="{{ $labelClass }} md:col-span-2 xl:col-span-6">
+                            <span>Description</span>
+                            <textarea class="{{ $fieldClass }} min-h-24 w-full" name="description">{{ $job->description }}</textarea>
+                        </label>
+                        <div class="flex justify-end gap-2 md:col-span-2 xl:col-span-6">
+                            <button type="button" @click="openId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
+                                Cancel
+                            </button>
+                            <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
+                                <i class="fa-solid fa-check"></i>
+                                Save
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        @endforeach
     </div>
 </x-app-layout>
