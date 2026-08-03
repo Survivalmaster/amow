@@ -35,10 +35,35 @@ test('admin can view a selected character activity timeline', function () {
         ->get(route('admin.character-logs.index', ['character_id' => $character->id]))
         ->assertOk()
         ->assertSee('Character Logs')
+        ->assertSee('Audit Table')
         ->assertSee($character->name)
         ->assertSee('Completed a Royal Advisor shift')
-        ->assertSee('xp earned')
+        ->assertSee('XP +8')
         ->assertSee('+75');
+});
+
+test('admin character logs are available from singular and plural routes', function () {
+    $this->seed([
+        PermissionSeeder::class,
+        RankSeeder::class,
+    ]);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    createLoggedCharacter();
+
+    $this
+        ->actingAs($admin)
+        ->get('/admin/character-log')
+        ->assertOk()
+        ->assertSee('Character Logs');
+
+    $this
+        ->actingAs($admin)
+        ->get('/admin/character-logs')
+        ->assertOk()
+        ->assertSee('Character Logs');
 });
 
 test('changing jobs writes a character log entry', function () {

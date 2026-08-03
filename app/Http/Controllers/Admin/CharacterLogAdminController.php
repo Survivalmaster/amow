@@ -9,6 +9,16 @@ use Illuminate\View\View;
 
 class CharacterLogAdminController extends Controller
 {
+    private const VISIBLE_LOG_TYPES = [
+        'work',
+        'item_purchase',
+        'licence_purchase',
+        'stock_buy',
+        'stock_sell',
+        'job_change',
+        'rank_change',
+    ];
+
     public function index(Request $request): View
     {
         $characters = Character::query()
@@ -29,6 +39,7 @@ class CharacterLogAdminController extends Controller
 
             $transactions = $selectedCharacter
                 ->transactions()
+                ->whereIn('type', self::VISIBLE_LOG_TYPES)
                 ->latest()
                 ->paginate(50)
                 ->withQueryString();

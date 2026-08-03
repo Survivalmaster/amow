@@ -112,6 +112,34 @@ class CharacterAdminController extends Controller
             return;
         }
 
+        if (in_array('rank_id', $changedFields, true)) {
+            CharacterActivity::recordTransaction(
+                $character,
+                'rank_change',
+                0,
+                'Rank changed by admin '.$request->user()->email.'.',
+                [
+                    'from_rank' => Rank::query()->find($before['rank_id'] ?? null)?->name,
+                    'to_rank' => Rank::query()->find($after['rank_id'] ?? null)?->name,
+                    'changed_by' => $request->user()->email,
+                ]
+            );
+        }
+
+        if (in_array('current_job_id', $changedFields, true)) {
+            CharacterActivity::recordTransaction(
+                $character,
+                'job_change',
+                0,
+                'Job changed by admin '.$request->user()->email.'.',
+                [
+                    'from_job' => GameJob::query()->find($before['current_job_id'] ?? null)?->name,
+                    'to_job' => GameJob::query()->find($after['current_job_id'] ?? null)?->name,
+                    'changed_by' => $request->user()->email,
+                ]
+            );
+        }
+
         CharacterActivity::recordTransaction(
             $character,
             'admin_update',

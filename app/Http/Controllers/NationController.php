@@ -69,8 +69,22 @@ class NationController extends Controller
         abort_unless($leader->faction_id === $character->faction_id, 403);
         abort_unless($character->role_type === 'military', 422);
 
+        $character->loadMissing('rank');
+        $previousRank = $character->rank;
         $rank = Rank::query()->where('is_military', true)->findOrFail($validated['rank_id']);
         $character->update(['rank_id' => $rank->id]);
+
+        CharacterActivity::recordTransaction(
+            $character,
+            'rank_change',
+            0,
+            "Rank changed from {$previousRank?->name} to {$rank->name}.",
+            [
+                'from_rank' => $previousRank?->name,
+                'to_rank' => $rank->name,
+                'changed_by' => $leader->name,
+            ]
+        );
 
         return back()->with('status', "Updated {$character->name}'s nation rank.");
     }
