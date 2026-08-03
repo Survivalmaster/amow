@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Faction;
 use App\Models\GameJob;
 use App\Models\Rank;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Support\CharacterActivity;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -54,7 +55,7 @@ class CharacterController extends Controller
             ->where('name', 'Civilian')
             ->firstOrFail();
 
-        $request->user()->character()->create([
+        $character = $request->user()->character()->create([
             ...$validated,
             'starting_occupation' => $starterJob->name,
             'role_type' => 'civilian',
@@ -68,6 +69,19 @@ class CharacterController extends Controller
             'stamina_points' => 100,
             'armor_points' => 0,
         ]);
+
+        CharacterActivity::recordTransaction(
+            $character,
+            'character_created',
+            100,
+            "Character created in {$faction->name} with starter job {$starterJob->name}.",
+            [
+                'faction' => $faction->name,
+                'rank' => $rank->name,
+                'starter_job' => $starterJob->name,
+                'starting_credits' => 100,
+            ]
+        );
 
         $request->session()->forget('selected_faction_id');
 

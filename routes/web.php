@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\CharacterAdminController;
+use App\Http\Controllers\Admin\CharacterLogAdminController;
 use App\Http\Controllers\Admin\CityAdminController;
 use App\Http\Controllers\Admin\FactionAdminController;
 use App\Http\Controllers\Admin\GameJobAdminController;
@@ -105,6 +106,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::get('/characters', [CharacterAdminController::class, 'index'])->middleware('admin.section:characters')->name('characters.index');
         Route::patch('/characters/{character}', [CharacterAdminController::class, 'update'])->middleware('admin.section:characters')->name('characters.update');
         Route::delete('/characters/{character}', [CharacterAdminController::class, 'destroy'])->middleware('admin.section:characters')->name('characters.destroy');
+        Route::get('/character-logs', [CharacterLogAdminController::class, 'index'])->middleware('admin.section:characters')->name('character-logs.index');
         Route::get('/factions', [FactionAdminController::class, 'index'])->middleware('admin.section:factions')->name('factions.index');
         Route::post('/factions', [FactionAdminController::class, 'store'])->middleware('admin.section:factions')->name('factions.store');
         Route::patch('/factions/{faction}', [FactionAdminController::class, 'update'])->middleware('admin.section:factions')->name('factions.update');

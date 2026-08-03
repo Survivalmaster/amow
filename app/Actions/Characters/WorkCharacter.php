@@ -16,9 +16,7 @@ class WorkCharacter
 {
     private const WORK_ACTIVITY_CHANNEL_ID = '1483329516796379136';
 
-    public function __construct(private readonly DiscordClient $discord)
-    {
-    }
+    public function __construct(private readonly DiscordClient $discord) {}
 
     public function execute(Character $character): array
     {
@@ -36,14 +34,39 @@ class WorkCharacter
         $staminaDecrease = max(0, (int) ($job->stamina_decrease ?? 0));
         $levelsGained = 0;
 
-        DB::transaction(function () use ($character, $earnings, $experienceEarned, $staminaDecrease, &$levelsGained) {
+        DB::transaction(function () use ($character, $job, $earnings, $experienceEarned, $staminaDecrease, &$levelsGained) {
+            $previousCredits = (int) $character->plastic_credits;
+            $previousLevel = (int) $character->level;
+            $previousExperience = (int) $character->experience_points;
+            $previousStamina = (int) ($character->stamina_points ?? 100);
+
             $character->increment('plastic_credits', $earnings);
             $character->forceFill([
                 'last_worked_at' => now(),
                 'stamina_points' => max(0, ($character->stamina_points ?? 100) - $staminaDecrease),
             ])->save();
             $levelsGained = $character->gainExperience($experienceEarned);
-            CharacterActivity::recordTransaction($character, 'work', $earnings, 'Completed a work shift.');
+            $character->refresh();
+
+            CharacterActivity::recordTransaction(
+                $character,
+                'work',
+                $earnings,
+                "Completed a {$job->name} shift and earned {$earnings} Plastic Credits.",
+                [
+                    'job' => $job->name,
+                    'credits_before' => $previousCredits,
+                    'credits_after' => $character->plastic_credits,
+                    'xp_earned' => $experienceEarned,
+                    'level_before' => $previousLevel,
+                    'level_after' => $character->level,
+                    'xp_before' => $previousExperience,
+                    'xp_after' => $character->experience_points,
+                    'levels_gained' => $levelsGained,
+                    'stamina_before' => $previousStamina,
+                    'stamina_after' => $character->stamina_points,
+                ]
+            );
         });
 
         $updatedCharacter = $character->fresh(['currentJob', 'faction', 'user']);

@@ -4,6 +4,10 @@
     @include('admin.partials.nav')
 
     <div x-data="{ openId: null }" class="space-y-6">
+        <div class="flex justify-end">
+            <a href="{{ route('admin.character-logs.index') }}" class="rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/10 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f4d77a]">Open Character Logs</a>
+        </div>
+
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm text-white/75">
@@ -31,6 +35,7 @@
                                 <td class="px-5 py-4">{{ number_format($character->plastic_credits) }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
+                                        <a href="{{ route('admin.character-logs.index', ['character_id' => $character->id]) }}" class="rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f4d77a]">Logs</a>
                                         <button type="button" @click="openId = openId === {{ $character->id }} ? null : {{ $character->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
                                         <form method="POST" action="{{ route('admin.characters.destroy', $character) }}">
                                             @csrf

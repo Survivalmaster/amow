@@ -4,6 +4,7 @@ namespace App\Actions\Characters;
 
 use App\Models\Character;
 use App\Models\GameJob;
+use App\Support\CharacterActivity;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -32,10 +33,25 @@ class ChangeCharacterJob
         }
 
         DB::transaction(function () use ($character, $gameJob) {
+            $previousJob = $character->currentJob;
+
             $character->forceFill([
                 'current_job_id' => $gameJob->id,
                 'job_changed_at' => now(),
             ])->save();
+
+            CharacterActivity::recordTransaction(
+                $character,
+                'job_change',
+                0,
+                'Changed job from '.($previousJob?->name ?? $character->starting_occupation).' to '.$gameJob->name.'.',
+                [
+                    'from_job' => $previousJob?->name ?? $character->starting_occupation,
+                    'to_job' => $gameJob->name,
+                    'required_level' => $gameJob->required_level,
+                    'cooldown_minutes' => $gameJob->work_cooldown_minutes,
+                ]
+            );
         });
 
         return [

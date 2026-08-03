@@ -8,6 +8,7 @@ use App\Models\Faction;
 use App\Models\GameJob;
 use App\Models\Rank;
 use App\Services\Discord\AdminActionLogger;
+use App\Support\CharacterActivity;
 use App\Support\DiscordCharacterRankSynchronizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,7 @@ class CharacterAdminController extends Controller
     public function update(Request $request, Character $character, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $before = $adminActionLogger->snapshot($character);
+        $beforeAttributes = $character->attributesToArray();
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'age' => ['required', 'integer', 'between:16,80'],
@@ -73,6 +75,7 @@ class CharacterAdminController extends Controller
         });
 
         $adminActionLogger->updated($request->user(), 'Character', $before, $character);
+        $this->recordCharacterAdminUpdate($request, $character, $beforeAttributes);
 
         return back()->with('status', "Updated character {$character->name}.");
     }
@@ -85,5 +88,39 @@ class CharacterAdminController extends Controller
         $adminActionLogger->deleted($request->user(), 'Character', $snapshot);
 
         return back()->with('status', "Deleted character {$name}.");
+    }
+
+    private function recordCharacterAdminUpdate(Request $request, Character $character, array $before): void
+    {
+        $after = $character->fresh()->attributesToArray();
+        $ignoredKeys = ['updated_at'];
+        $changedFields = [];
+
+        foreach (array_keys($before + $after) as $key) {
+            if (in_array($key, $ignoredKeys, true)) {
+                continue;
+            }
+
+            if (($before[$key] ?? null) === ($after[$key] ?? null)) {
+                continue;
+            }
+
+            $changedFields[] = $key;
+        }
+
+        if ($changedFields === []) {
+            return;
+        }
+
+        CharacterActivity::recordTransaction(
+            $character,
+            'admin_update',
+            0,
+            'Character updated by admin '.$request->user()->email.'.',
+            [
+                'admin' => $request->user()->email,
+                'changed_fields' => implode(', ', $changedFields),
+            ]
+        );
     }
 }
