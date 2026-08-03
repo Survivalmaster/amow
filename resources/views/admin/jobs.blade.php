@@ -239,9 +239,9 @@
                     x-cloak
                     x-transition.opacity
                     @keydown.escape.window="openId = null"
-                    class="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 p-4"
+                    class="fixed inset-0 z-[120] flex items-center justify-center bg-[#020403]/90 p-4 backdrop-blur-sm"
                 >
-                    <div @click.outside="openId = null" class="max-h-[86vh] w-full max-w-2xl overflow-y-auto rounded-[1.25rem] border border-white/10 bg-[linear-gradient(180deg,rgba(17,31,23,0.98),rgba(7,14,10,0.98))] shadow-2xl shadow-black/60">
+                    <div @click.outside="openId = null" class="max-h-[86vh] w-full max-w-2xl overflow-y-auto rounded-[1.25rem] border border-white/10 bg-[#07100c] shadow-2xl shadow-black">
                         <div class="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4">
                             <div class="min-w-0">
                                 <p class="truncate font-['Teko'] text-3xl uppercase leading-none tracking-[0.08em] text-white">Edit {{ $job->name }}</p>
