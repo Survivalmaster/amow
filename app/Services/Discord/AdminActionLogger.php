@@ -92,6 +92,10 @@ class AdminActionLogger
 
     private function send(User $actor, string $action, string $resource, array $snapshot, array $fields): void
     {
+        if (! config('services.discord.admin_audit_enabled', false)) {
+            return;
+        }
+
         try {
             $this->discord->sendEmbedMessage(self::CHANNEL_ID, [
                 'author' => array_filter([

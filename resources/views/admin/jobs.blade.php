@@ -82,15 +82,18 @@
 
                 <button
                     type="button"
-                    @click="showCreate = !showCreate"
+                    @click="showCreate = true"
                     class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c] transition hover:bg-[#d7edc7] lg:mb-0.5"
                 >
-                    <i class="fa-solid" :class="showCreate ? 'fa-minus' : 'fa-plus'"></i>
-                    <span x-text="showCreate ? 'Close Create' : 'Create Job'"></span>
+                    <i class="fa-solid fa-plus"></i>
+                    Create Job
                 </button>
             </div>
 
-            <form x-show="showCreate" x-cloak method="POST" action="{{ route('admin.jobs.store') }}" class="mt-5 grid gap-3 border-t border-white/10 pt-5 md:grid-cols-2 xl:grid-cols-6">
+        </section>
+
+        <x-admin.modal open="showCreate" title="Create Job" subtitle="Set work rewards, cooldowns, and progression gates." max-width="56rem">
+            <form method="POST" action="{{ route('admin.jobs.store') }}" class="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-6">
                 @csrf
                 <label class="{{ $labelClass }} xl:col-span-2">
                     <span>Job Name</span>
@@ -140,14 +143,17 @@
                     <span>Description</span>
                     <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description" placeholder="A short description players will see."></textarea>
                 </label>
-                <div class="flex justify-end md:col-span-2 xl:col-span-6">
+                <div class="flex justify-end gap-2 border-t border-white/10 pt-3 md:col-span-2 xl:col-span-6">
+                    <button type="button" @click="showCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
+                        Cancel
+                    </button>
                     <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
                         <i class="fa-solid fa-check"></i>
                         Create Job
                     </button>
                 </div>
             </form>
-        </section>
+        </x-admin.modal>
 
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
             <div class="overflow-x-auto">

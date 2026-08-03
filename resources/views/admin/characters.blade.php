@@ -66,19 +66,20 @@
                                 <td class="px-5 py-4">{{ number_format($character->plastic_credits) }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <a href="{{ route('admin.character-logs.index', ['character_id' => $character->id]) }}" class="rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f4d77a]">Logs</a>
-                                        <button type="button" @click="openId = openId === {{ $character->id }} ? null : {{ $character->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                        <a href="{{ route('admin.character-logs.index', ['character_id' => $character->id]) }}" class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/10 text-[#f4d77a] transition hover:bg-[#c2a84f]/20" title="Logs">
+                                            <i class="fa-solid fa-clock-rotate-left"></i>
+                                        </a>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openId = {{ $character->id }}" />
                                         <form method="POST" action="{{ route('admin.characters.destroy', $character) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </td>
                             </tr>
-                            <tr x-show="openId === {{ $character->id }}" x-cloak>
-                                <td colspan="8" class="px-5 pb-5">
-                                    <form method="POST" action="{{ route('admin.characters.update', $character) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2 xl:grid-cols-4">
+                            <x-admin.modal open="openId === {{ $character->id }}" close="openId = null" title="Edit {{ $character->name }}" subtitle="{{ $character->faction->name }} | {{ $character->rank->name }}" max-width="64rem">
+                                    <form method="POST" action="{{ route('admin.characters.update', $character) }}" class="grid gap-4 p-5 lg:grid-cols-2 xl:grid-cols-4">
                                         @csrf
                                         @method('PATCH')
                                         <label class="grid gap-2 text-sm text-white/70">
@@ -187,12 +188,12 @@
                                             <span class="uppercase tracking-[0.18em] text-white/45">Biography</span>
                                             <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="biography" required>{{ $character->biography }}</textarea>
                                         </label>
-                                        <div class="xl:col-span-4 flex justify-end">
-                                            <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
+                                        <div class="flex justify-end gap-2 border-t border-white/10 pt-3 xl:col-span-4">
+                                            <button type="button" @click="openId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                                            <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Save</button>
                                         </div>
                                     </form>
-                                </td>
-                            </tr>
+                            </x-admin.modal>
                         @endforeach
                     </tbody>
                 </table>

@@ -119,11 +119,11 @@
                                     </div>
                                     <div class="text-sm text-white/45">Order {{ $category['category']->sort_order }}</div>
                                     <div class="flex gap-2 md:justify-end">
-                                        <button type="button" @click="openCategoryId = openCategoryId === {{ $category['category']->id }} ? null : {{ $category['category']->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openCategoryId = {{ $category['category']->id }}" />
                                         <form method="POST" action="{{ route('admin.discord-management.categories.destroy', $category['category']) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </div>

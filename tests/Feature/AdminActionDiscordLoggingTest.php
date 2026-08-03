@@ -14,6 +14,7 @@ beforeEach(function () {
 
 test('admin create update and delete actions are logged to discord', function () {
     config()->set('services.discord.bot_token', 'test-token');
+    config()->set('services.discord.admin_audit_enabled', true);
 
     Http::fake([
         'https://discord.com/api/v10/channels/1483335218944282685/messages' => Http::response(['id' => '1'], 200),
@@ -72,4 +73,27 @@ test('admin create update and delete actions are logged to discord', function ()
         return ($embed['title'] ?? null) === 'Faction Deleted'
             && str_contains($embed['description'] ?? '', 'Blue Guard Prime');
     });
+});
+
+test('admin action discord audit logging is disabled by default', function () {
+    config()->set('services.discord.bot_token', 'test-token');
+
+    Http::fake([
+        'https://discord.com/api/v10/channels/1483335218944282685/messages' => Http::response(['id' => '1'], 200),
+    ]);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $permission = Permission::query()->where('slug', 'admin')->firstOrFail();
+    $admin->permissions()->attach($permission);
+
+    $this->actingAs($admin)->post(route('admin.factions.store'), [
+        'name' => 'Quiet Guard',
+        'slug' => 'quiet-guard',
+        'short_description' => 'No broadcast needed.',
+        'flag_image' => 'quiet.png',
+        'color' => '#112233',
+        'lore' => 'A test faction.',
+    ])->assertRedirect();
+
+    Http::assertSentCount(0);
 });

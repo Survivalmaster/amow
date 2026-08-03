@@ -88,11 +88,11 @@
                                 <td class="px-5 py-4">{{ $webhook->is_active ? 'Active' : 'Disabled' }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" @click="openWebhookId = openWebhookId === {{ $webhook->id }} ? null : {{ $webhook->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openWebhookId = {{ $webhook->id }}" />
                                         <form method="POST" action="{{ route('admin.discord.destroy', $webhook) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </td>
@@ -239,11 +239,11 @@
                                 <td class="px-5 py-4">{{ $command->is_active ? 'Active' : 'Disabled' }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" @click="openCommandId = openCommandId === {{ $command->id }} ? null : {{ $command->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openCommandId = {{ $command->id }}" />
                                         <form method="POST" action="{{ route('admin.discord.commands.destroy', $command) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </td>

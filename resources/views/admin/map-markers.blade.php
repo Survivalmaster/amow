@@ -649,11 +649,11 @@
                                     <td class="px-5 py-4">{{ $marker->map_x }}%, {{ $marker->map_y }}%</td>
                                     <td class="px-5 py-4 text-right">
                                         <div class="flex justify-end gap-2">
-                                            <button type="button" @click="openId = openId === {{ $marker->id }} ? null : {{ $marker->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                            <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openId = {{ $marker->id }}" />
                                             <form method="POST" action="{{ route('admin.map-markers.destroy', $marker) }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                                <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                             </form>
                                         </div>
                                     </td>
@@ -744,12 +744,13 @@
                                                         ]));
                                                     }
                                                 "
-                                                class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]"
-                                            >Edit</button>
+                                                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/75 transition hover:border-[#7ead59]/35 hover:text-[#d7edc7]"
+                                                title="Edit"
+                                            ><i class="fa-solid fa-pen"></i></button>
                                             <form method="POST" action="{{ route('admin.map-polygons.destroy', $polygon) }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                                <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                             </form>
                                         </div>
                                     </td>

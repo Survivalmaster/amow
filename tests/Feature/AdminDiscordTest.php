@@ -144,6 +144,7 @@ test('admin can create a pray command without a webhook', function () {
 
 test('resaving unchanged pray command does not create noisy discord audit update', function () {
     config()->set('services.discord.bot_token', 'test-token');
+    config()->set('services.discord.admin_audit_enabled', true);
     DiscordCommand::query()->where('command_name', 'amowpray')->delete();
 
     Http::fake([

@@ -25,18 +25,16 @@
                         <input x-model.debounce.150ms="query" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, slug, summary">
                     </div>
                 </label>
-                <button type="button" @click="showCreate = !showCreate" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
-                    <i class="fa-solid" :class="showCreate ? 'fa-minus' : 'fa-plus'"></i>
-                    <span x-text="showCreate ? 'Close Create' : 'Create Faction'"></span>
+                <button type="button" @click="showCreate = true" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c] transition hover:bg-[#d7edc7]">
+                    <i class="fa-solid fa-plus"></i>
+                    Create Faction
                 </button>
             </div>
         </section>
 
-        <form x-show="showCreate" x-cloak method="POST" action="{{ route('admin.factions.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
-            @csrf
-            <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Faction</p>
-            <p class="mt-2 text-sm text-white/60">Adds a new major army or civilian bloc that players can belong to across the world map.</p>
-            <div class="mt-5 grid gap-4 lg:grid-cols-2">
+        <x-admin.modal open="showCreate" title="Create Faction" subtitle="Adds a new major army or civilian bloc.">
+            <form method="POST" action="{{ route('admin.factions.store') }}" class="grid gap-4 p-5 lg:grid-cols-2">
+                @csrf
                 <label class="grid gap-2 text-sm text-white/70">
                     <span class="uppercase tracking-[0.18em] text-white/45">Faction Name</span>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Name" required>
@@ -64,11 +62,15 @@
                     <span class="uppercase tracking-[0.18em] text-white/45">Lore</span>
                     <textarea class="min-h-32 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="lore" placeholder="Lore"></textarea>
                 </label>
-            </div>
-            <div class="mt-5 flex justify-end">
-                <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Faction</button>
-            </div>
-        </form>
+                <div class="flex justify-end gap-2 border-t border-white/10 pt-3 lg:col-span-2">
+                    <button type="button" @click="showCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                    <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
+                        <i class="fa-solid fa-check"></i>
+                        Create
+                    </button>
+                </div>
+            </form>
+        </x-admin.modal>
 
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
             <div class="overflow-x-auto">
@@ -96,53 +98,55 @@
                                 <td class="px-5 py-4">{{ $faction->short_description }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" @click="openId = openId === {{ $faction->id }} ? null : {{ $faction->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openId = {{ $faction->id }}" />
                                         <form method="POST" action="{{ route('admin.factions.destroy', $faction) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </td>
                             </tr>
-                            <tr x-show="openId === {{ $faction->id }}" x-cloak>
-                                <td colspan="5" class="px-5 pb-5">
-                                    <form method="POST" action="{{ route('admin.factions.update', $faction) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2">
-                                        @csrf
-                                        @method('PATCH')
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Faction Name</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $faction->name }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Slug</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" value="{{ $faction->slug }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70 lg:col-span-2">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Short Description</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="short_description" value="{{ $faction->short_description }}" required>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Flag Image</span>
-                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="flag_image" value="{{ $faction->flag_image }}" placeholder="Flag image path">
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Faction Color</span>
-                                            <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-2">
-                                                <input type="color" value="{{ $faction->color ?: '#7ead59' }}" oninput="this.nextElementSibling.value = this.value">
-                                                <input class="w-full bg-transparent py-1 outline-none" name="color" value="{{ $faction->color ?: '#7ead59' }}">
-                                            </div>
-                                        </label>
-                                        <label class="grid gap-2 text-sm text-white/70 lg:col-span-2">
-                                            <span class="uppercase tracking-[0.18em] text-white/45">Lore</span>
-                                            <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="lore">{{ $faction->lore }}</textarea>
-                                        </label>
-                                        <div class="lg:col-span-2 flex justify-end">
-                                            <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
+                            <x-admin.modal open="openId === {{ $faction->id }}" close="openId = null" title="Edit {{ $faction->name }}" subtitle="{{ $faction->slug }}">
+                                <form method="POST" action="{{ route('admin.factions.update', $faction) }}" class="grid gap-4 p-5 lg:grid-cols-2">
+                                    @csrf
+                                    @method('PATCH')
+                                    <label class="grid gap-2 text-sm text-white/70">
+                                        <span class="uppercase tracking-[0.18em] text-white/45">Faction Name</span>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $faction->name }}" required>
+                                    </label>
+                                    <label class="grid gap-2 text-sm text-white/70">
+                                        <span class="uppercase tracking-[0.18em] text-white/45">Slug</span>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" value="{{ $faction->slug }}" required>
+                                    </label>
+                                    <label class="grid gap-2 text-sm text-white/70 lg:col-span-2">
+                                        <span class="uppercase tracking-[0.18em] text-white/45">Short Description</span>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="short_description" value="{{ $faction->short_description }}" required>
+                                    </label>
+                                    <label class="grid gap-2 text-sm text-white/70">
+                                        <span class="uppercase tracking-[0.18em] text-white/45">Flag Image</span>
+                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="flag_image" value="{{ $faction->flag_image }}" placeholder="Flag image path">
+                                    </label>
+                                    <label class="grid gap-2 text-sm text-white/70">
+                                        <span class="uppercase tracking-[0.18em] text-white/45">Faction Color</span>
+                                        <div class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-2">
+                                            <input type="color" value="{{ $faction->color ?: '#7ead59' }}" oninput="this.nextElementSibling.value = this.value">
+                                            <input class="w-full bg-transparent py-1 outline-none" name="color" value="{{ $faction->color ?: '#7ead59' }}">
                                         </div>
-                                    </form>
-                                </td>
-                            </tr>
+                                    </label>
+                                    <label class="grid gap-2 text-sm text-white/70 lg:col-span-2">
+                                        <span class="uppercase tracking-[0.18em] text-white/45">Lore</span>
+                                        <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="lore">{{ $faction->lore }}</textarea>
+                                    </label>
+                                    <div class="flex justify-end gap-2 border-t border-white/10 pt-3 lg:col-span-2">
+                                        <button type="button" @click="openId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                                        <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
+                                            <i class="fa-solid fa-check"></i>
+                                            Save
+                                        </button>
+                                    </div>
+                                </form>
+                            </x-admin.modal>
                         @endforeach
                     </tbody>
                 </table>

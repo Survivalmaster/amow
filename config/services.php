@@ -44,6 +44,7 @@ return [
         'linking_secret' => env('DISCORD_LINKING_SECRET'),
         'bot_sync_secret' => env('DISCORD_BOT_SYNC_SECRET'),
         'link_url' => env('DISCORD_LINK_URL'),
+        'admin_audit_enabled' => env('DISCORD_ADMIN_AUDIT_ENABLED', false),
     ],
 
 ];

@@ -28,23 +28,22 @@
                         <input x-model.debounce.150ms="itemQuery" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, type, requirements">
                     </div>
                 </label>
-                <button type="button" @click="showItemCreate = !showItemCreate" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
-                    <i class="fa-solid" :class="showItemCreate ? 'fa-minus' : 'fa-plus'"></i>
-                    <span x-text="showItemCreate ? 'Close Item' : 'Create Item'"></span>
+                <button type="button" @click="showItemCreate = true" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c] transition hover:bg-[#d7edc7]">
+                    <i class="fa-solid fa-plus"></i>
+                    Create Item
                 </button>
-                <button type="button" @click="showLicenceCreate = !showLicenceCreate" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#c2a84f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
-                    <i class="fa-solid" :class="showLicenceCreate ? 'fa-minus' : 'fa-plus'"></i>
-                    <span x-text="showLicenceCreate ? 'Close Licence' : 'Create Licence'"></span>
+                <button type="button" @click="showLicenceCreate = true" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#c2a84f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c] transition hover:bg-[#f4d77a]">
+                    <i class="fa-solid fa-plus"></i>
+                    Create Licence
                 </button>
             </div>
         </section>
 
         <div class="grid gap-6 xl:grid-cols-2">
-            <form x-show="showItemCreate" x-cloak method="POST" action="{{ route('admin.items.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+            <x-admin.modal open="showItemCreate" title="Create Item" subtitle="Create inventory items and building unlocks." max-width="56rem">
+            <form method="POST" action="{{ route('admin.items.store') }}" class="p-5">
                 @csrf
-                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Item</p>
-                <p class="mt-2 text-sm text-white/60">Create general inventory items or mark them as buildings that can be placed on land.</p>
-                <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                <div class="grid gap-4 lg:grid-cols-2">
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Name" required>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="Slug" required>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="type" placeholder="Type" value="utility" required>
@@ -82,16 +81,17 @@
                     </select>
                     <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="description" placeholder="Description" required></textarea>
                 </div>
-                <div class="mt-5 flex justify-end">
-                    <button class="rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Item</button>
+                <div class="mt-5 flex justify-end gap-2 border-t border-white/10 pt-3">
+                    <button type="button" @click="showItemCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                    <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Create</button>
                 </div>
             </form>
+            </x-admin.modal>
 
-            <form x-show="showLicenceCreate" x-cloak method="POST" action="{{ route('admin.licences.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+            <x-admin.modal open="showLicenceCreate" title="Create Licence" subtitle="Manage purchasable licence unlocks.">
+            <form method="POST" action="{{ route('admin.licences.store') }}" class="p-5">
                 @csrf
-                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Licence</p>
-                <p class="mt-2 text-sm text-white/60">Manage purchasable licences here, including the new Land unlock.</p>
-                <div class="mt-5 grid gap-4">
+                <div class="grid gap-4">
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Name" required>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="Slug" required>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="cost" placeholder="Cost" min="1" required>
@@ -103,10 +103,12 @@
                     </select>
                     <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Description" required></textarea>
                 </div>
-                <div class="mt-5 flex justify-end">
-                    <button class="rounded-full bg-[#c2a84f] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Licence</button>
+                <div class="mt-5 flex justify-end gap-2 border-t border-white/10 pt-3">
+                    <button type="button" @click="showLicenceCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                    <button class="inline-flex items-center gap-2 rounded-full bg-[#c2a84f] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Create</button>
                 </div>
             </form>
+            </x-admin.modal>
         </div>
 
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
@@ -137,18 +139,17 @@
                                 <td class="px-5 py-4">{{ number_format($item->price) }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" @click="openItemId = openItemId === {{ $item->id }} ? null : {{ $item->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openItemId = {{ $item->id }}" />
                                         <form method="POST" action="{{ route('admin.items.destroy', $item) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </td>
                             </tr>
-                            <tr x-show="openItemId === {{ $item->id }}" x-cloak>
-                                <td colspan="7" class="px-5 pb-5">
-                                    <form method="POST" action="{{ route('admin.items.update', $item) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2">
+                            <x-admin.modal open="openItemId === {{ $item->id }}" close="openItemId = null" title="Edit {{ $item->name }}" subtitle="{{ $item->type }}" max-width="56rem">
+                                    <form method="POST" action="{{ route('admin.items.update', $item) }}" class="grid gap-4 p-5 lg:grid-cols-2">
                                         @csrf
                                         @method('PATCH')
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $item->name }}" required>
@@ -187,12 +188,12 @@
                                             @endforeach
                                         </select>
                                         <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="description" required>{{ $item->description }}</textarea>
-                                        <div class="lg:col-span-2 flex justify-end">
-                                            <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
+                                        <div class="flex justify-end gap-2 border-t border-white/10 pt-3 lg:col-span-2">
+                                            <button type="button" @click="openItemId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                                            <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Save</button>
                                         </div>
                                     </form>
-                                </td>
-                            </tr>
+                            </x-admin.modal>
                         @endforeach
                     </tbody>
                 </table>
@@ -232,18 +233,17 @@
                                 <td class="px-5 py-4">{{ $licence->requiredRank?->name ?? 'None' }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" @click="openLicenceId = openLicenceId === {{ $licence->id }} ? null : {{ $licence->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">Edit</button>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openLicenceId = {{ $licence->id }}" />
                                         <form method="POST" action="{{ route('admin.licences.destroy', $licence) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </td>
                             </tr>
-                            <tr x-show="openLicenceId === {{ $licence->id }}" x-cloak>
-                                <td colspan="5" class="px-5 pb-5">
-                                    <form method="POST" action="{{ route('admin.licences.update', $licence) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 lg:grid-cols-2">
+                            <x-admin.modal open="openLicenceId === {{ $licence->id }}" close="openLicenceId = null" title="Edit {{ $licence->name }}" subtitle="{{ $licence->slug }}">
+                                    <form method="POST" action="{{ route('admin.licences.update', $licence) }}" class="grid gap-4 p-5 lg:grid-cols-2">
                                         @csrf
                                         @method('PATCH')
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $licence->name }}" required>
@@ -256,12 +256,12 @@
                                             @endforeach
                                         </select>
                                         <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="description" required>{{ $licence->description }}</textarea>
-                                        <div class="lg:col-span-2 flex justify-end">
-                                            <button class="rounded-full bg-[#c2a84f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
+                                        <div class="flex justify-end gap-2 border-t border-white/10 pt-3 lg:col-span-2">
+                                            <button type="button" @click="openLicenceId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                                            <button class="inline-flex items-center gap-2 rounded-full bg-[#c2a84f] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Save</button>
                                         </div>
                                     </form>
-                                </td>
-                            </tr>
+                            </x-admin.modal>
                         @endforeach
                     </tbody>
                 </table>

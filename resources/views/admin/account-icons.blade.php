@@ -25,20 +25,15 @@
                         <input x-model.debounce.150ms="query" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, slug, tooltip">
                     </div>
                 </label>
-                <button type="button" @click="showCreate = !showCreate" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
-                    <i class="fa-solid" :class="showCreate ? 'fa-minus' : 'fa-plus'"></i>
-                    <span x-text="showCreate ? 'Close Create' : 'Create Icon'"></span>
+                <button type="button" @click="showCreate = true" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c] transition hover:bg-[#d7edc7]">
+                    <i class="fa-solid fa-plus"></i>
+                    Create Icon
                 </button>
             </div>
         </section>
 
-        <section x-show="showCreate" x-cloak class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
-            <div class="mb-5">
-                <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">Create Account Icon</p>
-                <p class="text-sm text-white/55">Create badge icons here, then link them to permissions so they show on the character card automatically.</p>
-            </div>
-
-            <form method="POST" action="{{ route('admin.account-icons.store') }}" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <x-admin.modal open="showCreate" title="Create Account Icon" subtitle="Create badge icons for permissions and player cards." max-width="48rem">
+            <form method="POST" action="{{ route('admin.account-icons.store') }}" class="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
                 @csrf
                 <label class="grid gap-2 text-sm text-white/70">
                     <span class="uppercase tracking-[0.18em] text-white/45">Name</span>
@@ -73,11 +68,12 @@
                     <span class="uppercase tracking-[0.18em] text-white/45">Sort Order</span>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="sort_order" type="number" min="0" max="9999" value="{{ old('sort_order', 100) }}">
                 </label>
-                <div class="flex items-end xl:col-span-3">
-                    <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Icon</button>
+                <div class="flex justify-end gap-2 border-t border-white/10 pt-3 xl:col-span-3">
+                    <button type="button" @click="showCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                    <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Create</button>
                 </div>
             </form>
-        </section>
+        </x-admin.modal>
 
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
             <div class="overflow-x-auto">
@@ -106,20 +102,17 @@
                                 <td class="px-5 py-4">{{ $accountIcon->sort_order }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" @click="openId = openId === {{ $accountIcon->id }} ? null : {{ $accountIcon->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">
-                                            Edit
-                                        </button>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openId = {{ $accountIcon->id }}" />
                                         <form method="POST" action="{{ route('admin.account-icons.destroy', $accountIcon) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </td>
                             </tr>
-                            <tr x-show="openId === {{ $accountIcon->id }}" x-cloak>
-                                <td colspan="6" class="px-5 pb-5">
-                                    <form method="POST" action="{{ route('admin.account-icons.update', $accountIcon) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 md:grid-cols-2 xl:grid-cols-3">
+                            <x-admin.modal open="openId === {{ $accountIcon->id }}" close="openId = null" title="Edit {{ $accountIcon->name }}" subtitle="{{ $accountIcon->slug }}" max-width="48rem">
+                                    <form method="POST" action="{{ route('admin.account-icons.update', $accountIcon) }}" class="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
                                         @csrf
                                         @method('PATCH')
                                         <label class="grid gap-2 text-sm text-white/70">
@@ -155,12 +148,12 @@
                                             <span class="uppercase tracking-[0.18em] text-white/45">Sort Order</span>
                                             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="sort_order" type="number" min="0" max="9999" value="{{ $accountIcon->sort_order }}">
                                         </label>
-                                        <div class="flex items-end xl:col-span-3">
-                                            <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save Icon</button>
+                                        <div class="flex justify-end gap-2 border-t border-white/10 pt-3 xl:col-span-3">
+                                            <button type="button" @click="openId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                                            <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Save</button>
                                         </div>
                                     </form>
-                                </td>
-                            </tr>
+                            </x-admin.modal>
                         @endforeach
                     </tbody>
                 </table>

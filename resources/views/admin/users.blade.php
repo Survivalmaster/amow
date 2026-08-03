@@ -73,20 +73,17 @@
                                 </td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" @click="openId = openId === {{ $user->id }} ? null : {{ $user->id }}" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">
-                                            Edit
-                                        </button>
+                                        <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openId = {{ $user->id }}" />
                                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="rounded-full border border-[#c65b3f]/40 bg-[#c65b3f]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Delete</button>
+                                            <x-admin.icon-button icon="fa-trash" title="Delete" tone="danger" type="submit" />
                                         </form>
                                     </div>
                                 </td>
                             </tr>
-                            <tr x-show="openId === {{ $user->id }}" x-cloak>
-                                <td colspan="6" class="px-5 pb-5">
-                                    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="grid gap-4 rounded-[1.5rem] border border-white/10 bg-black/20 p-5 md:grid-cols-2 xl:grid-cols-3">
+                            <x-admin.modal open="openId === {{ $user->id }}" close="openId = null" title="Edit {{ $user->name }}" subtitle="{{ $canViewPlayerEmails ? $user->email : 'User #'.$user->id }}" max-width="56rem">
+                                    <form method="POST" action="{{ route('admin.users.update', $user) }}" class="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
                                         @csrf
                                         @method('PATCH')
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $user->name }}" required>
@@ -128,12 +125,12 @@
                                                 @endforeach
                                             </div>
                                         </label>
-                                        <div class="xl:col-span-3 flex justify-end">
-                                            <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save</button>
+                                        <div class="flex justify-end gap-2 border-t border-white/10 pt-3 xl:col-span-3">
+                                            <button type="button" @click="openId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
+                                            <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Save</button>
                                         </div>
                                     </form>
-                                </td>
-                            </tr>
+                            </x-admin.modal>
                         @endforeach
                     </tbody>
                 </table>
