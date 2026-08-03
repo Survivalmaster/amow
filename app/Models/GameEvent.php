@@ -13,12 +13,20 @@ class GameEvent extends Model
         'title',
         'body',
         'is_enabled',
+        'xp_multiplier_enabled',
+        'xp_multiplier',
+        'credit_multiplier_enabled',
+        'credit_multiplier',
     ];
 
     protected function casts(): array
     {
         return [
             'is_enabled' => 'boolean',
+            'xp_multiplier_enabled' => 'boolean',
+            'xp_multiplier' => 'integer',
+            'credit_multiplier_enabled' => 'boolean',
+            'credit_multiplier' => 'integer',
         ];
     }
 

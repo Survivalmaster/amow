@@ -10,6 +10,7 @@ use App\Services\Discord\AdminActionLogger;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ItemAdminController extends Controller
@@ -17,7 +18,8 @@ class ItemAdminController extends Controller
     public function index(): View
     {
         return view('admin.items', [
-            'items' => Item::query()->with(['requiredRank', 'requiredLicence'])->orderBy('name')->get(),
+            'items' => Item::query()->with(['requiredRank', 'requiredLicence', 'producingBuilding'])->orderBy('name')->get(),
+            'buildingItems' => Item::query()->where('is_building', true)->orderBy('name')->get(),
             'ranks' => Rank::query()->orderBy('order_index')->get(),
             'licences' => Licence::query()->with('requiredRank')->orderBy('name')->get(),
         ]);
@@ -36,6 +38,7 @@ class ItemAdminController extends Controller
             'footprint_width' => ['nullable', 'integer', 'min:1', 'max:10'],
             'footprint_height' => ['nullable', 'integer', 'min:1', 'max:10'],
             'build_time_minutes' => ['nullable', 'integer', 'min:0'],
+            'produced_by_building_item_id' => ['nullable', Rule::exists('items', 'id')->where('is_building', true)],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
             'price' => ['required', 'integer', 'min:1'],
             'required_rank_id' => ['nullable', 'exists:ranks,id'],
@@ -71,6 +74,7 @@ class ItemAdminController extends Controller
             'footprint_width' => ['nullable', 'integer', 'min:1', 'max:10'],
             'footprint_height' => ['nullable', 'integer', 'min:1', 'max:10'],
             'build_time_minutes' => ['nullable', 'integer', 'min:0'],
+            'produced_by_building_item_id' => ['nullable', Rule::exists('items', 'id')->where('is_building', true)],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
             'price' => ['required', 'integer', 'min:1'],
             'required_rank_id' => ['nullable', 'exists:ranks,id'],
@@ -85,6 +89,10 @@ class ItemAdminController extends Controller
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
         ];
+
+        if ((int) ($validated['produced_by_building_item_id'] ?? 0) === $item->id) {
+            return back()->withErrors(['produced_by_building_item_id' => 'An item cannot be produced by itself.'])->withInput();
+        }
 
         $item->update($validated);
         $adminActionLogger->updated($request->user(), 'Item', $before, $item);

@@ -4,6 +4,7 @@ namespace App\Actions\Characters;
 
 use App\Models\Character;
 use App\Models\GameJob;
+use App\Support\ActiveGameEventMultipliers;
 use App\Services\Discord\DiscordClient;
 use App\Support\CharacterActivity;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,10 @@ class WorkCharacter
 {
     private const WORK_ACTIVITY_CHANNEL_ID = '1483329516796379136';
 
-    public function __construct(private readonly DiscordClient $discord) {}
+    public function __construct(
+        private readonly DiscordClient $discord,
+        private readonly ActiveGameEventMultipliers $eventMultipliers,
+    ) {}
 
     public function execute(Character $character): array
     {
@@ -29,12 +33,15 @@ class WorkCharacter
             throw new RuntimeException('Work cooldown active. You can work again at '.$cooldownEndsAt->format('H:i').'.');
         }
 
-        $earnings = random_int($job->min_pay, $job->max_pay);
-        $experienceEarned = max(0, (int) ($job->experience_reward ?? 5));
+        $baseEarnings = random_int($job->min_pay, $job->max_pay);
+        $baseExperienceEarned = max(0, (int) ($job->experience_reward ?? 5));
+        $multipliers = $this->eventMultipliers->forCharacter($character);
+        $earnings = $baseEarnings * $multipliers['credits'];
+        $experienceEarned = $baseExperienceEarned * $multipliers['xp'];
         $staminaDecrease = max(0, (int) ($job->stamina_decrease ?? 0));
         $levelsGained = 0;
 
-        DB::transaction(function () use ($character, $job, $earnings, $experienceEarned, $staminaDecrease, &$levelsGained) {
+        DB::transaction(function () use ($character, $job, $baseEarnings, $baseExperienceEarned, $multipliers, $earnings, $experienceEarned, $staminaDecrease, &$levelsGained) {
             $previousCredits = (int) $character->plastic_credits;
             $previousLevel = (int) $character->level;
             $previousExperience = (int) $character->experience_points;
@@ -55,9 +62,13 @@ class WorkCharacter
                 "Completed a {$job->name} shift and earned {$earnings} Plastic Credits.",
                 [
                     'job' => $job->name,
+                    'base_credits_earned' => $baseEarnings,
                     'credits_before' => $previousCredits,
                     'credits_after' => $character->plastic_credits,
+                    'credit_multiplier' => $multipliers['credits'],
+                    'base_xp_earned' => $baseExperienceEarned,
                     'xp_earned' => $experienceEarned,
+                    'xp_multiplier' => $multipliers['xp'],
                     'level_before' => $previousLevel,
                     'level_after' => $character->level,
                     'xp_before' => $previousExperience,

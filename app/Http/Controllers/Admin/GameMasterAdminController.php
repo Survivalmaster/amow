@@ -26,12 +26,20 @@ class GameMasterAdminController extends Controller
             'body' => ['required', 'string', 'max:2000'],
             'faction_id' => ['nullable', 'exists:factions,id'],
             'is_enabled' => ['nullable', 'boolean'],
+            'xp_multiplier_enabled' => ['nullable', 'boolean'],
+            'xp_multiplier' => ['nullable', 'integer', 'min:1', 'max:5'],
+            'credit_multiplier_enabled' => ['nullable', 'boolean'],
+            'credit_multiplier' => ['nullable', 'integer', 'min:1', 'max:5'],
         ]);
 
         GameEvent::query()->create([
             ...$validated,
             'created_by_user_id' => $request->user()->id,
             'is_enabled' => $request->boolean('is_enabled', true),
+            'xp_multiplier_enabled' => $request->boolean('xp_multiplier_enabled') && filled($request->input('xp_multiplier')),
+            'xp_multiplier' => $request->boolean('xp_multiplier_enabled') ? $request->integer('xp_multiplier') : null,
+            'credit_multiplier_enabled' => $request->boolean('credit_multiplier_enabled') && filled($request->input('credit_multiplier')),
+            'credit_multiplier' => $request->boolean('credit_multiplier_enabled') ? $request->integer('credit_multiplier') : null,
         ]);
 
         return back()->with('status', 'Game event created.');
@@ -44,11 +52,19 @@ class GameMasterAdminController extends Controller
             'body' => ['required', 'string', 'max:2000'],
             'faction_id' => ['nullable', 'exists:factions,id'],
             'is_enabled' => ['nullable', 'boolean'],
+            'xp_multiplier_enabled' => ['nullable', 'boolean'],
+            'xp_multiplier' => ['nullable', 'integer', 'min:1', 'max:5'],
+            'credit_multiplier_enabled' => ['nullable', 'boolean'],
+            'credit_multiplier' => ['nullable', 'integer', 'min:1', 'max:5'],
         ]);
 
         $gameEvent->update([
             ...$validated,
             'is_enabled' => $request->boolean('is_enabled'),
+            'xp_multiplier_enabled' => $request->boolean('xp_multiplier_enabled') && filled($request->input('xp_multiplier')),
+            'xp_multiplier' => $request->boolean('xp_multiplier_enabled') ? $request->integer('xp_multiplier') : null,
+            'credit_multiplier_enabled' => $request->boolean('credit_multiplier_enabled') && filled($request->input('credit_multiplier')),
+            'credit_multiplier' => $request->boolean('credit_multiplier_enabled') ? $request->integer('credit_multiplier') : null,
         ]);
 
         return back()->with('status', 'Game event updated.');

@@ -20,6 +20,7 @@ class Item extends Model
         'footprint_width',
         'footprint_height',
         'build_time_minutes',
+        'produced_by_building_item_id',
         'inventory_slot_bonus',
         'price',
         'required_rank_id',
@@ -48,6 +49,16 @@ class Item extends Model
         return $this->hasMany(CharacterLandBuilding::class);
     }
 
+    public function producingBuilding(): BelongsTo
+    {
+        return $this->belongsTo(Item::class, 'produced_by_building_item_id');
+    }
+
+    public function producedItems(): HasMany
+    {
+        return $this->hasMany(Item::class, 'produced_by_building_item_id');
+    }
+
     protected function casts(): array
     {
         return [
@@ -56,6 +67,7 @@ class Item extends Model
             'footprint_width' => 'integer',
             'footprint_height' => 'integer',
             'build_time_minutes' => 'integer',
+            'produced_by_building_item_id' => 'integer',
             'inventory_slot_bonus' => 'integer',
         ];
     }

@@ -53,6 +53,12 @@
                         Building item
                     </label>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="build_time_minutes" placeholder="Build time (minutes)" min="0" value="0">
+                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="produced_by_building_item_id">
+                        <option value="">Not produced by a building</option>
+                        @foreach ($buildingItems as $buildingItem)
+                            <option value="{{ $buildingItem->id }}">{{ $buildingItem->name }}</option>
+                        @endforeach
+                    </select>
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="footprint_width" placeholder="Footprint width" min="1" max="10" value="1">
                     <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="footprint_height" placeholder="Footprint height" min="1" max="10" value="1">
                     <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
@@ -124,18 +130,20 @@
                             <th class="px-5 py-4 text-left">Building</th>
                             <th class="px-5 py-4 text-left">Footprint</th>
                             <th class="px-5 py-4 text-left">Build Time</th>
+                            <th class="px-5 py-4 text-left">Produced By</th>
                             <th class="px-5 py-4 text-left">Price</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody x-ref="itemRows" class="divide-y divide-white/10">
                         @foreach ($items as $item)
-                            <tr data-admin-row data-search="{{ str($item->name.' '.$item->slug.' '.$item->type.' '.$item->description.' '.$item->requiredRank?->name.' '.$item->required_role_type.' '.$item->requiredLicence?->name)->lower() }}">
+                            <tr data-admin-row data-search="{{ str($item->name.' '.$item->slug.' '.$item->type.' '.$item->description.' '.$item->requiredRank?->name.' '.$item->required_role_type.' '.$item->requiredLicence?->name.' '.$item->producingBuilding?->name)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $item->name }}</td>
                                 <td class="px-5 py-4">{{ $item->type }}</td>
                                 <td class="px-5 py-4">{{ $item->is_building ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ $item->footprint_width }}x{{ $item->footprint_height }}</td>
                                 <td class="px-5 py-4">{{ $item->build_time_minutes }} min</td>
+                                <td class="px-5 py-4">{{ $item->producingBuilding?->name ?? 'None' }}</td>
                                 <td class="px-5 py-4">{{ number_format($item->price) }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
@@ -161,6 +169,14 @@
                                             Building item
                                         </label>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="build_time_minutes" value="{{ $item->build_time_minutes }}" min="0">
+                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="produced_by_building_item_id">
+                                            <option value="">Not produced by a building</option>
+                                            @foreach ($buildingItems as $buildingItem)
+                                                @if ($buildingItem->id !== $item->id)
+                                                    <option value="{{ $buildingItem->id }}" @selected($item->produced_by_building_item_id === $buildingItem->id)>{{ $buildingItem->name }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="footprint_width" value="{{ $item->footprint_width }}" min="1" max="10">
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="footprint_height" value="{{ $item->footprint_height }}" min="1" max="10">
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">

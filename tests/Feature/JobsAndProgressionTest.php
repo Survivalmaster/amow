@@ -2,6 +2,7 @@
 
 use App\Models\Character;
 use App\Models\Faction;
+use App\Models\GameEvent;
 use App\Models\GameJob;
 use App\Models\Location;
 use App\Models\Rank;
@@ -88,6 +89,49 @@ test('work awards credits and experience based on the active job', function () {
             && isset($embed['color'])
             && ! empty($embed['timestamp']);
     });
+});
+
+test('active game master events multiply work credits and experience', function () {
+    config()->set('services.discord.bot_token', 'test-token');
+    Http::fake([
+        'https://discord.com/api/v10/channels/1483329516796379136/messages' => Http::response(['id' => '123'], 200),
+    ]);
+
+    $user = User::factory()->create();
+    $character = createCharacterForUser($user);
+    $character->currentJob()->update([
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'experience_reward' => 8,
+        'work_cooldown_minutes' => 1,
+    ]);
+    GameEvent::query()->create([
+        'created_by_user_id' => $user->id,
+        'title' => 'Factory Surge',
+        'body' => 'Temporary production bonuses.',
+        'is_enabled' => true,
+        'xp_multiplier_enabled' => true,
+        'xp_multiplier' => 2,
+        'credit_multiplier_enabled' => true,
+        'credit_multiplier' => 3,
+    ]);
+    $location = Location::query()->where('slug', 'go-to-work')->firstOrFail();
+
+    $this->actingAs($user)
+        ->post(route('work.store', $location))
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $character->refresh();
+
+    expect($character->plastic_credits)->toBe(130);
+    expect($character->experience_points)->toBe(16);
+
+    $this->assertDatabaseHas('transactions', [
+        'character_id' => $character->id,
+        'type' => 'work',
+        'amount' => 30,
+    ]);
 });
 
 test('character state endpoint returns live job and progression data', function () {

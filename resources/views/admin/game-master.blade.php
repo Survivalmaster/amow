@@ -10,7 +10,7 @@
                 <p class="text-sm text-white/55">Active events appear beneath the header on every non-admin page.</p>
             </div>
 
-            <form method="POST" action="{{ route('admin.game-master.events.store') }}" class="grid gap-4 lg:grid-cols-2">
+            <form method="POST" action="{{ route('admin.game-master.events.store') }}" class="grid gap-4 lg:grid-cols-2" x-data="{ xpBoost: false, creditBoost: false }">
                 @csrf
                 <label class="grid gap-2 text-sm text-white/70">
                     <span class="uppercase tracking-[0.18em] text-white/45">Title</span>
@@ -33,6 +33,20 @@
                     <input type="checkbox" name="is_enabled" value="1" checked>
                     Enabled and visible
                 </label>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                        <input type="checkbox" name="xp_multiplier_enabled" value="1" x-model="xpBoost">
+                        XP multiplier
+                    </label>
+                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 disabled:opacity-40" name="xp_multiplier" type="number" min="1" max="5" value="2" :disabled="!xpBoost">
+                </div>
+                <div class="grid gap-3 md:grid-cols-2">
+                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                        <input type="checkbox" name="credit_multiplier_enabled" value="1" x-model="creditBoost">
+                        Credit multiplier
+                    </label>
+                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 disabled:opacity-40" name="credit_multiplier" type="number" min="1" max="5" value="2" :disabled="!creditBoost">
+                </div>
                 <div class="flex items-end">
                     <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Create Event</button>
                 </div>
@@ -41,7 +55,7 @@
 
         <section class="space-y-4">
             @forelse ($events as $event)
-                <form method="POST" action="{{ route('admin.game-master.events.update', $event) }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+                <form method="POST" action="{{ route('admin.game-master.events.update', $event) }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30" x-data="{ xpBoost: @js($event->xp_multiplier_enabled), creditBoost: @js($event->credit_multiplier_enabled) }">
                     @csrf
                     @method('PATCH')
                     <div class="grid gap-4 lg:grid-cols-2">
@@ -66,6 +80,20 @@
                             <input type="checkbox" name="is_enabled" value="1" @checked($event->is_enabled)>
                             Enabled and visible
                         </label>
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                                <input type="checkbox" name="xp_multiplier_enabled" value="1" x-model="xpBoost" @checked($event->xp_multiplier_enabled)>
+                                XP multiplier
+                            </label>
+                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 disabled:opacity-40" name="xp_multiplier" type="number" min="1" max="5" value="{{ $event->xp_multiplier ?? 2 }}" :disabled="!xpBoost">
+                        </div>
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                                <input type="checkbox" name="credit_multiplier_enabled" value="1" x-model="creditBoost" @checked($event->credit_multiplier_enabled)>
+                                Credit multiplier
+                            </label>
+                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 disabled:opacity-40" name="credit_multiplier" type="number" min="1" max="5" value="{{ $event->credit_multiplier ?? 2 }}" :disabled="!creditBoost">
+                        </div>
                         <div class="flex items-center justify-between gap-4">
                             <p class="text-xs uppercase tracking-[0.18em] text-white/40">Created by {{ $event->creator->name }}{{ $event->faction ? ' | '.$event->faction->name : ' | Global' }}</p>
                             <button class="rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Save Event</button>

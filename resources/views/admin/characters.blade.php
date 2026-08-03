@@ -48,7 +48,7 @@
                             <th class="px-5 py-4 text-left">User</th>
                             <th class="px-5 py-4 text-left">Faction</th>
                             <th class="px-5 py-4 text-left">Rank</th>
-                            <th class="px-5 py-4 text-left">Nation Leader</th>
+                            <th class="px-5 py-4 text-left">Level</th>
                             <th class="px-5 py-4 text-left">Job</th>
                             <th class="px-5 py-4 text-left">Credits</th>
                             <th class="px-5 py-4 text-right">Actions</th>
@@ -61,7 +61,7 @@
                                 <td class="px-5 py-4">{{ $canViewPlayerEmails ? $character->user->email : ($character->user->name ?? 'User #'.$character->user_id) }}</td>
                                 <td class="px-5 py-4">{{ $character->faction->name }}</td>
                                 <td class="px-5 py-4">{{ $character->rank->name }}</td>
-                                <td class="px-5 py-4">{{ $character->is_nation_leader ? 'Yes' : 'No' }}</td>
+                                <td class="px-5 py-4">Lv {{ number_format($character->level) }}</td>
                                 <td class="px-5 py-4">{{ $character->displayed_job_name }}</td>
                                 <td class="px-5 py-4">{{ number_format($character->plastic_credits) }}</td>
                                 <td class="px-5 py-4 text-right">
