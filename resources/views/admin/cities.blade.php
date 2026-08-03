@@ -3,8 +3,36 @@
 
     @include('admin.partials.nav')
 
-    <div x-data="{ openId: null }" class="space-y-6">
-        <form method="POST" action="{{ route('admin.cities.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+    <div
+        x-data="{
+            openId: null,
+            showCreate: false,
+            query: '',
+            filterRows() {
+                if (!this.$refs.rows) return;
+                [...this.$refs.rows.querySelectorAll('[data-admin-row]')].forEach((row) => row.toggleAttribute('hidden', this.query && !row.dataset.search.includes(this.query.toLowerCase())));
+            }
+        }"
+        x-effect="filterRows()"
+        class="space-y-5"
+    >
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <label class="space-y-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45 lg:min-w-[28rem]">
+                    <span>Search</span>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"></i>
+                        <input x-model.debounce.150ms="query" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, faction, slug">
+                    </div>
+                </label>
+                <button type="button" @click="showCreate = !showCreate" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
+                    <i class="fa-solid" :class="showCreate ? 'fa-minus' : 'fa-plus'"></i>
+                    <span x-text="showCreate ? 'Close Create' : 'Create City'"></span>
+                </button>
+            </div>
+        </section>
+
+        <form x-show="showCreate" x-cloak method="POST" action="{{ route('admin.cities.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             @csrf
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create City</p>
             <p class="mt-2 text-sm text-white/60">Creates a city on the Plastica map and assigns it to the faction that controls it.</p>
@@ -39,9 +67,9 @@
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-white/10">
+                    <tbody x-ref="rows" class="divide-y divide-white/10">
                         @foreach ($cities as $city)
-                            <tr>
+                            <tr data-admin-row data-search="{{ str($city->name.' '.$city->faction->name.' '.$city->slug.' '.$city->description)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $city->name }}</td>
                                 <td class="px-5 py-4">{{ $city->faction->name }}</td>
                                 <td class="px-5 py-4">{{ $city->slug }}</td>

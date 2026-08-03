@@ -27,29 +27,42 @@
     @include('admin.partials.nav')
 
     @php($fieldClass = 'rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35')
+    @php($canViewPlayerEmails = auth()->user()?->loadMissing('permissions')->hasPermission('developer'))
 
     <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
         <aside class="space-y-4">
-            <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
-                <form method="GET" action="{{ route('admin.character-logs.index') }}">
-                    <label class="space-y-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
-                        <span>Character</span>
-                        <select class="{{ $fieldClass }} w-full" name="character_id" onchange="this.form.submit()">
-                            @foreach ($characters as $character)
-                                <option value="{{ $character->id }}" @selected($selectedCharacter?->id === $character->id)>
-                                    {{ $character->name }} | {{ $character->user?->email }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </label>
-                </form>
+            <section
+                x-data="{ characterSearch: '' }"
+                class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30"
+            >
+                <label class="space-y-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                    <span>Search Character</span>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"></i>
+                        <input x-model.debounce.150ms="characterSearch" class="{{ $fieldClass }} w-full pl-9" placeholder="Type a character name">
+                    </div>
+                </label>
+
+                <div class="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
+                    @foreach ($characters as $character)
+                        @php($characterUserLabel = $canViewPlayerEmails ? $character->user?->email : ($character->user?->name ?? 'User #'.$character->user_id))
+                        <a
+                            href="{{ route('admin.character-logs.index', ['character_id' => $character->id]) }}"
+                            x-show="!characterSearch || @js(str($character->name.' '.$characterUserLabel)->lower()->toString()).includes(characterSearch.toLowerCase())"
+                            class="block rounded-xl border px-3 py-2 text-sm transition {{ $selectedCharacter?->id === $character->id ? 'border-[#7ead59]/35 bg-[#7ead59]/10 text-[#d7edc7]' : 'border-white/10 bg-black/20 text-white/68 hover:border-white/20 hover:text-white' }}"
+                        >
+                            <span class="block font-semibold text-white">{{ $character->name }}</span>
+                            <span class="mt-0.5 block truncate text-xs text-white/42">{{ $characterUserLabel }}</span>
+                        </a>
+                    @endforeach
+                </div>
             </section>
 
             @if ($selectedCharacter)
                 <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">{{ $selectedCharacter->name }}</p>
                     <div class="mt-4 space-y-2 text-sm text-white/65">
-                        <p><span class="text-white/40">User:</span> {{ $selectedCharacter->user?->email ?? 'Unknown' }}</p>
+                        <p><span class="text-white/40">User:</span> {{ $canViewPlayerEmails ? ($selectedCharacter->user?->email ?? 'Unknown') : ($selectedCharacter->user?->name ?? 'User #'.$selectedCharacter->user_id) }}</p>
                         <p><span class="text-white/40">Discord:</span> {{ $selectedCharacter->user?->discord_username ?: 'Not linked' }}</p>
                         <p><span class="text-white/40">Faction:</span> {{ $selectedCharacter->faction?->name ?? 'Unknown' }}</p>
                         <p><span class="text-white/40">Rank:</span> {{ $selectedCharacter->rank?->name ?? 'Unknown' }}</p>

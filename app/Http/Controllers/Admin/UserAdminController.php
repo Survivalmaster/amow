@@ -8,8 +8,8 @@ use App\Models\User;
 use App\Services\Discord\AdminActionLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -26,9 +26,10 @@ class UserAdminController extends Controller
     public function update(Request $request, User $user, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $before = $this->userAuditSnapshot($user);
+        $canManageEmail = $request->user()->loadMissing('permissions')->hasPermission('developer');
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => [$canManageEmail ? 'required' : 'nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'permission_ids' => ['nullable', 'array'],
             'permission_ids.*' => ['integer', 'exists:permissions,id'],
             'password' => ['nullable', 'string', 'min:8'],
@@ -37,7 +38,9 @@ class UserAdminController extends Controller
         ]);
 
         $user->name = $validated['name'];
-        $user->email = $validated['email'];
+        if ($canManageEmail) {
+            $user->email = $validated['email'];
+        }
         $isBeingBanned = $request->boolean('is_banned');
 
         if (! empty($validated['password'])) {
@@ -76,17 +79,18 @@ class UserAdminController extends Controller
         $after['password_changed'] = ! empty($validated['password']) ? 'true' : 'false';
         $adminActionLogger->updated($request->user(), 'User', $before, $after);
 
-        return back()->with('status', "Updated user {$user->email}.");
+        return back()->with('status', $canManageEmail ? "Updated user {$user->email}." : "Updated user #{$user->id}.");
     }
 
     public function destroy(Request $request, User $user, AdminActionLogger $adminActionLogger): RedirectResponse
     {
         $snapshot = $this->userAuditSnapshot($user);
-        $email = $user->email;
+        $canViewPlayerEmails = $request->user()->loadMissing('permissions')->hasPermission('developer');
+        $label = $canViewPlayerEmails ? $user->email : "user #{$user->id}";
         $user->delete();
         $adminActionLogger->deleted($request->user(), 'User', $snapshot);
 
-        return back()->with('status', "Deleted user {$email}.");
+        return back()->with('status', "Deleted {$label}.");
     }
 
     private function userAuditSnapshot(User $user): array

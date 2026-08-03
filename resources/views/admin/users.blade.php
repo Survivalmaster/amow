@@ -3,25 +3,50 @@
 
     @include('admin.partials.nav')
 
-    <div x-data="{ openId: null }" class="space-y-6">
+    @php($canViewPlayerEmails = auth()->user()?->loadMissing('permissions')->hasPermission('developer'))
+
+    <div
+        x-data="{
+            openId: null,
+            query: '',
+            filterRows() {
+                if (!this.$refs.rows) return;
+                [...this.$refs.rows.querySelectorAll('[data-admin-row]')].forEach((row) => {
+                    row.toggleAttribute('hidden', this.query && !row.dataset.search.includes(this.query.toLowerCase()));
+                });
+            }
+        }"
+        x-effect="filterRows()"
+        class="space-y-5"
+    >
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
+            <label class="block space-y-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45 lg:max-w-xl">
+                <span>Search</span>
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"></i>
+                    <input x-model.debounce.150ms="query" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, account, character, permissions">
+                </div>
+            </label>
+        </section>
+
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm text-white/75">
                     <thead class="bg-black/30 text-xs uppercase tracking-[0.2em] text-white/40">
                         <tr>
                             <th class="px-5 py-4 text-left">Name</th>
-                            <th class="px-5 py-4 text-left">Email</th>
+                            <th class="px-5 py-4 text-left">Account</th>
                             <th class="px-5 py-4 text-left">Character</th>
                             <th class="px-5 py-4 text-left">Status</th>
                             <th class="px-5 py-4 text-left">Permissions</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-white/10">
+                    <tbody x-ref="rows" class="divide-y divide-white/10">
                         @foreach ($users as $user)
-                            <tr class="align-top">
+                            <tr class="align-top" data-admin-row data-search="{{ str($user->name.' '.($canViewPlayerEmails ? $user->email : 'user '.$user->id).' '.$user->character?->name.' '.$user->permissions->pluck('name')->implode(' '))->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $user->name }}</td>
-                                <td class="px-5 py-4">{{ $user->email }}</td>
+                                <td class="px-5 py-4">{{ $canViewPlayerEmails ? $user->email : 'User #'.$user->id }}</td>
                                 <td class="px-5 py-4">{{ $user->character?->name ? $user->character->name.' | '.($user->character->faction?->name ?? 'No faction') : 'None' }}</td>
                                 <td class="px-5 py-4">
                                     @if ($user->isBanned())
@@ -65,7 +90,11 @@
                                         @csrf
                                         @method('PATCH')
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $user->name }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="email" type="email" value="{{ $user->email }}" required>
+                                        @if ($canViewPlayerEmails)
+                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="email" type="email" value="{{ $user->email }}" required>
+                                        @else
+                                            <div class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-white/55">User #{{ $user->id }}</div>
+                                        @endif
                                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="password" type="password" placeholder="New password">
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70 xl:col-span-3">
                                             <input type="checkbox" name="is_banned" value="1" @checked($user->isBanned())>

@@ -3,8 +3,36 @@
 
     @include('admin.partials.nav')
 
-    <div x-data="{ openId: null }" class="space-y-6">
-        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+    <div
+        x-data="{
+            openId: null,
+            showCreate: false,
+            query: '',
+            filterRows() {
+                if (!this.$refs.rows) return;
+                [...this.$refs.rows.querySelectorAll('[data-admin-row]')].forEach((row) => row.toggleAttribute('hidden', this.query && !row.dataset.search.includes(this.query.toLowerCase())));
+            }
+        }"
+        x-effect="filterRows()"
+        class="space-y-5"
+    >
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <label class="space-y-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45 lg:min-w-[28rem]">
+                    <span>Search</span>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"></i>
+                        <input x-model.debounce.150ms="query" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, slug, sections">
+                    </div>
+                </label>
+                <button type="button" @click="showCreate = !showCreate" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
+                    <i class="fa-solid" :class="showCreate ? 'fa-minus' : 'fa-plus'"></i>
+                    <span x-text="showCreate ? 'Close Create' : 'Create Permission'"></span>
+                </button>
+            </div>
+        </section>
+
+        <section x-show="showCreate" x-cloak class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             <div class="mb-5">
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">Create Permission</p>
                 <p class="text-sm text-white/55">Permissions now control admin section access and can also define their own account badge icon.</p>
@@ -75,9 +103,9 @@
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-white/10">
+                    <tbody x-ref="rows" class="divide-y divide-white/10">
                         @foreach ($permissions as $permission)
-                            <tr class="align-top">
+                            <tr class="align-top" data-admin-row data-search="{{ str($permission->name.' '.$permission->slug.' '.$permission->description.' '.collect($permission->admin_sections ?? [])->implode(' '))->lower() }}">
                                 <td class="px-5 py-4">
                                     <p class="font-semibold text-white">{{ $permission->name }}</p>
                                     <p class="mt-1 text-xs text-white/45">{{ $permission->description ?: 'No description' }}</p>

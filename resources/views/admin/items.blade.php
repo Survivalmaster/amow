@@ -3,9 +3,44 @@
 
     @include('admin.partials.nav')
 
-    <div x-data="{ openItemId: null, openLicenceId: null }" class="space-y-6">
+    <div
+        x-data="{
+            openItemId: null,
+            openLicenceId: null,
+            showItemCreate: false,
+            showLicenceCreate: false,
+            itemQuery: '',
+            licenceQuery: '',
+            filterRows(refName, query) {
+                if (!this.$refs[refName]) return;
+                [...this.$refs[refName].querySelectorAll('[data-admin-row]')].forEach((row) => row.toggleAttribute('hidden', query && !row.dataset.search.includes(query.toLowerCase())));
+            }
+        }"
+        x-effect="filterRows('itemRows', itemQuery); filterRows('licenceRows', licenceQuery)"
+        class="space-y-5"
+    >
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
+            <div class="grid gap-3 xl:grid-cols-[minmax(0,1fr)_auto_auto] xl:items-end">
+                <label class="space-y-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                    <span>Search Items</span>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"></i>
+                        <input x-model.debounce.150ms="itemQuery" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, type, requirements">
+                    </div>
+                </label>
+                <button type="button" @click="showItemCreate = !showItemCreate" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
+                    <i class="fa-solid" :class="showItemCreate ? 'fa-minus' : 'fa-plus'"></i>
+                    <span x-text="showItemCreate ? 'Close Item' : 'Create Item'"></span>
+                </button>
+                <button type="button" @click="showLicenceCreate = !showLicenceCreate" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#c2a84f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]">
+                    <i class="fa-solid" :class="showLicenceCreate ? 'fa-minus' : 'fa-plus'"></i>
+                    <span x-text="showLicenceCreate ? 'Close Licence' : 'Create Licence'"></span>
+                </button>
+            </div>
+        </section>
+
         <div class="grid gap-6 xl:grid-cols-2">
-            <form method="POST" action="{{ route('admin.items.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+            <form x-show="showItemCreate" x-cloak method="POST" action="{{ route('admin.items.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 @csrf
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Item</p>
                 <p class="mt-2 text-sm text-white/60">Create general inventory items or mark them as buildings that can be placed on land.</p>
@@ -52,7 +87,7 @@
                 </div>
             </form>
 
-            <form method="POST" action="{{ route('admin.licences.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+            <form x-show="showLicenceCreate" x-cloak method="POST" action="{{ route('admin.licences.store') }}" class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 @csrf
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Create Licence</p>
                 <p class="mt-2 text-sm text-white/60">Manage purchasable licences here, including the new Land unlock.</p>
@@ -91,9 +126,9 @@
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-white/10">
+                    <tbody x-ref="itemRows" class="divide-y divide-white/10">
                         @foreach ($items as $item)
-                            <tr>
+                            <tr data-admin-row data-search="{{ str($item->name.' '.$item->slug.' '.$item->type.' '.$item->description.' '.$item->requiredRank?->name.' '.$item->required_role_type.' '.$item->requiredLicence?->name)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $item->name }}</td>
                                 <td class="px-5 py-4">{{ $item->type }}</td>
                                 <td class="px-5 py-4">{{ $item->is_building ? 'Yes' : 'No' }}</td>
@@ -166,7 +201,16 @@
 
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
             <div class="border-b border-white/10 px-5 py-4">
-                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Licences</p>
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Licences</p>
+                    <label class="space-y-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45 lg:min-w-[24rem]">
+                        <span>Search Licences</span>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"></i>
+                            <input x-model.debounce.150ms="licenceQuery" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, slug, required rank">
+                        </div>
+                    </label>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm text-white/75">
@@ -179,9 +223,9 @@
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-white/10">
+                    <tbody x-ref="licenceRows" class="divide-y divide-white/10">
                         @foreach ($licences as $licence)
-                            <tr>
+                            <tr data-admin-row data-search="{{ str($licence->name.' '.$licence->slug.' '.$licence->description.' '.$licence->requiredRank?->name)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $licence->name }}</td>
                                 <td class="px-5 py-4">{{ $licence->slug }}</td>
                                 <td class="px-5 py-4">{{ number_format($licence->cost) }}</td>

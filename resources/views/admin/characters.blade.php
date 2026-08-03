@@ -3,8 +3,39 @@
 
     @include('admin.partials.nav')
 
-    <div x-data="{ openId: null }" class="space-y-6">
-        <div class="flex justify-end">
+    @php($canViewPlayerEmails = auth()->user()?->loadMissing('permissions')->hasPermission('developer'))
+
+    <div
+        x-data="{
+            openId: null,
+            query: '',
+            filterRows() {
+                if (!this.$refs.rows) return;
+                [...this.$refs.rows.querySelectorAll('[data-admin-row]')].forEach((row) => {
+                    row.toggleAttribute('hidden', this.query && !row.dataset.search.includes(this.query.toLowerCase()));
+                });
+            }
+        }"
+        x-effect="filterRows()"
+        class="space-y-5"
+    >
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <label class="space-y-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45 lg:min-w-[28rem]">
+                    <span>Search</span>
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/35"></i>
+                        <input x-model.debounce.150ms="query" class="w-full rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 pl-9 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35" placeholder="Name, user, faction, rank, job">
+                    </div>
+                </label>
+                <a href="{{ route('admin.character-logs.index') }}" class="inline-flex items-center justify-center gap-2 rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/10 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f4d77a]">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    Character Logs
+                </a>
+            </div>
+        </section>
+
+        <div class="hidden">
             <a href="{{ route('admin.character-logs.index') }}" class="rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/10 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#f4d77a]">Open Character Logs</a>
         </div>
 
@@ -23,11 +54,11 @@
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-white/10">
+                    <tbody x-ref="rows" class="divide-y divide-white/10">
                         @foreach ($characters as $character)
-                            <tr>
+                            <tr data-admin-row data-search="{{ str($character->name.' '.$character->user->name.' '.($canViewPlayerEmails ? $character->user->email : '').' '.$character->faction->name.' '.$character->rank->name.' '.$character->displayed_job_name)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $character->name }}</td>
-                                <td class="px-5 py-4">{{ $character->user->email }}</td>
+                                <td class="px-5 py-4">{{ $canViewPlayerEmails ? $character->user->email : ($character->user->name ?? 'User #'.$character->user_id) }}</td>
                                 <td class="px-5 py-4">{{ $character->faction->name }}</td>
                                 <td class="px-5 py-4">{{ $character->rank->name }}</td>
                                 <td class="px-5 py-4">{{ $character->is_nation_leader ? 'Yes' : 'No' }}</td>

@@ -95,6 +95,7 @@ class CharacterAdminController extends Controller
         $after = $character->fresh()->attributesToArray();
         $ignoredKeys = ['updated_at'];
         $changedFields = [];
+        $adminLabel = $request->user()->name ?: 'Admin #'.$request->user()->id;
 
         foreach (array_keys($before + $after) as $key) {
             if (in_array($key, $ignoredKeys, true)) {
@@ -117,11 +118,11 @@ class CharacterAdminController extends Controller
                 $character,
                 'rank_change',
                 0,
-                'Rank changed by admin '.$request->user()->email.'.',
+                'Rank changed by '.$adminLabel.'.',
                 [
                     'from_rank' => Rank::query()->find($before['rank_id'] ?? null)?->name,
                     'to_rank' => Rank::query()->find($after['rank_id'] ?? null)?->name,
-                    'changed_by' => $request->user()->email,
+                    'changed_by' => $adminLabel,
                 ]
             );
         }
@@ -131,11 +132,11 @@ class CharacterAdminController extends Controller
                 $character,
                 'job_change',
                 0,
-                'Job changed by admin '.$request->user()->email.'.',
+                'Job changed by '.$adminLabel.'.',
                 [
                     'from_job' => GameJob::query()->find($before['current_job_id'] ?? null)?->name,
                     'to_job' => GameJob::query()->find($after['current_job_id'] ?? null)?->name,
-                    'changed_by' => $request->user()->email,
+                    'changed_by' => $adminLabel,
                 ]
             );
         }
@@ -144,9 +145,9 @@ class CharacterAdminController extends Controller
             $character,
             'admin_update',
             0,
-            'Character updated by admin '.$request->user()->email.'.',
+            'Character updated by '.$adminLabel.'.',
             [
-                'admin' => $request->user()->email,
+                'admin' => $adminLabel,
                 'changed_fields' => implode(', ', $changedFields),
             ]
         );
