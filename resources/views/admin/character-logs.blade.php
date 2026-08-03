@@ -124,8 +124,15 @@
                                 $meta->has('stamina_before') && $meta->has('stamina_after') ? 'Stamina '.$meta->get('stamina_before').' -> '.$meta->get('stamina_after') : null,
                                 $meta->has('credits_before') && $meta->has('credits_after') ? 'Balance '.number_format((int) $meta->get('credits_before')).' -> '.number_format((int) $meta->get('credits_after')) : null,
                             ])->filter()->implode(' | '))
+                            @php($formatMultiplier = fn ($value) => rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.'))
+                            @php($xpBonusEvents = collect($meta->get('xp_multiplier_events', []))->pluck('name')->filter()->implode(', '))
+                            @php($creditBonusEvents = collect($meta->get('credit_multiplier_events', []))->pluck('name')->filter()->implode(', '))
+                            @php($bonusTags = collect([
+                                ((float) $meta->get('xp_multiplier', 1) > 1 && $xpBonusEvents !== '') ? 'XP '.$formatMultiplier($meta->get('xp_multiplier')).'x: '.$xpBonusEvents : null,
+                                ((float) $meta->get('credit_multiplier', 1) > 1 && $creditBonusEvents !== '') ? 'Credits '.$formatMultiplier($meta->get('credit_multiplier')).'x: '.$creditBonusEvents : null,
+                            ])->filter()->implode(' | '))
                             @php($stateChange = match ($transaction->type) {
-                                'work' => $workChanges !== '' ? $workChanges : 'Legacy work log - XP and level details were not recorded',
+                                'work' => $workChanges !== '' ? trim($workChanges.($bonusTags !== '' ? ' | Bonus '.$bonusTags : '')) : 'Legacy work log - XP and level details were not recorded',
                                 'job_change' => $meta->get('changed_by') ? 'Changed by '.$meta->get('changed_by') : 'Cooldown updated',
                                 'rank_change' => $meta->get('changed_by') ? 'Changed by '.$meta->get('changed_by') : 'Rank updated',
                                 default => $meta->get('credits_after') ? 'Balance '.number_format((int) $meta->get('credits_after')) : 'Balance impact',

@@ -24,9 +24,9 @@ class GameEvent extends Model
         return [
             'is_enabled' => 'boolean',
             'xp_multiplier_enabled' => 'boolean',
-            'xp_multiplier' => 'integer',
+            'xp_multiplier' => 'float',
             'credit_multiplier_enabled' => 'boolean',
-            'credit_multiplier' => 'integer',
+            'credit_multiplier' => 'float',
         ];
     }
 

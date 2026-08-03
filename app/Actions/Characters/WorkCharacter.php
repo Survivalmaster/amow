@@ -36,12 +36,14 @@ class WorkCharacter
         $baseEarnings = random_int($job->min_pay, $job->max_pay);
         $baseExperienceEarned = max(0, (int) ($job->experience_reward ?? 5));
         $multipliers = $this->eventMultipliers->forCharacter($character);
-        $earnings = $baseEarnings * $multipliers['credits'];
-        $experienceEarned = $baseExperienceEarned * $multipliers['xp'];
+        $creditMultiplier = (float) $multipliers['credits']['multiplier'];
+        $xpMultiplier = (float) $multipliers['xp']['multiplier'];
+        $earnings = (int) round($baseEarnings * $creditMultiplier);
+        $experienceEarned = (int) round($baseExperienceEarned * $xpMultiplier);
         $staminaDecrease = max(0, (int) ($job->stamina_decrease ?? 0));
         $levelsGained = 0;
 
-        DB::transaction(function () use ($character, $job, $baseEarnings, $baseExperienceEarned, $multipliers, $earnings, $experienceEarned, $staminaDecrease, &$levelsGained) {
+        DB::transaction(function () use ($character, $job, $baseEarnings, $baseExperienceEarned, $multipliers, $creditMultiplier, $xpMultiplier, $earnings, $experienceEarned, $staminaDecrease, &$levelsGained) {
             $previousCredits = (int) $character->plastic_credits;
             $previousLevel = (int) $character->level;
             $previousExperience = (int) $character->experience_points;
@@ -65,10 +67,12 @@ class WorkCharacter
                     'base_credits_earned' => $baseEarnings,
                     'credits_before' => $previousCredits,
                     'credits_after' => $character->plastic_credits,
-                    'credit_multiplier' => $multipliers['credits'],
+                    'credit_multiplier' => $creditMultiplier,
+                    'credit_multiplier_events' => $multipliers['credits']['events'],
                     'base_xp_earned' => $baseExperienceEarned,
                     'xp_earned' => $experienceEarned,
-                    'xp_multiplier' => $multipliers['xp'],
+                    'xp_multiplier' => $xpMultiplier,
+                    'xp_multiplier_events' => $multipliers['xp']['events'],
                     'level_before' => $previousLevel,
                     'level_after' => $character->level,
                     'xp_before' => $previousExperience,
@@ -82,7 +86,7 @@ class WorkCharacter
 
         $updatedCharacter = $character->fresh(['currentJob', 'faction', 'user']);
 
-        $this->sendDiscordWorkActivity($updatedCharacter, $job, $earnings);
+        $this->sendDiscordWorkActivity($updatedCharacter, $job, $earnings, $multipliers);
 
         return [
             'character' => $updatedCharacter,
@@ -94,10 +98,20 @@ class WorkCharacter
         ];
     }
 
-    private function sendDiscordWorkActivity(Character $character, GameJob $job, int $earnings): void
+    private function sendDiscordWorkActivity(Character $character, GameJob $job, int $earnings, array $multipliers): void
     {
         $workActivityMessage = $job->working_display_message ?: 'Is working.';
         $discordActivityMessage = $this->normalizeWorkActivityMessage($workActivityMessage);
+        $eventBonusText = $this->formatDiscordEventBonusText($multipliers);
+        $description = sprintf(
+            "They have earned **%s** credits.\nTheir total now is **%s**.",
+            number_format($earnings),
+            number_format($character->plastic_credits)
+        );
+
+        if ($eventBonusText !== '') {
+            $description .= "\n\n**Event bonus:** {$eventBonusText}";
+        }
 
         try {
             $this->discord->sendEmbedMessage(
@@ -108,11 +122,7 @@ class WorkCharacter
                         'icon_url' => $character->user?->discord_avatar_url,
                     ]),
                     'title' => sprintf('%s is %s', $character->name, $discordActivityMessage),
-                    'description' => sprintf(
-                        "They have earned **%s** credits.\nTheir total now is **%s**.",
-                        number_format($earnings),
-                        number_format($character->plastic_credits)
-                    ),
+                    'description' => $description,
                     'color' => $this->resolveDiscordEmbedColor($character->faction?->color),
                     'footer' => [
                         'text' => 'AMOW Work Activity',
@@ -140,6 +150,33 @@ class WorkCharacter
         $message = preg_replace('/^is\s+/i', '', $message) ?? $message;
 
         return Str::of($message)->trim()->lower()->toString();
+    }
+
+    private function formatDiscordEventBonusText(array $multipliers): string
+    {
+        $bonuses = collect([
+            $this->formatBonusLine('XP', $multipliers['xp'] ?? []),
+            $this->formatBonusLine('Credits', $multipliers['credits'] ?? []),
+        ])->filter();
+
+        return $bonuses->implode(' | ');
+    }
+
+    private function formatBonusLine(string $label, array $details): ?string
+    {
+        $multiplier = (float) ($details['multiplier'] ?? 1);
+        $eventNames = collect($details['events'] ?? [])->pluck('name')->filter()->implode(', ');
+
+        if ($multiplier <= 1 || $eventNames === '') {
+            return null;
+        }
+
+        return sprintf('%s %sx from %s', $label, $this->formatMultiplier($multiplier), $eventNames);
+    }
+
+    private function formatMultiplier(float $multiplier): string
+    {
+        return rtrim(rtrim(number_format($multiplier, 2, '.', ''), '0'), '.');
     }
 
     private function resolveDiscordEmbedColor(?string $hexColor): int

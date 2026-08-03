@@ -18,9 +18,9 @@ return new class extends Migration
 
         Schema::table('game_events', function (Blueprint $table) {
             $table->boolean('xp_multiplier_enabled')->default(false)->after('is_enabled');
-            $table->unsignedTinyInteger('xp_multiplier')->nullable()->after('xp_multiplier_enabled');
+            $table->decimal('xp_multiplier', 4, 2)->nullable()->after('xp_multiplier_enabled');
             $table->boolean('credit_multiplier_enabled')->default(false)->after('xp_multiplier');
-            $table->unsignedTinyInteger('credit_multiplier')->nullable()->after('credit_multiplier_enabled');
+            $table->decimal('credit_multiplier', 4, 2)->nullable()->after('credit_multiplier_enabled');
         });
     }
 

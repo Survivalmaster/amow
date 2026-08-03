@@ -20,15 +20,32 @@ class ActiveGameEventMultipliers
             ->get();
 
         return [
-            'credits' => $this->highestMultiplier($events, 'credit_multiplier_enabled', 'credit_multiplier'),
-            'xp' => $this->highestMultiplier($events, 'xp_multiplier_enabled', 'xp_multiplier'),
+            'credits' => $this->multiplierDetails($events, 'credit_multiplier_enabled', 'credit_multiplier'),
+            'xp' => $this->multiplierDetails($events, 'xp_multiplier_enabled', 'xp_multiplier'),
         ];
     }
 
-    private function highestMultiplier($events, string $enabledKey, string $valueKey): int
+    private function multiplierDetails($events, string $enabledKey, string $valueKey): array
     {
-        return max(1, (int) $events
+        $eligibleEvents = $events
             ->filter(fn (GameEvent $event) => $event->{$enabledKey})
-            ->max(fn (GameEvent $event) => min(5, max(1, (int) $event->{$valueKey}))));
+            ->map(function (GameEvent $event) use ($valueKey) {
+                return [
+                    'name' => $event->title,
+                    'multiplier' => min(5, max(1, (float) $event->{$valueKey})),
+                ];
+            })
+            ->filter(fn (array $event) => $event['multiplier'] > 1)
+            ->values();
+
+        $highest = (float) ($eligibleEvents->max('multiplier') ?? 1);
+
+        return [
+            'multiplier' => max(1, $highest),
+            'events' => $eligibleEvents
+                ->filter(fn (array $event) => $event['multiplier'] === $highest)
+                ->values()
+                ->all(),
+        ];
     }
 }
