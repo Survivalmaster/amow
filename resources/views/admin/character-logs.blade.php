@@ -105,8 +105,14 @@
                                 'rank_change' => ($meta->get('from_rank') || $meta->get('to_rank')) ? (($meta->get('from_rank') ?: 'None').' -> '.($meta->get('to_rank') ?: 'None')) : $transaction->description,
                                 default => $transaction->description,
                             })
+                            @php($workChanges = collect([
+                                $meta->has('xp_earned') ? 'XP +'.number_format((int) $meta->get('xp_earned')) : null,
+                                $meta->has('level_before') && $meta->has('level_after') ? 'Lv '.$meta->get('level_before').' -> '.$meta->get('level_after') : null,
+                                $meta->has('stamina_before') && $meta->has('stamina_after') ? 'Stamina '.$meta->get('stamina_before').' -> '.$meta->get('stamina_after') : null,
+                                $meta->has('credits_before') && $meta->has('credits_after') ? 'Balance '.number_format((int) $meta->get('credits_before')).' -> '.number_format((int) $meta->get('credits_after')) : null,
+                            ])->filter()->implode(' | '))
                             @php($stateChange = match ($transaction->type) {
-                                'work' => 'XP +'.number_format((int) $meta->get('xp_earned', 0)).' | Lv '.($meta->get('level_before', '?')).' -> '.($meta->get('level_after', '?')).' | Stamina '.($meta->get('stamina_before', '?')).' -> '.($meta->get('stamina_after', '?')),
+                                'work' => $workChanges !== '' ? $workChanges : 'Legacy work log - XP and level details were not recorded',
                                 'job_change' => $meta->get('changed_by') ? 'Changed by '.$meta->get('changed_by') : 'Cooldown updated',
                                 'rank_change' => $meta->get('changed_by') ? 'Changed by '.$meta->get('changed_by') : 'Rank updated',
                                 default => $meta->get('credits_after') ? 'Balance '.number_format((int) $meta->get('credits_after')) : 'Balance impact',

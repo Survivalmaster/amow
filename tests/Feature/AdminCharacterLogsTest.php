@@ -42,6 +42,32 @@ test('admin can view a selected character activity timeline', function () {
         ->assertSee('+75');
 });
 
+test('legacy work logs do not show unknown placeholders', function () {
+    $this->seed([
+        PermissionSeeder::class,
+        RankSeeder::class,
+    ]);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $character = createLoggedCharacter();
+    $character->transactions()->create([
+        'type' => 'work',
+        'amount' => 50,
+        'description' => 'Completed a work shift.',
+        'metadata' => null,
+    ]);
+
+    $this
+        ->actingAs($admin)
+        ->get(route('admin.character-logs.index', ['character_id' => $character->id]))
+        ->assertOk()
+        ->assertSee('Legacy work log')
+        ->assertDontSee('Lv ?')
+        ->assertDontSee('Stamina ?');
+});
+
 test('admin character logs are available from singular and plural routes', function () {
     $this->seed([
         PermissionSeeder::class,
