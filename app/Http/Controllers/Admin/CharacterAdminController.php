@@ -8,6 +8,7 @@ use App\Models\Faction;
 use App\Models\GameJob;
 use App\Models\Rank;
 use App\Services\Discord\AdminActionLogger;
+use App\Support\DiscordCharacterRankSynchronizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,8 +16,10 @@ use Illuminate\View\View;
 
 class CharacterAdminController extends Controller
 {
-    public function index(): View
+    public function index(DiscordCharacterRankSynchronizer $rankSynchronizer): View
     {
+        $rankSynchronizer->syncLinkedCharacters();
+
         return view('admin.characters', [
             'characters' => Character::query()->with(['user', 'faction', 'rank', 'currentJob'])->orderBy('name')->get(),
             'factions' => Faction::query()->orderBy('name')->get(),
