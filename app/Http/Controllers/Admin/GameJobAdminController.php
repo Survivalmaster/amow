@@ -14,7 +14,7 @@ class GameJobAdminController extends Controller
     public function index(): View
     {
         return view('admin.jobs', [
-            'jobs' => GameJob::query()->orderBy('required_level')->orderBy('name')->get(),
+            'jobs' => GameJob::query()->withCount('characters')->orderBy('required_level')->orderBy('name')->get(),
         ]);
     }
 
