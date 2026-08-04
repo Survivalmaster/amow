@@ -71,7 +71,7 @@
 
         @if ($selectedCharacter)
             <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
-                <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
+                <div class="grid gap-6 xl:grid-cols-[minmax(20rem,1fr)_minmax(34rem,0.9fr)] xl:items-start">
                     <div>
                         <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">{{ $selectedCharacter->name }}</p>
                         <div class="mt-4 space-y-2 text-sm text-white/65">
@@ -84,8 +84,8 @@
                         </div>
                     </div>
 
-                    <div class="space-y-4">
-                        <div class="grid gap-3 md:grid-cols-2 xl:ml-auto xl:max-w-xl">
+                    <div>
+                        <div class="grid gap-3 md:grid-cols-2">
                             <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                                 <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">Earned</p>
                                 <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['earned_credits'] ?? 0) }}</p>
@@ -103,7 +103,10 @@
                                 <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['total_logs'] ?? 0) }}</p>
                             </div>
                         </div>
+                    </div>
+                </div>
 
+                <div class="mt-6 space-y-4">
                         <div class="grid gap-4 xl:grid-cols-2">
                             <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                                 <div class="flex items-center justify-between text-xs uppercase tracking-[0.14em] text-white/45">
@@ -219,7 +222,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
             </section>
         @endif
