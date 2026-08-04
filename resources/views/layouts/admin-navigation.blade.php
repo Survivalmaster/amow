@@ -22,8 +22,8 @@
     'moderator' => 'fa-gavel',
 ])
 
-<nav x-data="{ open: false }" class="amow-admin-sidebar border-b border-slate-800 bg-[#0f1720] lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
-    <div class="flex items-center justify-between px-4 py-4 lg:hidden">
+<nav x-data="{ open: false }" class="amow-admin-sidebar">
+    <div class="amow-admin-mobile-bar flex items-center justify-between px-4 py-4">
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 font-semibold text-slate-100">
             <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-950">AM</span>
             <span>Admin</span>
@@ -31,7 +31,7 @@
         <button @click="open = ! open" class="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200">Menu</button>
     </div>
 
-    <div class="hidden min-h-0 flex-col lg:flex lg:h-screen">
+    <div class="amow-admin-desktop-nav">
         <div class="border-b border-slate-800 px-5 py-5">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
                 <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-950">AM</span>
@@ -61,7 +61,7 @@
         </div>
     </div>
 
-    <div x-show="open" x-cloak class="border-t border-slate-800 px-3 py-4 lg:hidden">
+    <div x-show="open" x-cloak class="amow-admin-mobile-menu border-t border-slate-800 px-3 py-4">
         @include('layouts.partials.admin-nav-links', ['adminNavUser' => $adminNavUser, 'adminSections' => $adminSections, 'adminIcons' => $adminIcons])
         <div class="mt-4 border-t border-slate-800 pt-4">
             <a href="{{ route('lobby') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400">

@@ -1,3 +1,5 @@
+@php($isAdminArea = request()->routeIs('admin.*'))
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -10,6 +12,209 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=rajdhani:500,600,700|teko:500,600,700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        @if ($isAdminArea)
+            <style>
+                :root {
+                    color-scheme: dark;
+                }
+
+                body.amow-admin-shell {
+                    margin: 0;
+                    background: #0b0f14 !important;
+                    color: #e5e7eb !important;
+                    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+                }
+
+                .amow-admin-root {
+                    min-height: 100vh;
+                    background: #0b0f14;
+                }
+
+                .amow-admin-layout {
+                    min-height: 100vh;
+                }
+
+                @media (min-width: 1024px) {
+                    .amow-admin-layout {
+                        display: grid;
+                        grid-template-columns: 280px minmax(0, 1fr);
+                    }
+                }
+
+                .amow-admin-sidebar {
+                    background: #111827 !important;
+                    border-color: #1f2937 !important;
+                }
+
+                @media (min-width: 1024px) {
+                    .amow-admin-sidebar {
+                        position: sticky;
+                        top: 0;
+                        height: 100vh;
+                        border-right: 1px solid #1f2937;
+                    }
+
+                    .amow-admin-mobile-bar,
+                    .amow-admin-mobile-menu {
+                        display: none !important;
+                    }
+
+                    .amow-admin-desktop-nav {
+                        display: flex !important;
+                    }
+                }
+
+                @media (max-width: 1023px) {
+                    .amow-admin-desktop-nav {
+                        display: none !important;
+                    }
+                }
+
+                .amow-admin-desktop-nav {
+                    display: none;
+                    min-height: 100%;
+                    flex-direction: column;
+                }
+
+                .amow-admin-main-header {
+                    border-bottom: 1px solid #1f2937;
+                    background: #0f172a;
+                    padding: 1.25rem 2rem;
+                }
+
+                .amow-admin-header {
+                    max-width: 120rem;
+                    margin: 0 auto;
+                }
+
+                .amow-admin-header p:first-child,
+                .amow-admin-shell h1 {
+                    color: #f8fafc !important;
+                    font-family: Inter, ui-sans-serif, system-ui, sans-serif !important;
+                    font-size: clamp(1.6rem, 2.2vw, 2.25rem) !important;
+                    font-weight: 750 !important;
+                    letter-spacing: -0.01em !important;
+                    line-height: 1.1 !important;
+                    text-transform: none !important;
+                }
+
+                .amow-admin-main {
+                    max-width: 120rem;
+                    margin: 0 auto;
+                    padding: 1.5rem 2rem 3rem;
+                }
+
+                .amow-admin-side-link {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    border-radius: 0.5rem;
+                    padding: 0.625rem 0.75rem;
+                    color: #9ca3af !important;
+                    font-size: 0.875rem;
+                    font-weight: 650;
+                    text-decoration: none;
+                    transition: background-color 160ms ease, color 160ms ease;
+                }
+
+                .amow-admin-side-link:hover {
+                    background: #1f2937;
+                    color: #f9fafb !important;
+                }
+
+                .amow-admin-side-link.is-active {
+                    background: #2563eb;
+                    color: #ffffff !important;
+                }
+
+                .amow-admin-side-link i {
+                    width: 1.25rem;
+                    text-align: center;
+                    color: currentColor !important;
+                }
+
+                .amow-admin-shell main section,
+                .amow-admin-shell main > div > section,
+                .amow-admin-shell [class*="rounded-[2rem]"],
+                .amow-admin-shell [class*="rounded-[1.5rem]"] {
+                    border-color: #263244 !important;
+                    border-radius: 0.75rem !important;
+                    background: #111827 !important;
+                    box-shadow: none !important;
+                    backdrop-filter: none !important;
+                }
+
+                .amow-admin-shell input,
+                .amow-admin-shell select,
+                .amow-admin-shell textarea {
+                    border-color: #374151 !important;
+                    border-radius: 0.5rem !important;
+                    background: #0b0f14 !important;
+                    color: #f3f4f6 !important;
+                    box-shadow: none !important;
+                }
+
+                .amow-admin-shell input:focus,
+                .amow-admin-shell select:focus,
+                .amow-admin-shell textarea:focus {
+                    border-color: #3b82f6 !important;
+                    outline: 2px solid rgba(59, 130, 246, 0.24) !important;
+                }
+
+                .amow-admin-shell thead {
+                    background: #0b0f14 !important;
+                    color: #9ca3af !important;
+                }
+
+                .amow-admin-shell tbody tr {
+                    border-color: #1f2937 !important;
+                }
+
+                .amow-admin-shell tbody tr:hover {
+                    background: #172033 !important;
+                }
+
+                .amow-admin-shell .rounded-full {
+                    border-radius: 0.5rem !important;
+                }
+
+                .amow-admin-shell button[class*="bg-[#7ead59]"],
+                .amow-admin-shell a[class*="bg-[#7ead59]"] {
+                    background: #2563eb !important;
+                    color: #ffffff !important;
+                }
+
+                .amow-admin-shell button[class*="bg-[#c2a84f]"],
+                .amow-admin-shell a[class*="bg-[#c2a84f]"] {
+                    background: #475569 !important;
+                    color: #ffffff !important;
+                }
+
+                .amow-admin-shell [class*="bg-white/5"],
+                .amow-admin-shell [class*="bg-black/20"],
+                .amow-admin-shell [class*="bg-black/25"],
+                .amow-admin-shell [class*="bg-black/30"],
+                .amow-admin-shell [class*="bg-[#7ead59]/"],
+                .amow-admin-shell [class*="bg-[#c2a84f]/"],
+                .amow-admin-shell [class*="bg-[#c65b3f]/"] {
+                    background-color: #111827 !important;
+                }
+
+                .amow-admin-shell [class*="text-[#7ead59]"],
+                .amow-admin-shell [class*="text-[#d7edc7]"],
+                .amow-admin-shell [class*="text-[#f4d77a]"],
+                .amow-admin-shell [class*="text-[#f0b29f]"],
+                .amow-admin-shell [class*="text-[#f4ecd0]"] {
+                    color: #e5e7eb !important;
+                }
+
+                .amow-admin-shell [class*="border-[#7ead59]"],
+                .amow-admin-shell [class*="border-[#c2a84f]"],
+                .amow-admin-shell [class*="border-[#c65b3f]"] {
+                    border-color: #374151 !important;
+                }
+            </style>
+        @endif
         @stack('styles')
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -19,8 +224,6 @@
             <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         @endif
     </head>
-    @php($isAdminArea = request()->routeIs('admin.*'))
-
     <body
         @auth
             @if (auth()->user()->character)
@@ -34,8 +237,8 @@
     >
         @php($authUser = auth()->user()?->fresh())
         @php($chatCharacter = $authUser?->character?->loadMissing(['user.permissions']))
-        <div class="{{ $isAdminArea ? 'min-h-screen bg-[#0b1117]' : 'min-h-screen bg-[rgba(4,8,6,0.35)]' }}">
-            <div class="{{ $isAdminArea ? 'lg:grid lg:grid-cols-[280px_minmax(0,1fr)]' : 'lg:grid lg:grid-cols-[320px_minmax(0,1fr)]' }}">
+        <div class="{{ $isAdminArea ? 'amow-admin-root' : 'min-h-screen bg-[rgba(4,8,6,0.35)]' }}">
+            <div class="{{ $isAdminArea ? 'amow-admin-layout' : 'lg:grid lg:grid-cols-[320px_minmax(0,1fr)]' }}">
                 @if ($isAdminArea)
                     @include('layouts.admin-navigation')
                 @else
@@ -44,7 +247,7 @@
 
                 <div class="min-w-0">
                     @isset($header)
-                        <header class="{{ $isAdminArea ? 'border-b border-slate-800 bg-[#0f1720] px-4 py-5 sm:px-6 lg:px-8' : 'px-4 pt-8 sm:px-6 lg:px-8' }}">
+                        <header class="{{ $isAdminArea ? 'amow-admin-main-header' : 'px-4 pt-8 sm:px-6 lg:px-8' }}">
                             <div class="{{ $isAdminArea ? 'amow-admin-header mx-auto max-w-[120rem]' : 'rounded-[2rem] border border-white/10 bg-white/5 px-6 py-5 shadow-2xl shadow-black/30 backdrop-blur' }}">
                                 {{ $header }}
                             </div>
@@ -71,7 +274,7 @@
                         </div>
                     @endif
 
-                    <main class="{{ $isAdminArea ? 'mx-auto max-w-[120rem] px-4 py-6 sm:px-6 lg:px-8' : 'px-4 py-8 sm:px-6 lg:px-8' }}">
+                    <main class="{{ $isAdminArea ? 'amow-admin-main' : 'px-4 py-8 sm:px-6 lg:px-8' }}">
                         @if (session('status'))
                             <div class="{{ $isAdminArea ? 'mb-5 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100' : 'mb-6 rounded-2xl border border-[#7ead59]/35 bg-[#7ead59]/10 px-4 py-3 text-sm' }}">
                                 {{ session('status') }}
