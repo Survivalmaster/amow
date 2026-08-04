@@ -13,6 +13,7 @@ class GameEvent extends Model
         'title',
         'body',
         'is_enabled',
+        'ends_at',
         'xp_multiplier_enabled',
         'xp_multiplier',
         'credit_multiplier_enabled',
@@ -23,6 +24,7 @@ class GameEvent extends Model
     {
         return [
             'is_enabled' => 'boolean',
+            'ends_at' => 'datetime',
             'xp_multiplier_enabled' => 'boolean',
             'xp_multiplier' => 'float',
             'credit_multiplier_enabled' => 'boolean',
@@ -38,5 +40,20 @@ class GameEvent extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    public function isActive(): bool
+    {
+        return $this->is_enabled && ($this->ends_at === null || $this->ends_at->isFuture());
+    }
+
+    public function scopeActive($query)
+    {
+        return $query
+            ->where('is_enabled', true)
+            ->where(function ($query) {
+                $query->whereNull('ends_at')
+                    ->orWhere('ends_at', '>', now());
+            });
     }
 }

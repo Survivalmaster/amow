@@ -12,7 +12,7 @@ class ActiveGameEventMultipliers
         $character->loadMissing('faction');
 
         $events = GameEvent::query()
-            ->where('is_enabled', true)
+            ->active()
             ->where(function ($query) use ($character) {
                 $query->whereNull('faction_id')
                     ->orWhere('faction_id', $character->faction_id);

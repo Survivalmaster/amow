@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
                 $characterFactionId = auth()->user()?->character?->faction_id;
 
                 $activeEvents = GameEvent::query()
-                    ->where('is_enabled', true)
+                    ->active()
                     ->where(function ($query) use ($characterFactionId) {
                         $query->whereNull('faction_id');
 

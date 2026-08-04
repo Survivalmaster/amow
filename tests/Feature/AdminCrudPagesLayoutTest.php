@@ -3,6 +3,7 @@
 use App\Models\Character;
 use App\Models\City;
 use App\Models\Faction;
+use App\Models\GameEvent;
 use App\Models\GameJob;
 use App\Models\Location;
 use App\Models\Permission;
@@ -80,6 +81,18 @@ test('main admin crud pages render with compact management controls', function (
         'armor_points' => 0,
     ]);
 
+    GameEvent::query()->create([
+        'created_by_user_id' => $admin->id,
+        'title' => 'Community Week',
+        'body' => 'A test event.',
+        'is_enabled' => true,
+        'ends_at' => now()->addDay(),
+        'xp_multiplier_enabled' => true,
+        'xp_multiplier' => 1.5,
+        'credit_multiplier_enabled' => true,
+        'credit_multiplier' => 1.5,
+    ]);
+
     foreach ([
         route('admin.characters.index') => 'Character Logs',
         route('admin.users.index') => 'Search',
@@ -88,6 +101,7 @@ test('main admin crud pages render with compact management controls', function (
         route('admin.locations.index') => 'Create Location',
         route('admin.items.index') => 'Create Item',
         route('admin.permissions.index') => 'Create Permission',
+        route('admin.game-master.index') => 'Create Event',
     ] as $route => $expectedText) {
         $this
             ->actingAs($admin)

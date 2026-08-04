@@ -146,6 +146,43 @@ test('active game master events multiply work credits and experience', function 
     });
 });
 
+test('expired game master events do not multiply work rewards', function () {
+    config()->set('services.discord.bot_token', 'test-token');
+    Http::fake([
+        'https://discord.com/api/v10/channels/1483329516796379136/messages' => Http::response(['id' => '123'], 200),
+    ]);
+
+    $user = User::factory()->create();
+    $character = createCharacterForUser($user);
+    $character->currentJob()->update([
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'experience_reward' => 8,
+    ]);
+    GameEvent::query()->create([
+        'created_by_user_id' => $user->id,
+        'title' => 'Expired Surge',
+        'body' => 'This should no longer apply.',
+        'is_enabled' => true,
+        'ends_at' => now()->subMinute(),
+        'xp_multiplier_enabled' => true,
+        'xp_multiplier' => 5,
+        'credit_multiplier_enabled' => true,
+        'credit_multiplier' => 5,
+    ]);
+    $location = Location::query()->where('slug', 'go-to-work')->firstOrFail();
+
+    $this->actingAs($user)
+        ->post(route('work.store', $location))
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $character->refresh();
+
+    expect($character->plastic_credits)->toBe(110);
+    expect($character->experience_points)->toBe(8);
+});
+
 test('character state endpoint returns live job and progression data', function () {
     $user = User::factory()->create();
     $character = createCharacterForUser($user);
