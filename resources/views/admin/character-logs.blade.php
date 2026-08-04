@@ -303,12 +303,14 @@
                                 'stock_sell' => 'Stock Sold',
                                 'job_change' => 'Job Change',
                                 'rank_change' => 'Rank Change',
+                                'refund' => 'Refund',
                                 default => str($transaction->type)->replace('_', ' ')->title(),
                             })
                             @php($eventClass = match ($transaction->type) {
                                 'work' => 'border-[#7ead59]/30 bg-[#7ead59]/10 text-[#d7edc7]',
                                 'item_purchase', 'licence_purchase', 'stock_buy' => 'border-[#c2a84f]/30 bg-[#c2a84f]/10 text-[#f4d77a]',
                                 'stock_sell' => 'border-[#7ec6ff]/30 bg-[#7ec6ff]/10 text-[#b9ddff]',
+                                'refund' => 'border-[#7ead59]/30 bg-[#7ead59]/10 text-[#d7edc7]',
                                 'job_change', 'rank_change' => 'border-white/15 bg-white/8 text-white',
                                 default => 'border-white/10 bg-black/20 text-white/65',
                             })
@@ -316,6 +318,7 @@
                                 'work' => ($meta->get('job') ? $meta->get('job').' shift' : $transaction->description),
                                 'job_change' => ($meta->get('from_job') || $meta->get('to_job')) ? (($meta->get('from_job') ?: 'None').' -> '.($meta->get('to_job') ?: 'None')) : $transaction->description,
                                 'rank_change' => ($meta->get('from_rank') || $meta->get('to_rank')) ? (($meta->get('from_rank') ?: 'None').' -> '.($meta->get('to_rank') ?: 'None')) : $transaction->description,
+                                'refund' => $meta->get('reason') ?: $transaction->description,
                                 default => $transaction->description,
                             })
                             @php($workChanges = collect([
@@ -335,6 +338,12 @@
                                 'work' => $workChanges !== '' ? trim($workChanges.($bonusTags !== '' ? ' | Bonus '.$bonusTags : '')) : 'Legacy work log - XP and level details were not recorded',
                                 'job_change' => $meta->get('changed_by') ? 'Changed by '.$meta->get('changed_by') : 'Cooldown updated',
                                 'rank_change' => $meta->get('changed_by') ? 'Changed by '.$meta->get('changed_by') : 'Rank updated',
+                                'refund' => collect([
+                                    $meta->get('refund_xp') ? 'XP +'.number_format((int) $meta->get('refund_xp')) : null,
+                                    $meta->has('level_before') && $meta->has('level_after') ? 'Lv '.$meta->get('level_before').' -> '.$meta->get('level_after') : null,
+                                    $meta->has('credits_before') && $meta->has('credits_after') ? 'Balance '.number_format((int) $meta->get('credits_before')).' -> '.number_format((int) $meta->get('credits_after')) : null,
+                                    $meta->get('admin') ? 'Issued by '.$meta->get('admin') : null,
+                                ])->filter()->implode(' | '),
                                 default => $meta->get('credits_after') ? 'Balance '.number_format((int) $meta->get('credits_after')) : 'Balance impact',
                             })
                             <tr class="transition hover:bg-white/[0.035]">

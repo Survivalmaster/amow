@@ -101,11 +101,24 @@
                 <div class="mt-4 space-y-3">
                     @foreach ($character->transactions as $transaction)
                         <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
+                            @php($meta = collect($transaction->metadata ?? []))
                             <div class="flex items-center justify-between gap-4">
                                 <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ str_replace('_', ' ', $transaction->type) }}</p>
                                 <p class="font-['Teko'] text-2xl uppercase {{ $transaction->amount >= 0 ? 'text-[#7ead59]' : 'text-[#c65b3f]' }}">{{ $transaction->amount >= 0 ? '+' : '' }}{{ number_format($transaction->amount) }}</p>
                             </div>
                             <p class="text-sm text-white/70">{{ $transaction->description }}</p>
+                            @if ($transaction->type === 'refund')
+                                <p class="mt-2 text-xs uppercase tracking-[0.16em] text-white/45">
+                                    {{ collect([
+                                        $meta->get('refund_xp') ? 'XP +'.number_format((int) $meta->get('refund_xp')) : null,
+                                        $meta->has('level_before') && $meta->has('level_after') ? 'Lv '.$meta->get('level_before').' -> '.$meta->get('level_after') : null,
+                                        $meta->has('credits_before') && $meta->has('credits_after') ? 'Credits '.number_format((int) $meta->get('credits_before')).' -> '.number_format((int) $meta->get('credits_after')) : null,
+                                    ])->filter()->implode(' | ') }}
+                                </p>
+                                @if ($meta->get('reason'))
+                                    <p class="mt-1 text-xs text-white/50">Reason: {{ $meta->get('reason') }}</p>
+                                @endif
+                            @endif
                         </div>
                     @endforeach
                 </div>

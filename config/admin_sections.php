@@ -4,6 +4,7 @@ return [
     'overview' => ['label' => 'Overview', 'route' => 'admin.dashboard'],
     'users' => ['label' => 'Users', 'route' => 'admin.users.index'],
     'characters' => ['label' => 'Characters', 'route' => 'admin.characters.index'],
+    'refunds' => ['label' => 'Refunds', 'route' => 'admin.refunds.index'],
     'factions' => ['label' => 'Factions', 'route' => 'admin.factions.index'],
     'cities' => ['label' => 'Cities', 'route' => 'admin.cities.index'],
     'locations' => ['label' => 'Locations', 'route' => 'admin.locations.index'],

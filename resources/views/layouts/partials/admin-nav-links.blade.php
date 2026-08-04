@@ -6,6 +6,7 @@
                 ['label' => 'Overview', 'route' => 'admin.dashboard', 'match' => ['admin.dashboard'], 'icon' => 'fa-solid fa-chart-line', 'access' => true],
                 ['section' => 'users'],
                 ['section' => 'characters'],
+                ['section' => 'refunds'],
                 ['label' => 'Character Logs', 'route' => 'admin.character-logs.index', 'match' => ['admin.character-log.*', 'admin.character-logs.*'], 'icon' => 'fa-solid fa-clock-rotate-left', 'access' => $adminNavUser->canAccessAdminSection('characters')],
                 ['section' => 'permissions'],
             ],

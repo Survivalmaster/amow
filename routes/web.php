@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ModeratorAdminController;
 use App\Http\Controllers\Admin\NationRequisitionAdminController;
 use App\Http\Controllers\Admin\PermissionAdminController;
 use App\Http\Controllers\Admin\GameMasterAdminController;
+use App\Http\Controllers\Admin\RefundAdminController;
 use App\Http\Controllers\Admin\StockMarketAdminController;
 use App\Http\Controllers\Admin\SkirmishAdminController;
 use App\Http\Controllers\Admin\UnitAdminController;
@@ -109,6 +110,8 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::get('/characters', [CharacterAdminController::class, 'index'])->middleware('admin.section:characters')->name('characters.index');
         Route::patch('/characters/{character}', [CharacterAdminController::class, 'update'])->middleware('admin.section:characters')->name('characters.update');
         Route::delete('/characters/{character}', [CharacterAdminController::class, 'destroy'])->middleware('admin.section:characters')->name('characters.destroy');
+        Route::get('/refunds', [RefundAdminController::class, 'index'])->middleware('admin.section:refunds')->name('refunds.index');
+        Route::post('/refunds', [RefundAdminController::class, 'store'])->middleware('admin.section:refunds')->name('refunds.store');
         Route::get('/character-log', [CharacterLogAdminController::class, 'index'])->middleware('admin.section:characters')->name('character-log.index');
         Route::get('/character-logs', [CharacterLogAdminController::class, 'index'])->middleware('admin.section:characters')->name('character-logs.index');
         Route::get('/factions', [FactionAdminController::class, 'index'])->middleware('admin.section:factions')->name('factions.index');

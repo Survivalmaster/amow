@@ -4,6 +4,7 @@
     'dashboard' => 'fa-chart-line',
     'users' => 'fa-users',
     'characters' => 'fa-id-card',
+    'refunds' => 'fa-rotate-left',
     'factions' => 'fa-flag',
     'cities' => 'fa-city',
     'locations' => 'fa-location-dot',

@@ -21,6 +21,7 @@ class CharacterLogAdminController extends Controller
         'stock_sell',
         'job_change',
         'rank_change',
+        'refund',
     ];
 
     public function index(Request $request): View
@@ -92,7 +93,9 @@ class CharacterLogAdminController extends Controller
         $earnedCredits = (int) $logs->where('amount', '>', 0)->sum('amount');
         $spentCredits = abs((int) $logs->where('amount', '<', 0)->sum('amount'));
         $workLogs = $logs->where('type', 'work');
-        $xpEarned = (int) $workLogs->sum(fn ($transaction) => (int) data_get($transaction->metadata, 'xp_earned', 0));
+        $refundLogs = $logs->where('type', 'refund');
+        $xpEarned = (int) $workLogs->sum(fn ($transaction) => (int) data_get($transaction->metadata, 'xp_earned', 0))
+            + (int) $refundLogs->sum(fn ($transaction) => (int) data_get($transaction->metadata, 'refund_xp', 0));
         $staminaSpent = (int) $workLogs->sum(function ($transaction) {
             $before = data_get($transaction->metadata, 'stamina_before');
             $after = data_get($transaction->metadata, 'stamina_after');
@@ -114,6 +117,7 @@ class CharacterLogAdminController extends Controller
             'purchase_count' => (int) (($counts['item_purchase'] ?? 0) + ($counts['licence_purchase'] ?? 0)),
             'market_count' => (int) (($counts['stock_buy'] ?? 0) + ($counts['stock_sell'] ?? 0)),
             'change_count' => (int) (($counts['job_change'] ?? 0) + ($counts['rank_change'] ?? 0)),
+            'refund_count' => (int) ($counts['refund'] ?? 0),
             'earned_credits' => $earnedCredits,
             'spent_credits' => $spentCredits,
             'net_credits' => $earnedCredits - $spentCredits,
