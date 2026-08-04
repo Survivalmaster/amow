@@ -209,7 +209,18 @@ export function bootTerritoryMap(root) {
         const hex = payload?.data?.id ? payload.data : payload;
 
         if (!hex?.id) {
-            throw new Error(payload?.message || 'Tile saved, but the server did not return the updated tile data.');
+            return null;
+        }
+
+        return hex;
+    };
+
+    const refreshedHex = async (hexId) => {
+        const payload = await jsonFetch(`/api/map/hexes/${hexId}`);
+        const hex = savedHexFrom(payload);
+
+        if (!hex?.id) {
+            throw new Error(payload?.message || 'Tile saved, but the updated tile could not be reloaded.');
         }
 
         return hex;
@@ -235,7 +246,7 @@ export function bootTerritoryMap(root) {
                 headers: { 'X-CSRF-TOKEN': csrfToken },
                 body: JSON.stringify(payload),
             });
-            upsertHex(savedHexFrom(data));
+            upsertHex(savedHexFrom(data) || await refreshedHex(hex.id));
             setStatus('Tile saved.', 'success');
         } catch (error) {
             setStatus(error.message, 'error');
@@ -269,7 +280,7 @@ export function bootTerritoryMap(root) {
                     headers: { 'X-CSRF-TOKEN': csrfToken },
                     body: JSON.stringify({ faction_id: editor.faction_id.value }),
                 });
-                upsertHex(savedHexFrom(data));
+                upsertHex(savedHexFrom(data) || await refreshedHex(selectedHex.id));
                 setStatus('Tile claimed.', 'success');
             } catch (error) {
                 setStatus(error.message, 'error');
@@ -283,7 +294,7 @@ export function bootTerritoryMap(root) {
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': csrfToken },
                 });
-                upsertHex(savedHexFrom(data));
+                upsertHex(savedHexFrom(data) || await refreshedHex(selectedHex.id));
                 setStatus('Claim removed.', 'success');
             } catch (error) {
                 setStatus(error.message, 'error');
