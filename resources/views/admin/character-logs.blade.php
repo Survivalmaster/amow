@@ -73,19 +73,19 @@
             <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
                 <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
                     <div>
-                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">{{ $selectedCharacter->name }}</p>
-                    <div class="mt-4 space-y-2 text-sm text-white/65">
-                        <p><span class="text-white/40">User:</span> {{ $canViewPlayerEmails ? ($selectedCharacter->user?->email ?? 'Unknown') : ($selectedCharacter->user?->name ?? 'User #'.$selectedCharacter->user_id) }}</p>
-                        <p><span class="text-white/40">Discord:</span> {{ $selectedCharacter->user?->discord_username ?: 'Not linked' }}</p>
-                        <p><span class="text-white/40">Faction:</span> {{ $selectedCharacter->faction?->name ?? 'Unknown' }}</p>
-                        <p><span class="text-white/40">Rank:</span> {{ $selectedCharacter->rank?->name ?? 'Unknown' }}</p>
-                        <p><span class="text-white/40">Job:</span> {{ $selectedCharacter->currentJob?->name ?? $selectedCharacter->starting_occupation }}</p>
-                        <p><span class="text-white/40">Created:</span> {{ $selectedCharacter->created_at?->format('d M Y H:i') }}</p>
-                    </div>
+                        <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">{{ $selectedCharacter->name }}</p>
+                        <div class="mt-4 space-y-2 text-sm text-white/65">
+                            <p><span class="text-white/40">User:</span> {{ $canViewPlayerEmails ? ($selectedCharacter->user?->email ?? 'Unknown') : ($selectedCharacter->user?->name ?? 'User #'.$selectedCharacter->user_id) }}</p>
+                            <p><span class="text-white/40">Discord:</span> {{ $selectedCharacter->user?->discord_username ?: 'Not linked' }}</p>
+                            <p><span class="text-white/40">Faction:</span> {{ $selectedCharacter->faction?->name ?? 'Unknown' }}</p>
+                            <p><span class="text-white/40">Rank:</span> {{ $selectedCharacter->rank?->name ?? 'Unknown' }}</p>
+                            <p><span class="text-white/40">Job:</span> {{ $selectedCharacter->currentJob?->name ?? $selectedCharacter->starting_occupation }}</p>
+                            <p><span class="text-white/40">Created:</span> {{ $selectedCharacter->created_at?->format('d M Y H:i') }}</p>
+                        </div>
                     </div>
 
                     <div class="space-y-4">
-                        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        <div class="grid gap-3 md:grid-cols-2 xl:ml-auto xl:max-w-xl">
                             <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                                 <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">Earned</p>
                                 <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['earned_credits'] ?? 0) }}</p>
@@ -154,8 +154,8 @@
                             <div class="mt-4 flex h-28 items-end gap-2">
                                 @foreach (($logStats['activity_days'] ?? collect()) as $day)
                                     <div class="flex flex-1 flex-col items-center gap-2">
-                                        <div class="relative flex h-20 w-full items-end rounded bg-white/5 px-1">
-                                            <span class="absolute left-1/2 top-2 -translate-x-1/2 text-xs font-semibold text-white">{{ number_format($day['count']) }}</span>
+                                        <div class="relative flex h-20 w-full items-end rounded bg-white/5 px-1 pb-1">
+                                            <span class="absolute right-2 top-2 rounded bg-slate-950/75 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white">{{ number_format($day['count']) }}</span>
                                             @php($barColor = sprintf('hsl(%d 70%% 45%%)', (int) round(($day['percent'] / 100) * 130)))
                                             <div class="w-full rounded" style="height: {{ max(5, $day['percent']) }}%; background: {{ $barColor }};"></div>
                                         </div>
@@ -230,6 +230,18 @@
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">Audit Table</p>
                     <p class="text-xs uppercase tracking-[0.18em] text-white/38">Work, purchases, sales, rank changes, and job changes</p>
                 </div>
+                @if ($selectedCharacter)
+                    <form method="GET" action="{{ route('admin.character-logs.index') }}" class="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-white/45">
+                        <input type="hidden" name="character_id" value="{{ $selectedCharacter->id }}">
+                        <label for="character-log-per-page">Rows</label>
+                        <select id="character-log-per-page" name="per_page" class="{{ $fieldClass }} py-2" onchange="this.form.submit()">
+                            @foreach ($perPageOptions as $option)
+                                <option value="{{ $option }}" @selected((string) $perPage === (string) $option)>{{ $option }}</option>
+                            @endforeach
+                            <option value="max" @selected($perPage === 'max')>Max</option>
+                        </select>
+                    </form>
+                @endif
             </div>
 
             <div class="overflow-x-auto">

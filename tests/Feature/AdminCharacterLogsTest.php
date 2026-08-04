@@ -68,6 +68,46 @@ test('legacy work logs do not show unknown placeholders', function () {
         ->assertDontSee('Stamina ?');
 });
 
+test('character audit table defaults to ten rows and supports max option', function () {
+    $this->seed([
+        PermissionSeeder::class,
+        RankSeeder::class,
+    ]);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $character = createLoggedCharacter();
+
+    foreach (range(1, 12) as $index) {
+        $transaction = $character->transactions()->create([
+            'type' => 'work',
+            'amount' => $index,
+            'description' => "Completed test shift {$index}.",
+            'metadata' => ['xp_earned' => 1],
+        ]);
+        $transaction->forceFill([
+            'created_at' => now()->addMinutes($index),
+            'updated_at' => now()->addMinutes($index),
+        ])->save();
+    }
+
+    $this
+        ->actingAs($admin)
+        ->get(route('admin.character-logs.index', ['character_id' => $character->id]))
+        ->assertOk()
+        ->assertSee('Completed test shift 12.')
+        ->assertSee('Completed test shift 3.')
+        ->assertDontSee('Completed test shift 2.');
+
+    $this
+        ->actingAs($admin)
+        ->get(route('admin.character-logs.index', ['character_id' => $character->id, 'per_page' => 'max']))
+        ->assertOk()
+        ->assertSee('Completed test shift 12.')
+        ->assertSee('Completed test shift 1.');
+});
+
 test('admin character logs are available from singular and plural routes', function () {
     $this->seed([
         PermissionSeeder::class,

@@ -10,6 +10,9 @@ use Illuminate\View\View;
 
 class CharacterLogAdminController extends Controller
 {
+    private const PER_PAGE_OPTIONS = [10, 50, 100];
+    private const MAX_PER_PAGE = 500;
+
     private const VISIBLE_LOG_TYPES = [
         'work',
         'item_purchase',
@@ -30,6 +33,7 @@ class CharacterLogAdminController extends Controller
         $selectedCharacter = null;
         $transactions = null;
         $logStats = null;
+        $perPage = $this->resolvePerPage($request);
 
         if ($request->integer('character_id')) {
             $selectedCharacter = $characters->firstWhere('id', $request->integer('character_id'));
@@ -54,7 +58,7 @@ class CharacterLogAdminController extends Controller
 
             $transactions = (clone $baseTransactionsQuery)
                 ->latest()
-                ->paginate(50)
+                ->paginate($perPage)
                 ->withQueryString();
         }
 
@@ -63,7 +67,23 @@ class CharacterLogAdminController extends Controller
             'selectedCharacter' => $selectedCharacter,
             'transactions' => $transactions,
             'logStats' => $logStats,
+            'perPage' => $request->query('per_page', '10'),
+            'perPageOptions' => self::PER_PAGE_OPTIONS,
+            'maxPerPage' => self::MAX_PER_PAGE,
         ]);
+    }
+
+    private function resolvePerPage(Request $request): int
+    {
+        $requested = $request->query('per_page', 10);
+
+        if ($requested === 'max') {
+            return self::MAX_PER_PAGE;
+        }
+
+        $requested = (int) $requested;
+
+        return in_array($requested, self::PER_PAGE_OPTIONS, true) ? $requested : 10;
     }
 
     private function buildLogStats(Character $character, Collection $logs): array
