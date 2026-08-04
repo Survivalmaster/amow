@@ -1,47 +1,58 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">Faction Store</p>
+            <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">Marketplace</p>
             <p class="text-sm uppercase tracking-[0.22em] text-white/55">{{ number_format($character->plastic_credits) }} Plastic Credits available</p>
         </div>
     </x-slot>
 
-    <div class="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-        <section class="space-y-6">
-            <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
-                <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Licences</p>
-                <p class="mt-2 text-sm text-white/60">Land is now the unlock for your personal plot. Once purchased, you can place tents and other buildings on a 10x10 grid.</p>
-                <div class="mt-5 space-y-4">
-                    @foreach ($licences as $licence)
-                        @php($owned = $character->licences->contains('id', $licence->id))
-                        <form method="POST" action="{{ route('store.purchase') }}" class="rounded-3xl border border-white/10 bg-black/20 p-4">
-                            @csrf
-                            <input type="hidden" name="purchase_type" value="licence">
-                            <input type="hidden" name="id" value="{{ $licence->id }}">
-                            <div class="flex items-start justify-between gap-4">
-                                <div>
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ $licence->name }}</p>
-                                        @if ($licence->slug === 'land')
-                                            <span class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Unlocks Land</span>
-                                        @endif
-                                        @if ($owned)
-                                            <span class="rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f4ecd0]">Owned</span>
-                                        @endif
-                                    </div>
-                                    <p class="mt-2 text-sm text-white/70">{{ $licence->description }}</p>
-                                    <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $licence->requiredRank?->name ?? 'No rank requirement' }}</p>
+    <div class="mb-6 flex flex-wrap gap-2">
+        <a href="{{ route('store.index') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] {{ $marketplaceSection === 'store' ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#d7edc7]' : 'border-white/10 bg-white/5 text-white/70' }}">Store</a>
+        <a href="{{ route('store.licences') }}" class="rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] {{ $marketplaceSection === 'licences' ? 'border-[#7ead59]/40 bg-[#7ead59]/15 text-[#d7edc7]' : 'border-white/10 bg-white/5 text-white/70' }}">License Center</a>
+        <span class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/35">
+            Player Businesses
+            <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] text-white/40">Coming Soon</span>
+        </span>
+    </div>
+
+    @if ($marketplaceSection === 'licences')
+        <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
+            <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">License Center</p>
+            <p class="mt-2 text-sm text-white/60">Buy access licences, ownership permits, and unlocks for your character.</p>
+            <div class="mt-5 space-y-4">
+                @foreach ($licences as $licence)
+                    @php($owned = $character->licences->contains('id', $licence->id))
+                    <form method="POST" action="{{ route('store.purchase') }}" class="rounded-3xl border border-white/10 bg-black/20 p-4">
+                        @csrf
+                        <input type="hidden" name="purchase_type" value="licence">
+                        <input type="hidden" name="id" value="{{ $licence->id }}">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">{{ $licence->name }}</p>
+                                    @if ($licence->slug === 'land')
+                                        <span class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Unlocks Land</span>
+                                    @endif
+                                    @if ($owned)
+                                        <span class="rounded-full border border-[#c2a84f]/35 bg-[#c2a84f]/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#f4ecd0]">Owned</span>
+                                    @endif
                                 </div>
-                                <div class="text-right">
-                                    <p class="font-['Teko'] text-3xl uppercase text-[#7ead59]">{{ number_format($licence->cost) }}</p>
-                                    <p class="text-xs uppercase tracking-[0.22em] text-white/45">Credits</p>
-                                </div>
+                                <p class="mt-2 text-sm text-white/70">{{ $licence->description }}</p>
+                                <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $licence->requiredRank?->name ?? 'No rank requirement' }}</p>
                             </div>
-                            <button class="mt-4 rounded-full bg-[#c2a84f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]" @disabled($owned)>Purchase Licence</button>
-                        </form>
-                    @endforeach
-                </div>
+                            <div class="text-right">
+                                <p class="font-['Teko'] text-3xl uppercase text-[#7ead59]">{{ number_format($licence->cost) }}</p>
+                                <p class="text-xs uppercase tracking-[0.22em] text-white/45">Credits</p>
+                            </div>
+                        </div>
+                        <button class="mt-4 rounded-full bg-[#c2a84f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]" @disabled($owned)>Purchase Licence</button>
+                    </form>
+                @endforeach
             </div>
+        </section>
+    @else
+        <div class="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
+            <section class="space-y-6">
 
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Buildings</p>
@@ -131,5 +142,6 @@
                 </div>
             </div>
         </section>
-    </div>
+        </div>
+    @endif
 </x-app-layout>

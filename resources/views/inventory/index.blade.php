@@ -61,7 +61,7 @@
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Inventory Grid</p>
                     <p class="mt-2 text-sm text-white/60">A compact slot layout inspired by classic RPG inventory pages.</p>
                 </div>
-                <a href="{{ route('store.index') }}" class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Visit Store</a>
+                <a href="{{ route('store.index') }}" class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Visit Marketplace</a>
             </div>
 
             <div class="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4">

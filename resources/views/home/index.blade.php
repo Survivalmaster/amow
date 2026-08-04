@@ -398,7 +398,7 @@
                             <div class="rounded-[1.4rem] border border-white/10 bg-black/20 p-5">
                                 <p class="font-['Teko'] text-2xl uppercase tracking-[0.08em]">No Building Items</p>
                                 <p class="mt-2 text-sm text-white/65">You do not currently own any buildings to place on this tile.</p>
-                                <a href="{{ route('store.index') }}" class="mt-4 inline-flex rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Go To Store</a>
+                                <a href="{{ route('store.index') }}" class="mt-4 inline-flex rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Go To Marketplace</a>
                             </div>
                         @endif
                     </div>

@@ -68,6 +68,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::post('/chat/global', [GlobalChatController::class, 'store'])->name('chat.global.store');
         Route::post('/locations/{location}/work', [WorkController::class, 'store'])->name('work.store');
         Route::get('/store', [StoreController::class, 'index'])->name('store.index');
+        Route::get('/license-center', [StoreController::class, 'licences'])->name('store.licences');
         Route::post('/store/purchase', [StoreController::class, 'purchase'])->name('store.purchase');
         Route::get('/profile/game', [CharacterController::class, 'show'])->name('characters.show');
         Route::get('/profile/inventory', [InventoryController::class, 'index'])->name('inventory.index');

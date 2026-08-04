@@ -14,11 +14,22 @@ class StoreController extends Controller
 {
     public function index(Request $request): View
     {
+        return $this->marketplaceView($request, 'store');
+    }
+
+    public function licences(Request $request): View
+    {
+        return $this->marketplaceView($request, 'licences');
+    }
+
+    private function marketplaceView(Request $request, string $section): View
+    {
         $character = $request->user()->character()->with(['rank', 'licences', 'inventory'])->firstOrFail();
         $items = Item::query()->with(['requiredRank', 'requiredLicence'])->orderBy('type')->orderBy('price')->get();
 
         return view('store.index', [
             'character' => $character,
+            'marketplaceSection' => $section,
             'gearItems' => $items->where('is_building', false)->values(),
             'buildingItems' => $items->where('is_building', true)->values(),
             'licences' => Licence::query()->with('requiredRank')->orderBy('cost')->get(),

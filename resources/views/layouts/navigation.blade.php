@@ -22,7 +22,6 @@
     $primaryNav = array_values(array_filter([
         ['label' => 'My Dashboard', 'route' => 'lobby', 'match' => ['lobby', 'cities.*', 'locations.*', 'messages.*', 'work.*'], 'icon' => 'fa-solid fa-gauge-high'],
         ['label' => 'Jobs', 'route' => 'jobs.index', 'match' => ['jobs.*'], 'icon' => 'fa-solid fa-briefcase'],
-        ['label' => 'Store', 'route' => 'store.index', 'match' => ['store.*'], 'icon' => 'fa-solid fa-store'],
         ['label' => 'Stock Market', 'route' => 'market.index', 'match' => ['market.*'], 'icon' => 'fa-solid fa-chart-line'],
         ['label' => 'Leaderboards', 'route' => 'leaderboards.index', 'match' => ['leaderboards.*'], 'icon' => 'fa-solid fa-trophy'],
     ]))
@@ -53,7 +52,7 @@
     </style>
 @endpush
 
-<nav x-data="{ open: false, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }}, nationOpen: {{ request()->routeIs('nation.*') ? 'true' : 'false' }}, adminOpen: {{ request()->routeIs('admin.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
+<nav x-data="{ open: false, marketplaceOpen: {{ request()->routeIs('store.*') ? 'true' : 'false' }}, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }}, nationOpen: {{ request()->routeIs('nation.*') ? 'true' : 'false' }}, adminOpen: {{ request()->routeIs('admin.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
     <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:hidden">
         <a href="{{ route('dashboard') }}" class="font-['Teko'] text-3xl uppercase tracking-[0.16em] text-[#f4ecd0]">AMOW</a>
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
@@ -147,6 +146,45 @@
                             <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                             <span>{{ $item['label'] }}</span>
                         </a>
+                        @if ($item['label'] === 'Jobs')
+                            <button
+                                type="button"
+                                @click="marketplaceOpen = !marketplaceOpen"
+                                class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/82 transition hover:bg-white/[0.05]"
+                            >
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('store.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="fa-solid fa-store w-5 text-center text-[#7ead59]"></i>
+                                <span class="flex-1 text-left">Marketplace</span>
+                                <i class="fa-solid text-xs text-white/45" :class="marketplaceOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            </button>
+
+                            <div x-show="marketplaceOpen" x-cloak class="grid gap-1 pl-4">
+                                <a href="{{ route('store.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('store.index') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                    <span class="h-6 w-1 rounded-full {{ request()->routeIs('store.index') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                    <i class="fa-solid fa-basket-shopping w-5 text-center text-[#7ead59]"></i>
+                                    <span>Store</span>
+                                </a>
+                                <a href="{{ route('store.licences') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('store.licences') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                    <span class="h-6 w-1 rounded-full {{ request()->routeIs('store.licences') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                    <i class="fa-solid fa-id-card w-5 text-center text-[#7ead59]"></i>
+                                    <span>License Center</span>
+                                </a>
+                                <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                                    <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                                    <i class="fa-solid fa-shop-lock w-5 text-center text-white/25"></i>
+                                    <span class="flex-1">Player Businesses</span>
+                                    <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                                </div>
+                            </div>
+                        @endif
+                        @if ($item['label'] === 'Leaderboards')
+                            <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                                <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                                <i class="fa-solid fa-crosshairs w-5 text-center text-white/25"></i>
+                                <span class="flex-1">Skirmishes</span>
+                                <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                            </div>
+                        @endif
                     @endforeach
                 </div>
             </div>
@@ -346,6 +384,45 @@
                     <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
                     <span>{{ $item['label'] }}</span>
                 </a>
+                @if ($item['label'] === 'Jobs')
+                    <button
+                        type="button"
+                        @click="marketplaceOpen = !marketplaceOpen"
+                        class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/82 transition hover:bg-white/[0.05]"
+                    >
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('store.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-store w-5 text-center text-[#7ead59]"></i>
+                        <span class="flex-1 text-left">Marketplace</span>
+                        <i class="fa-solid text-xs text-white/45" :class="marketplaceOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+
+                    <div x-show="marketplaceOpen" x-cloak class="grid gap-1 pl-4">
+                        <a href="{{ route('store.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('store.index') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <span class="h-6 w-1 rounded-full {{ request()->routeIs('store.index') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                            <i class="fa-solid fa-basket-shopping w-5 text-center text-[#7ead59]"></i>
+                            <span>Store</span>
+                        </a>
+                        <a href="{{ route('store.licences') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('store.licences') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <span class="h-6 w-1 rounded-full {{ request()->routeIs('store.licences') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                            <i class="fa-solid fa-id-card w-5 text-center text-[#7ead59]"></i>
+                            <span>License Center</span>
+                        </a>
+                        <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                            <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                            <i class="fa-solid fa-shop-lock w-5 text-center text-white/25"></i>
+                            <span class="flex-1">Player Businesses</span>
+                            <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                        </div>
+                    </div>
+                @endif
+                @if ($item['label'] === 'Leaderboards')
+                    <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                        <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                        <i class="fa-solid fa-crosshairs w-5 text-center text-white/25"></i>
+                        <span class="flex-1">Skirmishes</span>
+                        <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                    </div>
+                @endif
             @endforeach
 
             <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">User Area</p>
