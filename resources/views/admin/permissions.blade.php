@@ -71,7 +71,8 @@
                     <span class="uppercase tracking-[0.18em] text-white/45">Admin Sections</span>
                     <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
                         @foreach ($adminSections as $section => $definition)
-                            <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
+                            @php($isSelected = collect(old('admin_sections', []))->contains($section))
+                            <label class="flex items-center gap-3 rounded-2xl border px-4 py-3 {{ $isSelected ? 'border-blue-400/60 bg-blue-500/15 text-white' : 'border-white/10 bg-black/25' }}">
                                 <input type="checkbox" name="admin_sections[]" value="{{ $section }}" @checked(collect(old('admin_sections', []))->contains($section))>
                                 <span>{{ $definition['label'] }}</span>
                             </label>
@@ -178,7 +179,8 @@
                                             <span class="uppercase tracking-[0.18em] text-white/45">Admin Sections</span>
                                             <div class="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
                                                 @foreach ($adminSections as $section => $definition)
-                                                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
+                                                    @php($isSelected = in_array($section, $permission->admin_sections ?? [], true))
+                                                    <label class="flex items-center gap-3 rounded-2xl border px-4 py-3 {{ $isSelected ? 'border-blue-400/60 bg-blue-500/15 text-white' : 'border-white/10 bg-black/25' }}">
                                                         <input type="checkbox" name="admin_sections[]" value="{{ $section }}" @checked(in_array($section, $permission->admin_sections ?? [], true))>
                                                         <span>{{ $definition['label'] }}</span>
                                                     </label>

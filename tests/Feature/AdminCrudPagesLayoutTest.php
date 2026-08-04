@@ -113,3 +113,34 @@ test('main admin crud pages render with compact management controls', function (
             ->assertSee($expectedText);
     }
 });
+
+test('admin permissions can save multiple admin sections', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $permission = Permission::query()->create([
+        'name' => 'Section Manager',
+        'slug' => 'section-manager',
+        'description' => 'Limited admin access.',
+        'grants_admin_access' => true,
+        'admin_sections' => ['users'],
+        'sort_order' => 50,
+    ]);
+
+    $this
+        ->actingAs($admin)
+        ->patch(route('admin.permissions.update', $permission), [
+            'name' => 'Section Manager',
+            'slug' => 'section-manager',
+            'description' => 'Limited admin access.',
+            'icon_value' => null,
+            'icon_color' => null,
+            'icon_tooltip' => null,
+            'grants_admin_access' => '1',
+            'admin_sections' => ['users', 'characters', 'jobs'],
+            'sort_order' => 50,
+        ])
+        ->assertRedirect();
+
+    expect($permission->fresh()->admin_sections)->toBe(['users', 'characters', 'jobs']);
+});

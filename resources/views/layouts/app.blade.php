@@ -200,6 +200,40 @@
                     outline: 2px solid rgba(59, 130, 246, 0.24) !important;
                 }
 
+                .amow-admin-shell input[type="checkbox"] {
+                    appearance: none;
+                    display: inline-grid;
+                    width: 1rem;
+                    height: 1rem;
+                    flex: 0 0 auto;
+                    place-content: center;
+                    border: 1px solid #4b5563 !important;
+                    border-radius: 0.25rem !important;
+                    background: #020617 !important;
+                    color: #ffffff !important;
+                    cursor: pointer;
+                }
+
+                .amow-admin-shell input[type="checkbox"]::before {
+                    content: "";
+                    width: 0.58rem;
+                    height: 0.58rem;
+                    transform: scale(0);
+                    transform-origin: center;
+                    transition: transform 120ms ease;
+                    background: currentColor;
+                    clip-path: polygon(14% 44%, 0 59%, 38% 100%, 100% 18%, 84% 6%, 36% 69%);
+                }
+
+                .amow-admin-shell input[type="checkbox"]:checked {
+                    border-color: #60a5fa !important;
+                    background: #2563eb !important;
+                }
+
+                .amow-admin-shell input[type="checkbox"]:checked::before {
+                    transform: scale(1);
+                }
+
                 .amow-admin-shell thead {
                     background: #0b0f14 !important;
                     color: #9ca3af !important;
