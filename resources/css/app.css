@@ -82,3 +82,171 @@
         transform: translateX(100%);
     }
 }
+
+@layer components {
+    .amow-admin-shell {
+        background: #0b1117;
+        color: #e5edf6;
+        color-scheme: dark;
+    }
+
+    .amow-admin-shell select,
+    .amow-admin-shell option,
+    .amow-admin-shell optgroup,
+    .amow-admin-shell input,
+    .amow-admin-shell textarea {
+        background-color: #0b1117;
+        color: #e5edf6;
+    }
+
+    .amow-admin-header {
+        color: #e5edf6;
+    }
+
+    .amow-admin-header p:first-child {
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+        font-size: clamp(1.6rem, 2.2vw, 2.25rem) !important;
+        font-weight: 750;
+        letter-spacing: -0.01em !important;
+        line-height: 1.1;
+        text-transform: none !important;
+    }
+
+    .amow-admin-sidebar {
+        box-shadow: 1px 0 0 rgba(15, 23, 42, 0.9);
+    }
+
+    .amow-admin-side-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        border-radius: 0.5rem;
+        padding: 0.625rem 0.75rem;
+        color: #94a3b8;
+        font-size: 0.875rem;
+        font-weight: 650;
+        transition:
+            background-color 160ms ease,
+            color 160ms ease;
+    }
+
+    .amow-admin-side-link:hover {
+        background: #182230;
+        color: #f8fafc;
+    }
+
+    .amow-admin-side-link.is-active {
+        background: #1d4ed8;
+        color: #ffffff;
+    }
+
+    .amow-admin-side-link i {
+        width: 1.25rem;
+        text-align: center;
+        color: currentColor;
+        opacity: 0.85;
+    }
+
+    .amow-admin-shell main > [class*="space-y-"] > section,
+    .amow-admin-shell main > section,
+    .amow-admin-shell [class*="rounded-[2rem]"],
+    .amow-admin-shell [class*="rounded-[1.5rem]"] {
+        border-color: #253244 !important;
+        border-radius: 0.75rem !important;
+        background: #111a24 !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+
+    .amow-admin-shell table {
+        color: #cbd5e1;
+    }
+
+    .amow-admin-shell thead {
+        background: #0d141d !important;
+        color: #7f8ea3 !important;
+    }
+
+    .amow-admin-shell tbody tr {
+        border-color: #223044 !important;
+    }
+
+    .amow-admin-shell tbody tr:hover {
+        background: #152031 !important;
+    }
+
+    .amow-admin-shell input,
+    .amow-admin-shell select,
+    .amow-admin-shell textarea {
+        border-color: #2b3a4f !important;
+        border-radius: 0.5rem !important;
+        background: #0b1117 !important;
+        color: #e5edf6 !important;
+        box-shadow: none !important;
+    }
+
+    .amow-admin-shell input:focus,
+    .amow-admin-shell select:focus,
+    .amow-admin-shell textarea:focus {
+        border-color: #3b82f6 !important;
+        outline: 2px solid rgba(59, 130, 246, 0.22) !important;
+        outline-offset: 0;
+    }
+
+    .amow-admin-shell button,
+    .amow-admin-shell a {
+        box-shadow: none !important;
+    }
+
+    .amow-admin-shell button[class*="bg-[#7ead59]"],
+    .amow-admin-shell a[class*="bg-[#7ead59]"] {
+        background: #2563eb !important;
+        color: #ffffff !important;
+    }
+
+    .amow-admin-shell button[class*="bg-[#7ead59]"]:hover,
+    .amow-admin-shell a[class*="bg-[#7ead59]"]:hover {
+        background: #3b82f6 !important;
+    }
+
+    .amow-admin-shell button[class*="bg-[#c2a84f]"],
+    .amow-admin-shell a[class*="bg-[#c2a84f]"] {
+        background: #475569 !important;
+        color: #ffffff !important;
+    }
+
+    .amow-admin-shell [class*="text-[#7ead59]"],
+    .amow-admin-shell [class*="text-[#d7edc7]"],
+    .amow-admin-shell [class*="text-[#f4d77a]"],
+    .amow-admin-shell [class*="text-[#f0b29f]"],
+    .amow-admin-shell [class*="text-[#f4ecd0]"] {
+        color: #e5edf6 !important;
+    }
+
+    .amow-admin-shell [class*="border-[#7ead59]"],
+    .amow-admin-shell [class*="border-[#c2a84f]"],
+    .amow-admin-shell [class*="border-[#c65b3f]"],
+    .amow-admin-shell [class*="border-[#f4d77a]"] {
+        border-color: #334155 !important;
+    }
+
+    .amow-admin-shell [class*="bg-[#7ead59]/"],
+    .amow-admin-shell [class*="bg-[#c2a84f]/"],
+    .amow-admin-shell [class*="bg-[#c65b3f]/"],
+    .amow-admin-shell [class*="bg-[#f4d77a]/"],
+    .amow-admin-shell [class*="bg-white/5"],
+    .amow-admin-shell [class*="bg-black/25"],
+    .amow-admin-shell [class*="bg-black/30"] {
+        background-color: #111a24 !important;
+    }
+
+    .amow-admin-shell .rounded-full {
+        border-radius: 0.5rem !important;
+    }
+
+    .amow-admin-shell [class*="tracking-[0.2em]"],
+    .amow-admin-shell [class*="tracking-[0.18em]"],
+    .amow-admin-shell [class*="tracking-[0.16em]"] {
+        letter-spacing: 0.08em !important;
+    }
+}

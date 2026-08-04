@@ -19,6 +19,8 @@
             <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
         @endif
     </head>
+    @php($isAdminArea = request()->routeIs('admin.*'))
+
     <body
         @auth
             @if (auth()->user()->character)
@@ -28,18 +30,22 @@
             data-current-path="{{ request()->path() }}"
             data-current-page-name="{{ \Illuminate\Support\Str::of(request()->route()?->getName() ?? request()->path())->replace(['.', '-', '_'], ' ')->title() }}"
         @endauth
-        class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]"
+        class="{{ $isAdminArea ? 'amow-admin-shell min-h-screen bg-[#0b1117] font-sans antialiased text-slate-100' : 'min-h-screen bg-[radial-gradient(circle_at_top,_rgba(126,173,89,0.14),_transparent_30%),linear-gradient(180deg,_#102017_0%,_#07100c_55%,_#040806_100%)] font-sans antialiased text-[#f4ecd0]' }}"
     >
         @php($authUser = auth()->user()?->fresh())
         @php($chatCharacter = $authUser?->character?->loadMissing(['user.permissions']))
-        <div class="min-h-screen bg-[rgba(4,8,6,0.35)]">
-            <div class="lg:grid lg:grid-cols-[320px_minmax(0,1fr)]">
-                @include('layouts.navigation')
+        <div class="{{ $isAdminArea ? 'min-h-screen bg-[#0b1117]' : 'min-h-screen bg-[rgba(4,8,6,0.35)]' }}">
+            <div class="{{ $isAdminArea ? 'lg:grid lg:grid-cols-[280px_minmax(0,1fr)]' : 'lg:grid lg:grid-cols-[320px_minmax(0,1fr)]' }}">
+                @if ($isAdminArea)
+                    @include('layouts.admin-navigation')
+                @else
+                    @include('layouts.navigation')
+                @endif
 
                 <div class="min-w-0">
                     @isset($header)
-                        <header class="px-4 pt-8 sm:px-6 lg:px-8">
-                            <div class="rounded-[2rem] border border-white/10 bg-white/5 px-6 py-5 shadow-2xl shadow-black/30 backdrop-blur">
+                        <header class="{{ $isAdminArea ? 'border-b border-slate-800 bg-[#0f1720] px-4 py-5 sm:px-6 lg:px-8' : 'px-4 pt-8 sm:px-6 lg:px-8' }}">
+                            <div class="{{ $isAdminArea ? 'amow-admin-header mx-auto max-w-[120rem]' : 'rounded-[2rem] border border-white/10 bg-white/5 px-6 py-5 shadow-2xl shadow-black/30 backdrop-blur' }}">
                                 {{ $header }}
                             </div>
                         </header>
@@ -65,15 +71,15 @@
                         </div>
                     @endif
 
-                    <main class="px-4 py-8 sm:px-6 lg:px-8">
+                    <main class="{{ $isAdminArea ? 'mx-auto max-w-[120rem] px-4 py-6 sm:px-6 lg:px-8' : 'px-4 py-8 sm:px-6 lg:px-8' }}">
                         @if (session('status'))
-                            <div class="mb-6 rounded-2xl border border-[#7ead59]/35 bg-[#7ead59]/10 px-4 py-3 text-sm">
+                            <div class="{{ $isAdminArea ? 'mb-5 rounded-lg border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100' : 'mb-6 rounded-2xl border border-[#7ead59]/35 bg-[#7ead59]/10 px-4 py-3 text-sm' }}">
                                 {{ session('status') }}
                             </div>
                         @endif
 
                         @if ($errors->any())
-                            <div class="mb-6 rounded-2xl border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-4 py-3 text-sm">
+                            <div class="{{ $isAdminArea ? 'mb-5 rounded-lg border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-100' : 'mb-6 rounded-2xl border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-4 py-3 text-sm' }}">
                                 {{ $errors->first() }}
                             </div>
                         @endif
@@ -85,7 +91,9 @@
         </div>
         @auth
             @if ($chatCharacter)
-                @include('layouts.global-chat', ['chatCharacter' => $chatCharacter])
+                @unless ($isAdminArea)
+                    @include('layouts.global-chat', ['chatCharacter' => $chatCharacter])
+                @endunless
             @endif
         @endauth
         @auth
