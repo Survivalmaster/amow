@@ -23,6 +23,8 @@ class CharacterStateController extends Controller
         $workCooldownProgressPercent = $workRemainingSeconds > 0
             ? max(0, min(100, (int) round((1 - ($workRemainingSeconds / max(1, $workCooldownMinutes * 60))) * 100)))
             : 100;
+        $hasStaminaForWork = (int) ($character->stamina_points ?? 100) > 0;
+        $canWork = $workRemainingSeconds === 0 && $hasStaminaForWork;
 
         return response()->json([
             'name' => $character->name,
@@ -47,9 +49,11 @@ class CharacterStateController extends Controller
             'work_cooldown_minutes' => $workCooldownMinutes,
             'work_status_label' => $workRemainingSeconds > 0
                 ? $this->formatDuration($workRemainingSeconds)
-                : 'Ready now',
+                : ($hasStaminaForWork ? 'Ready now' : 'Exhausted'),
             'work_cooldown_progress_percent' => $workCooldownProgressPercent,
-            'can_work' => $workRemainingSeconds === 0,
+            'can_work' => $canWork,
+            'work_blocked_by_stamina' => ! $hasStaminaForWork,
+            'work_unavailable' => ! $canWork,
             'work_activity_message' => $workRemainingSeconds > 0
                 ? ($character->currentJob?->working_display_message ?: 'Is working.')
                 : null,

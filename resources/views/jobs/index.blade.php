@@ -11,7 +11,8 @@
     @php($workRemainingSeconds = $workCooldownEndsAt && $workCooldownEndsAt->isFuture() ? now()->diffInSeconds($workCooldownEndsAt) : 0)
     @php($workCooldownMinutes = $character->currentJob?->work_cooldown_minutes ?? 5)
     @php($workProgressPercent = $workRemainingSeconds > 0 ? max(0, min(100, (int) round((1 - ($workRemainingSeconds / max(1, $workCooldownMinutes * 60))) * 100))) : 100)
-    @php($canWork = $workRemainingSeconds === 0)
+    @php($hasStaminaForWork = (int) ($character->stamina_points ?? 100) > 0)
+    @php($canWork = $workRemainingSeconds === 0 && $hasStaminaForWork)
     @php($currentActivityText = $workRemainingSeconds > 0 ? ($character->currentJob?->working_display_message ?: 'Is working.') : 'Reviewing job assignments.')
 
     <div class="space-y-6">
@@ -39,15 +40,16 @@
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <p class="text-xs uppercase tracking-[0.2em] text-white/45">Work Cooldown</p>
-                            <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]" data-work-countdown-label>{{ $canWork ? 'Ready now' : ($workRemainingSeconds >= 3600 ? gmdate('H:i:s', $workRemainingSeconds) : gmdate('i:s', $workRemainingSeconds)) }}</p>
+                            <p class="mt-2 font-['Teko'] text-3xl uppercase text-[#f4ecd0]" data-work-countdown-label>{{ $canWork ? 'Ready now' : ($workRemainingSeconds > 0 ? ($workRemainingSeconds >= 3600 ? gmdate('H:i:s', $workRemainingSeconds) : gmdate('i:s', $workRemainingSeconds)) : 'Exhausted') }}</p>
                         </div>
                         @if ($workLocation)
                             <form method="POST" action="{{ route('work.store', $workLocation) }}">
                                 @csrf
                                 <button
                                     class="amow-action-button rounded-full px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] transition {{ $canWork ? 'bg-[#7ead59] text-[#07100c] hover:bg-[#92c46a]' : 'cursor-not-allowed border border-white/10 bg-white/5 text-white/38' }}"
-                                    data-character-toggle-disabled="work_cooldown_active"
+                                    data-character-toggle-disabled="work_unavailable"
                                     data-work-button
+                                    data-stamina-empty="{{ $hasStaminaForWork ? 'false' : 'true' }}"
                                 >
                                     Work
                                 </button>
@@ -57,7 +59,7 @@
                     <div class="mt-4">
                         <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
                             <span>Shift Recovery</span>
-                            <span data-work-countdown-caption>{{ $canWork ? 'Ready for work' : 'Cooldown active' }}</span>
+                            <span data-work-countdown-caption>{{ $canWork ? 'Ready for work' : ($workRemainingSeconds > 0 ? 'Cooldown active' : 'Sleep to restore stamina') }}</span>
                         </div>
                         <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-white/10">
                             <div class="amow-progress-fill h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#c2a84f_100%)]" data-work-countdown-progress style="width: {{ $workProgressPercent }}%;"></div>
@@ -157,12 +159,13 @@
                 };
 
                 const render = () => {
-                    const canWork = remainingSeconds <= 0;
+                    const staminaEmpty = workButton.dataset.staminaEmpty === 'true';
+                    const canWork = remainingSeconds <= 0 && !staminaEmpty;
                     const totalSeconds = Math.max(1, cooldownMinutes * 60);
                     const progress = canWork ? 100 : Math.max(0, Math.min(100, Math.round((1 - (remainingSeconds / totalSeconds)) * 100)));
 
-                    countdownLabel.textContent = canWork ? 'Ready now' : formatSeconds(remainingSeconds);
-                    countdownCaption.textContent = canWork ? 'Ready for work' : 'Cooldown active';
+                    countdownLabel.textContent = canWork ? 'Ready now' : (remainingSeconds > 0 ? formatSeconds(remainingSeconds) : 'Exhausted');
+                    countdownCaption.textContent = canWork ? 'Ready for work' : (remainingSeconds > 0 ? 'Cooldown active' : 'Sleep to restore stamina');
                     progressBar.style.width = `${progress}%`;
                     workButton.disabled = !canWork;
                     workButton.classList.toggle('bg-[#7ead59]', canWork);

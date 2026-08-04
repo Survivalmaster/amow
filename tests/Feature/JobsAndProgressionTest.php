@@ -91,6 +91,40 @@ test('work awards credits and experience based on the active job', function () {
     });
 });
 
+test('characters with no stamina cannot work', function () {
+    $user = User::factory()->create();
+    $character = createCharacterForUser($user);
+    $character->update(['stamina_points' => 0]);
+    $location = Location::query()->where('slug', 'go-to-work')->firstOrFail();
+
+    $this
+        ->actingAs($user)
+        ->from(route('jobs.index'))
+        ->post(route('work.store', $location))
+        ->assertSessionHasErrors('work')
+        ->assertRedirect(route('jobs.index'));
+
+    $character->refresh();
+
+    expect($character->plastic_credits)->toBe(100);
+    expect($character->last_worked_at)->toBeNull();
+});
+
+test('character state marks work unavailable with no stamina', function () {
+    $user = User::factory()->create();
+    $character = createCharacterForUser($user);
+    $character->update(['stamina_points' => 0]);
+
+    $this
+        ->actingAs($user)
+        ->getJson(route('characters.state'))
+        ->assertOk()
+        ->assertJsonPath('can_work', false)
+        ->assertJsonPath('work_blocked_by_stamina', true)
+        ->assertJsonPath('work_unavailable', true)
+        ->assertJsonPath('work_status_label', 'Exhausted');
+});
+
 test('active game master events multiply work credits and experience', function () {
     config()->set('services.discord.bot_token', 'test-token');
     Http::fake([

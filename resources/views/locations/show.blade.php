@@ -71,12 +71,15 @@
                         <p class="mt-2 text-xs uppercase tracking-[0.18em] text-white/45">Cooldown: {{ $character->currentJob?->work_cooldown_minutes ?? 5 }} minutes</p>
                         <form method="POST" action="{{ route('work.store', $location) }}" class="mt-5">
                             @csrf
-                            <button data-work-button data-ready-label="Work Shift" class="w-full rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]" @disabled($character->workCooldownEndsAt()?->isFuture())>
-                                {{ $character->workCooldownEndsAt()?->isFuture() ? 'Work Cooldown Active' : 'Work Shift' }}
+                            @php($hasStaminaForWork = (int) ($character->stamina_points ?? 100) > 0)
+                            <button data-work-button data-ready-label="Work Shift" data-character-toggle-disabled="work_unavailable" class="w-full rounded-full bg-[#7ead59] px-6 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-[#07100c]" @disabled($character->workCooldownEndsAt()?->isFuture() || ! $hasStaminaForWork)>
+                                {{ $character->workCooldownEndsAt()?->isFuture() ? 'Work Cooldown Active' : ($hasStaminaForWork ? 'Work Shift' : 'Too Exhausted') }}
                             </button>
                         </form>
                         <p data-work-status class="mt-3 text-xs uppercase tracking-[0.18em] text-white/50">
-                            @if ($character->workCooldownEndsAt()?->isFuture())
+                            @if (! $hasStaminaForWork)
+                                Sleep to restore stamina before taking another shift.
+                            @elseif ($character->workCooldownEndsAt()?->isFuture())
                                 Next shift available at {{ $character->workCooldownEndsAt()->format('H:i') }}.
                             @else
                                 Ready for another shift.

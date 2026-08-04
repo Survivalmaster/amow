@@ -111,7 +111,7 @@
                                     <span>{{ $selectedCharacter->experience_points }}/{{ $selectedCharacter->experienceRequiredForNextLevel() }} XP</span>
                                 </div>
                                 <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                                    <div class="h-full rounded-full bg-blue-500" style="width: {{ $logStats['level_progress_percent'] ?? 0 }}%;"></div>
+                                    <div class="h-full rounded-full" style="width: {{ $logStats['level_progress_percent'] ?? 0 }}%; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%);"></div>
                                 </div>
 
                                 <div class="mt-5 flex items-center justify-between text-xs uppercase tracking-[0.14em] text-white/45">
@@ -119,7 +119,7 @@
                                     <span>{{ $selectedCharacter->stamina_points ?? 100 }}/100</span>
                                 </div>
                                 <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-                                    <div class="h-full rounded-full bg-slate-300" style="width: {{ $logStats['stamina_percent'] ?? 0 }}%;"></div>
+                                    <div class="h-full rounded-full" style="width: {{ $logStats['stamina_percent'] ?? 0 }}%; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%);"></div>
                                 </div>
                             </div>
 
@@ -140,7 +140,8 @@
                                                 <span>{{ number_format($count) }}</span>
                                             </div>
                                             <div class="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
-                                                <div class="h-full rounded-full bg-blue-500" style="width: {{ (int) round(($count / $maxActivity) * 100) }}%;"></div>
+                                                @php($activityPercent = (int) round(($count / $maxActivity) * 100))
+                                                <div class="h-full rounded-full" style="width: {{ $activityPercent }}%; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%);"></div>
                                             </div>
                                         </div>
                                     @endforeach
@@ -154,7 +155,8 @@
                                 @foreach (($logStats['activity_days'] ?? collect()) as $day)
                                     <div class="flex flex-1 flex-col items-center gap-2">
                                         <div class="flex h-20 w-full items-end rounded bg-white/5 px-1">
-                                            <div class="w-full rounded bg-blue-500" style="height: {{ max(5, $day['percent']) }}%;"></div>
+                                            @php($barColor = sprintf('hsl(%d 70%% 45%%)', (int) round(($day['percent'] / 100) * 130)))
+                                            <div class="w-full rounded" style="height: {{ max(5, $day['percent']) }}%; background: {{ $barColor }};"></div>
                                         </div>
                                         <span class="text-[10px] uppercase text-white/40">{{ $day['label'] }}</span>
                                     </div>

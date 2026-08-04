@@ -33,6 +33,10 @@ class WorkCharacter
             throw new RuntimeException('Work cooldown active. You can work again at '.$cooldownEndsAt->format('H:i').'.');
         }
 
+        if ((int) ($character->stamina_points ?? 100) <= 0) {
+            throw new RuntimeException('You are too exhausted to work. Sleep to restore stamina before taking another shift.');
+        }
+
         $baseEarnings = random_int($job->min_pay, $job->max_pay);
         $baseExperienceEarned = max(0, (int) ($job->experience_reward ?? 5));
         $multipliers = $this->eventMultipliers->forCharacter($character);

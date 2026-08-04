@@ -105,6 +105,41 @@ test('discord work api uses website work cooldown and rewards', function () {
         ->assertJsonPath('worked', false);
 });
 
+test('discord work api blocks characters with no stamina', function () {
+    config()->set('services.discord.linking_secret', 'test-secret');
+
+    $job = GameJob::query()->create([
+        'name' => 'Scrap Runner',
+        'slug' => 'scrap-runner',
+        'description' => 'Collect useful scraps.',
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'required_level' => 0,
+        'work_cooldown_minutes' => 5,
+        'stamina_decrease' => 3,
+        'is_starter' => true,
+        'is_active' => true,
+    ]);
+
+    $character = createLinkedDiscordCharacter([
+        'current_job_id' => $job->id,
+        'plastic_credits' => 100,
+        'stamina_points' => 0,
+    ]);
+
+    $this
+        ->withHeader('X-Discord-Link-Secret', 'test-secret')
+        ->postJson('/api/discord/work', [
+            'discord_user_id' => '123456789012345678',
+        ])
+        ->assertUnprocessable()
+        ->assertJsonPath('worked', false)
+        ->assertJsonPath('message', 'You are too exhausted to work. Sleep to restore stamina before taking another shift.');
+
+    expect($character->fresh()->plastic_credits)->toBe(100);
+    expect($character->fresh()->last_worked_at)->toBeNull();
+});
+
 test('discord jobs api lists and changes linked character job with cooldown', function () {
     config()->set('services.discord.linking_secret', 'test-secret');
 
