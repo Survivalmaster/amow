@@ -61,11 +61,16 @@
                             <input type="checkbox" data-brush-enabled>
                             <span>Brush</span>
                         </label>
+                        <select data-brush-action>
+                            <option value="tile_type">Tile Type</option>
+                            <option value="claim">Claim Faction</option>
+                        </select>
                         <select data-brush-type>
                             @foreach (\App\Models\MapHex::TILE_TYPES as $tileType)
                                 <option value="{{ $tileType }}">{{ str($tileType)->title() }}</option>
                             @endforeach
                         </select>
+                        <span class="territory-brush-note">Claim brush uses the panel faction.</span>
                     </div>
                 @endif
 

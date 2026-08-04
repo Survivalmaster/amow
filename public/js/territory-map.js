@@ -82,6 +82,7 @@
         const selectedSummary = root.querySelector('[data-selected-summary]');
         const editor = root.querySelector('[data-territory-editor]');
         const brushEnabled = root.querySelector('[data-brush-enabled]');
+        const brushAction = root.querySelector('[data-brush-action]');
         const brushType = root.querySelector('[data-brush-type]');
         const closePanel = root.querySelector('[data-close-panel]');
         let mode = 'hex';
@@ -182,8 +183,13 @@
                     const currentHex = layer.hexData;
 
                     selectedHex = currentHex;
-                    if (canManage && brushEnabled?.checked && brushType?.value) {
-                        await updateHex(currentHex, { tile_type: brushType.value });
+                    if (canManage && brushEnabled?.checked) {
+                        if (brushAction?.value === 'claim') {
+                            await claimHex(currentHex, editor?.faction_id?.value || '');
+                        } else if (brushType?.value) {
+                            await updateHex(currentHex, { tile_type: brushType.value });
+                        }
+
                         return;
                     }
                     layers.forEach((candidate) => candidate.setStyle(tileStyle(candidate.hexData, mode, selectedHex?.id)));
@@ -250,6 +256,23 @@
             }
         };
 
+        const claimHex = async (hex, factionId) => {
+            if (!factionId) return setStatus('Select a faction in the panel before using claim brush.', 'error');
+
+            try {
+                setStatus('Claiming tile...');
+                const data = await jsonFetch(`/api/map/hexes/${hex.id}/claim`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken },
+                    body: JSON.stringify({ faction_id: factionId }),
+                });
+                upsertHex(savedHexFrom(data) || await refreshedHex(hex.id));
+                setStatus('Tile claimed.', 'success');
+            } catch (error) {
+                setStatus(error.message, 'error');
+            }
+        };
+
         root.querySelectorAll('[data-territory-mode]').forEach((button) => {
             button.addEventListener('click', async () => {
                 await setMode(button.dataset.territoryMode);
@@ -270,18 +293,8 @@
             });
 
             root.querySelector('[data-claim-selected]')?.addEventListener('click', async () => {
-                if (!selectedHex || !editor.faction_id.value) return setStatus('Select a faction before claiming.', 'error');
-                try {
-                    const data = await jsonFetch(`/api/map/hexes/${selectedHex.id}/claim`, {
-                        method: 'POST',
-                        headers: { 'X-CSRF-TOKEN': csrfToken },
-                        body: JSON.stringify({ faction_id: editor.faction_id.value }),
-                    });
-                    upsertHex(savedHexFrom(data) || await refreshedHex(selectedHex.id));
-                    setStatus('Tile claimed.', 'success');
-                } catch (error) {
-                    setStatus(error.message, 'error');
-                }
+                if (!selectedHex) return;
+                await claimHex(selectedHex, editor.faction_id.value);
             });
 
             root.querySelector('[data-remove-claim]')?.addEventListener('click', async () => {

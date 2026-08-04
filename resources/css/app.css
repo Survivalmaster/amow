@@ -208,6 +208,7 @@
     .territory-brush {
         display: none;
         align-items: center;
+        flex-wrap: wrap;
         gap: 0.6rem;
     }
 
@@ -236,6 +237,11 @@
         color: #f4ecd0;
         padding: 0.7rem 0.85rem;
         outline: none;
+    }
+
+    .territory-brush-note {
+        color: rgba(255, 255, 255, 0.42);
+        font-size: 0.76rem;
     }
 
     .territory-status {
