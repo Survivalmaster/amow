@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\StockHolding;
 use App\Support\CharacterActivity;
+use App\Support\StockMarketImpact;
 use App\Support\StockMarketTicker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,10 @@ use Illuminate\View\View;
 
 class MarketController extends Controller
 {
-    public function __construct(private readonly StockMarketTicker $ticker)
+    public function __construct(
+        private readonly StockMarketTicker $ticker,
+        private readonly StockMarketImpact $marketImpact,
+    )
     {
     }
 
@@ -64,6 +68,8 @@ class MarketController extends Controller
         }
 
         DB::transaction(function () use ($character, $company, $validated, $cost) {
+            $company = Company::query()->whereKey($company->id)->lockForUpdate()->firstOrFail();
+
             $holding = StockHolding::query()->firstOrCreate(
                 ['character_id' => $character->id, 'company_id' => $company->id],
                 ['shares' => 0, 'average_buy_price' => 0]
@@ -78,7 +84,20 @@ class MarketController extends Controller
             ]);
 
             $character->decrement('plastic_credits', $cost);
-            CharacterActivity::recordTransaction($character, 'stock_buy', -$cost, "Bought {$validated['shares']} shares of {$company->name}.");
+            $impact = $this->marketImpact->applyBuyImpact($company, $validated['shares']);
+
+            CharacterActivity::recordTransaction(
+                $character,
+                'stock_buy',
+                -$cost,
+                "Bought {$validated['shares']} shares of {$company->name}.",
+                [
+                    'company_id' => $company->id,
+                    'company_name' => $company->name,
+                    'shares' => $validated['shares'],
+                    ...$impact,
+                ]
+            );
         });
 
         return back()->with('status', 'Shares purchased.');
@@ -106,6 +125,8 @@ class MarketController extends Controller
         $value = (int) round($company->current_price * $validated['shares']);
 
         DB::transaction(function () use ($character, $holding, $company, $validated, $value) {
+            $company = Company::query()->whereKey($company->id)->lockForUpdate()->firstOrFail();
+
             $remaining = $holding->shares - $validated['shares'];
 
             if ($remaining === 0) {
@@ -115,7 +136,20 @@ class MarketController extends Controller
             }
 
             $character->increment('plastic_credits', $value);
-            CharacterActivity::recordTransaction($character, 'stock_sell', $value, "Sold {$validated['shares']} shares of {$company->name}.");
+            $impact = $this->marketImpact->applySellImpact($company, $validated['shares']);
+
+            CharacterActivity::recordTransaction(
+                $character,
+                'stock_sell',
+                $value,
+                "Sold {$validated['shares']} shares of {$company->name}.",
+                [
+                    'company_id' => $company->id,
+                    'company_name' => $company->name,
+                    'shares' => $validated['shares'],
+                    ...$impact,
+                ]
+            );
         });
 
         return back()->with('status', 'Shares sold.');

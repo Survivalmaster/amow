@@ -4,11 +4,15 @@ use App\Models\Character;
 use App\Models\Company;
 use App\Models\Faction;
 use App\Models\GameJob;
+use App\Models\Permission;
 use App\Models\Rank;
+use App\Models\StockHolding;
+use App\Models\StockMarketSetting;
 use App\Models\User;
 use Database\Seeders\CompanySeeder;
 use Database\Seeders\FactionSeeder;
 use Database\Seeders\GameJobSeeder;
+use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RankSeeder;
 
 beforeEach(function () {
@@ -17,6 +21,7 @@ beforeEach(function () {
         RankSeeder::class,
         GameJobSeeder::class,
         CompanySeeder::class,
+        PermissionSeeder::class,
     ]);
 });
 
@@ -56,4 +61,89 @@ test('market state fluctuates prices when they are due', function () {
         ->assertJsonCount(4, 'companies');
 
     expect(Company::query()->where('current_price', '!=', 50)->count())->toBeGreaterThan(0);
+});
+
+test('admins can add companies to the stock market', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $this->actingAs($admin)
+        ->post(route('admin.stock-market.companies.store'), [
+            'name' => 'Blue Ocean Salvage',
+            'current_price' => 28.75,
+            'description' => 'Recovery crews trading in washed-up plastic and machine scrap.',
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('companies', [
+        'name' => 'Blue Ocean Salvage',
+        'slug' => 'blue-ocean-salvage',
+        'current_price' => 28.75,
+    ]);
+});
+
+test('buying shares raises the company price', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 20,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 5,
+    ]);
+
+    $user = User::factory()->create();
+    $character = createMarketCharacter($user);
+    $character->update(['plastic_credits' => 100000]);
+    $company = Company::query()->firstOrFail();
+    $company->update(['current_price' => 100, 'last_price_updated_at' => now()]);
+
+    $this->actingAs($user)
+        ->post(route('market.buy', $company), ['shares' => 100])
+        ->assertRedirect();
+
+    expect((float) $company->fresh()->current_price)->toBeGreaterThan(100.0);
+    expect($character->transactions()->where('type', 'stock_buy')->first()?->metadata)
+        ->toMatchArray([
+            'shares' => 100,
+            'impact_percent' => 1.0,
+            'crash_applied' => false,
+        ]);
+});
+
+test('selling one hundred shares drops the company price and crashes it', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 20,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 5,
+    ]);
+
+    $user = User::factory()->create();
+    $character = createMarketCharacter($user);
+    $company = Company::query()->firstOrFail();
+    $company->update(['current_price' => 100, 'last_price_updated_at' => now()]);
+
+    StockHolding::query()->create([
+        'character_id' => $character->id,
+        'company_id' => $company->id,
+        'shares' => 100,
+        'average_buy_price' => 75,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('market.sell', $company), ['shares' => 100])
+        ->assertRedirect();
+
+    expect((float) $company->fresh()->current_price)->toBeLessThan(100.0);
+    expect($character->transactions()->where('type', 'stock_sell')->first()?->metadata)
+        ->toMatchArray([
+            'shares' => 100,
+            'impact_percent' => -6.0,
+            'crash_applied' => true,
+        ]);
 });

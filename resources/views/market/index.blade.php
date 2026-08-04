@@ -70,14 +70,14 @@
     <x-slot name="header">
         <div>
             <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">Plastica Stock Market</p>
-            <p class="text-sm uppercase tracking-[0.22em] text-white/55">{{ number_format($character->plastic_credits) }} Plastic Credits liquid | Prices adjust every minute</p>
+            <p class="text-sm uppercase tracking-[0.22em] text-white/55">{{ number_format($character->plastic_credits) }} Plastic Credits liquid | Prices react to trades and scheduled drift</p>
         </div>
     </x-slot>
 
     <div data-market-root data-market-state-url="{{ route('market.state') }}" class="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         <section class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
             <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Listed Companies</p>
-            <p class="mt-2 text-sm text-white/60">Values drift up and down in small movements about once a minute, so timings and patience matter.</p>
+            <p class="mt-2 text-sm text-white/60">Values drift about once a minute. Player buying adds upward pressure, while heavy selling can knock prices down hard.</p>
             <div class="mt-5 space-y-4">
                 @foreach ($companies as $company)
                     <div data-company-id="{{ $company->id }}" class="rounded-3xl border border-white/10 bg-black/20 p-4">
