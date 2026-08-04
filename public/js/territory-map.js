@@ -11,13 +11,13 @@
     const jsonFetch = async (url, options = {}) => {
         const response = await fetch(url, {
             credentials: 'same-origin',
+            ...options,
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 ...(options.headers || {}),
             },
-            ...options,
         });
 
         const payload = await response.json().catch(() => ({}));

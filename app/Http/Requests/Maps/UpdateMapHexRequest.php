@@ -17,7 +17,7 @@ class UpdateMapHexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tile_type' => ['sometimes', 'required', Rule::in(MapHex::TILE_TYPES)],
+            'tile_type' => ['required_without_all:terrain_type,is_visible,faction_id,claim_strength', Rule::in(MapHex::TILE_TYPES)],
             'terrain_type' => ['nullable', 'string', 'max:80'],
             'is_visible' => ['sometimes', 'boolean'],
             'faction_id' => ['nullable', 'exists:factions,id'],

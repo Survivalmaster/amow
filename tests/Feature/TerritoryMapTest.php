@@ -120,6 +120,19 @@ test('an authorised user can update a tile through the post fallback', function 
         ->claim_strength->toBe(42);
 });
 
+test('an authorised tile update cannot be empty', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+    createTerritoryCharacter($admin);
+    $hex = MapHex::factory()->create(['tile_type' => MapHex::TYPE_CLAIMABLE, 'is_visible' => true]);
+
+    $this
+        ->actingAs($admin)
+        ->postJson(route('api.map.hexes.update.post', $hex), [])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('tile_type');
+});
+
 test('a claim can be removed through the post fallback', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
