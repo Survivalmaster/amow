@@ -29,12 +29,12 @@
     @php($fieldClass = 'rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35')
     @php($canViewPlayerEmails = auth()->user()?->loadMissing('permissions')->hasPermission('developer'))
 
-    <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
-        <aside class="space-y-4">
-            <section
-                x-data="{ characterSearch: '' }"
-                class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30"
-            >
+    <div class="space-y-5">
+        <section
+            x-data="{ characterSearch: '' }"
+            class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30"
+        >
+            <div class="grid gap-4 lg:grid-cols-[minmax(18rem,28rem)_minmax(0,1fr)]">
                 <label class="space-y-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
                     <span>Search Character</span>
                     <div class="relative">
@@ -43,23 +43,36 @@
                     </div>
                 </label>
 
-                <div class="mt-4 max-h-72 space-y-2 overflow-y-auto pr-1">
-                    @foreach ($characters as $character)
-                        @php($characterUserLabel = $canViewPlayerEmails ? $character->user?->email : ($character->user?->name ?? 'User #'.$character->user_id))
-                        <a
-                            href="{{ route('admin.character-logs.index', ['character_id' => $character->id]) }}"
-                            x-show="!characterSearch || @js(str($character->name.' '.$characterUserLabel)->lower()->toString()).includes(characterSearch.toLowerCase())"
-                            class="block rounded-xl border px-3 py-2 text-sm transition {{ $selectedCharacter?->id === $character->id ? 'border-[#7ead59]/35 bg-[#7ead59]/10 text-[#d7edc7]' : 'border-white/10 bg-black/20 text-white/68 hover:border-white/20 hover:text-white' }}"
-                        >
-                            <span class="block font-semibold text-white">{{ $character->name }}</span>
-                            <span class="mt-0.5 block truncate text-xs text-white/42">{{ $characterUserLabel }}</span>
-                        </a>
-                    @endforeach
+                <div class="flex items-end text-sm text-white/50">
+                    @if ($selectedCharacter)
+                        <span>Showing logs for <span class="font-semibold text-white">{{ $selectedCharacter->name }}</span>. Search again to switch character.</span>
+                    @else
+                        <span>Search for a character to view their audit history and performance summary.</span>
+                    @endif
                 </div>
-            </section>
 
-            @if ($selectedCharacter)
-                <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
+                <div x-show="characterSearch.trim().length > 0" x-cloak class="lg:col-span-2">
+                    <div class="max-h-72 space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-black/20 p-2">
+                        @foreach ($characters as $character)
+                            @php($characterUserLabel = $canViewPlayerEmails ? $character->user?->email : ($character->user?->name ?? 'User #'.$character->user_id))
+                            <a
+                                href="{{ route('admin.character-logs.index', ['character_id' => $character->id]) }}"
+                                x-show="@js(str($character->name.' '.$characterUserLabel)->lower()->toString()).includes(characterSearch.toLowerCase())"
+                                class="block rounded-lg border px-3 py-2 text-sm transition {{ $selectedCharacter?->id === $character->id ? 'border-blue-400/50 bg-blue-500/15 text-white' : 'border-white/10 bg-black/20 text-white/68 hover:border-white/20 hover:text-white' }}"
+                            >
+                                <span class="block font-semibold text-white">{{ $character->name }}</span>
+                                <span class="mt-0.5 block truncate text-xs text-white/42">{{ $characterUserLabel }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @if ($selectedCharacter)
+            <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
+                <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
+                    <div>
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">{{ $selectedCharacter->name }}</p>
                     <div class="mt-4 space-y-2 text-sm text-white/65">
                         <p><span class="text-white/40">User:</span> {{ $canViewPlayerEmails ? ($selectedCharacter->user?->email ?? 'Unknown') : ($selectedCharacter->user?->name ?? 'User #'.$selectedCharacter->user_id) }}</p>
@@ -69,9 +82,89 @@
                         <p><span class="text-white/40">Job:</span> {{ $selectedCharacter->currentJob?->name ?? $selectedCharacter->starting_occupation }}</p>
                         <p><span class="text-white/40">Created:</span> {{ $selectedCharacter->created_at?->format('d M Y H:i') }}</p>
                     </div>
-                </section>
-            @endif
-        </aside>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">Earned</p>
+                                <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['earned_credits'] ?? 0) }}</p>
+                            </div>
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">Spent</p>
+                                <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['spent_credits'] ?? 0) }}</p>
+                            </div>
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">XP Logged</p>
+                                <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['xp_earned'] ?? 0) }}</p>
+                            </div>
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">Log Entries</p>
+                                <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['total_logs'] ?? 0) }}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-4 xl:grid-cols-2">
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <div class="flex items-center justify-between text-xs uppercase tracking-[0.14em] text-white/45">
+                                    <span>Level Progress</span>
+                                    <span>{{ $selectedCharacter->experience_points }}/{{ $selectedCharacter->experienceRequiredForNextLevel() }} XP</span>
+                                </div>
+                                <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                                    <div class="h-full rounded-full bg-blue-500" style="width: {{ $logStats['level_progress_percent'] ?? 0 }}%;"></div>
+                                </div>
+
+                                <div class="mt-5 flex items-center justify-between text-xs uppercase tracking-[0.14em] text-white/45">
+                                    <span>Stamina</span>
+                                    <span>{{ $selectedCharacter->stamina_points ?? 100 }}/100</span>
+                                </div>
+                                <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                                    <div class="h-full rounded-full bg-slate-300" style="width: {{ $logStats['stamina_percent'] ?? 0 }}%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <p class="text-xs uppercase tracking-[0.14em] text-white/45">Activity Mix</p>
+                                @php($activityRows = [
+                                    ['Work', $logStats['work_count'] ?? 0],
+                                    ['Purchases', $logStats['purchase_count'] ?? 0],
+                                    ['Market', $logStats['market_count'] ?? 0],
+                                    ['Changes', $logStats['change_count'] ?? 0],
+                                ])
+                                @php($maxActivity = max(1, max(array_column($activityRows, 1))))
+                                <div class="mt-3 space-y-3">
+                                    @foreach ($activityRows as [$label, $count])
+                                        <div>
+                                            <div class="flex justify-between text-xs text-white/55">
+                                                <span>{{ $label }}</span>
+                                                <span>{{ number_format($count) }}</span>
+                                            </div>
+                                            <div class="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
+                                                <div class="h-full rounded-full bg-blue-500" style="width: {{ (int) round(($count / $maxActivity) * 100) }}%;"></div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                            <p class="text-xs uppercase tracking-[0.14em] text-white/45">Last 7 Days</p>
+                            <div class="mt-4 flex h-28 items-end gap-2">
+                                @foreach (($logStats['activity_days'] ?? collect()) as $day)
+                                    <div class="flex flex-1 flex-col items-center gap-2">
+                                        <div class="flex h-20 w-full items-end rounded bg-white/5 px-1">
+                                            <div class="w-full rounded bg-blue-500" style="height: {{ max(5, $day['percent']) }}%;"></div>
+                                        </div>
+                                        <span class="text-[10px] uppercase text-white/40">{{ $day['label'] }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        @endif
 
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
             <div class="flex flex-col gap-2 border-b border-white/10 px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
@@ -93,6 +186,11 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/10">
+                        @if (! $selectedCharacter)
+                            <tr>
+                                <td colspan="5" class="px-5 py-12 text-center text-sm text-white/55">Search for a character to load their audit table.</td>
+                            </tr>
+                        @else
                         @forelse ($transactions ?? [] as $transaction)
                             @php($meta = collect($transaction->metadata ?? []))
                             @php($eventLabel = match ($transaction->type) {
@@ -159,6 +257,7 @@
                                 <td colspan="5" class="px-5 py-10 text-center text-sm text-white/55">No important log entries for this character yet.</td>
                             </tr>
                         @endforelse
+                        @endif
                     </tbody>
                 </table>
             </div>
