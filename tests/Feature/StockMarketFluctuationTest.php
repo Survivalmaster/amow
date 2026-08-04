@@ -135,6 +135,55 @@ test('buying shares raises the company price', function () {
         ]);
 });
 
+test('buying shares cannot raise a company by more than ten percent at once', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'buy_impact_percent_per_100_shares' => 99,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    $character = createMarketCharacter($user);
+    $character->update(['plastic_credits' => 100000]);
+    $company = Company::query()->firstOrFail();
+    $company->update(['current_price' => 100, 'last_price_updated_at' => now()]);
+
+    $this->actingAs($user)
+        ->post(route('market.buy', $company), ['shares' => 1000])
+        ->assertRedirect();
+
+    expect((float) $company->fresh()->current_price)->toBe(110.0);
+});
+
+test('random ticker cannot raise a company by more than ten percent at once', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 99,
+        'max_change_percent' => 99,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    createMarketCharacter($user);
+    Company::query()->update([
+        'current_price' => 100,
+        'last_price_updated_at' => now()->subMinutes(2),
+    ]);
+
+    $this->actingAs($user)
+        ->getJson(route('market.state'))
+        ->assertOk();
+
+    expect((float) Company::query()->firstOrFail()->current_price)->toBe(110.0);
+});
+
 test('selling one hundred shares can hard crash a company price', function () {
     StockMarketSetting::query()->updateOrCreate(['id' => 1], [
         'min_change_percent' => 0,

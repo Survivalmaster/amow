@@ -27,7 +27,7 @@
                     <input type="number" step="0.01" name="min_change_percent" value="{{ old('min_change_percent', $settings->min_change_percent) }}" required>
                 </label>
                 <label class="grid gap-2 text-sm text-slate-300">
-                    <span class="text-xs font-semibold uppercase text-slate-500">Maximum Random Change %</span>
+                    <span class="text-xs font-semibold uppercase text-slate-500">Maximum Random Change % (10 max)</span>
                     <input type="number" step="0.01" name="max_change_percent" value="{{ old('max_change_percent', $settings->max_change_percent) }}" required>
                 </label>
                 <label class="grid gap-2 text-sm text-slate-300">

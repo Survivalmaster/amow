@@ -7,6 +7,8 @@ use App\Models\StockMarketSetting;
 
 class StockMarketImpact
 {
+    private const MAX_BUY_IMPACT_PERCENT = 10.0;
+
     public function applyBuyImpact(Company $company, int $shares): array
     {
         return $this->applyImpact($company, $shares, 'buy');
@@ -38,7 +40,10 @@ class StockMarketImpact
                 ? $settings->buy_impact_percent_per_100_shares
                 : $settings->sell_impact_percent_per_100_shares
         );
-        $baseImpact = min($baseImpact, (float) $settings->max_trade_impact_percent);
+        $baseImpact = min(
+            $baseImpact,
+            $direction === 'buy' ? self::MAX_BUY_IMPACT_PERCENT : (float) $settings->max_trade_impact_percent
+        );
 
         $crashImpact = 0.0;
 
@@ -50,7 +55,10 @@ class StockMarketImpact
             );
         }
 
-        $totalImpact = min((float) $settings->max_trade_impact_percent, $baseImpact + $crashImpact);
+        $totalImpact = min(
+            $direction === 'buy' ? self::MAX_BUY_IMPACT_PERCENT : (float) $settings->max_trade_impact_percent,
+            $baseImpact + $crashImpact
+        );
         $multiplier = $direction === 'buy'
             ? 1 + ($totalImpact / 100)
             : 1 - ($totalImpact / 100);

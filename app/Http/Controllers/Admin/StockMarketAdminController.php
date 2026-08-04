@@ -36,7 +36,7 @@ class StockMarketAdminController extends Controller
     {
         $validated = $request->validate([
             'min_change_percent' => ['required', 'numeric', 'between:-99,99'],
-            'max_change_percent' => ['required', 'numeric', 'between:-99,99'],
+            'max_change_percent' => ['required', 'numeric', 'between:-99,10'],
             'buy_impact_percent_per_100_shares' => ['required', 'numeric', 'between:0,99'],
             'sell_impact_percent_per_100_shares' => ['required', 'numeric', 'between:0,99'],
             'max_trade_impact_percent' => ['required', 'numeric', 'between:0,99'],

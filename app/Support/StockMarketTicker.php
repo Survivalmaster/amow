@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 
 class StockMarketTicker
 {
+    private const MAX_UPWARD_TICK_PERCENT = 10.0;
+
     public function fluctuateIfDue(): void
     {
         $latestUpdate = Company::query()->max('last_price_updated_at');
@@ -28,10 +30,12 @@ class StockMarketTicker
                     return;
                 }
 
-                $basisPoints = random_int(
-                    (int) round(((float) $settings->min_change_percent) * 100),
-                    (int) round(((float) $settings->max_change_percent) * 100)
-                );
+                $minChangePercent = (float) $settings->min_change_percent;
+                $maxChangePercent = min((float) $settings->max_change_percent, self::MAX_UPWARD_TICK_PERCENT);
+                $minBasisPoints = (int) round(min($minChangePercent, $maxChangePercent) * 100);
+                $maxBasisPoints = (int) round($maxChangePercent * 100);
+
+                $basisPoints = random_int($minBasisPoints, $maxBasisPoints);
                 $multiplier = 1 + ($basisPoints / 10000);
                 $nextPrice = max(5, round((float) $company->current_price * $multiplier, 2));
 
