@@ -5,17 +5,22 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Faction;
 use App\Models\GameEvent;
+use App\Models\Transaction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class GameMasterAdminController extends Controller
 {
     public function index(): View
     {
+        $events = GameEvent::query()->with(['faction', 'creator'])->latest()->get();
+
         return view('admin.game-master', [
-            'events' => GameEvent::query()->with(['faction', 'creator'])->latest()->get(),
+            'events' => $events,
             'factions' => Faction::query()->orderBy('name')->get(),
+            'eventParticipation' => $this->buildEventParticipation($events),
         ]);
     }
 
@@ -72,5 +77,65 @@ class GameMasterAdminController extends Controller
         ]);
 
         return back()->with('status', 'Game event updated.');
+    }
+
+    private function buildEventParticipation(Collection $events): Collection
+    {
+        if ($events->isEmpty()) {
+            return collect();
+        }
+
+        $logs = Transaction::query()
+            ->with('character')
+            ->where('type', 'work')
+            ->whereNotNull('metadata')
+            ->where('created_at', '>=', $events->min('created_at')->copy()->subMinute())
+            ->latest()
+            ->get();
+
+        return $events->mapWithKeys(function (GameEvent $event) use ($logs) {
+            $eventLogs = $logs->filter(fn (Transaction $transaction) => $this->transactionIncludesEvent($transaction, $event));
+            $participants = $eventLogs
+                ->groupBy('character_id')
+                ->map(function (Collection $participantLogs) {
+                    $firstLog = $participantLogs->first();
+
+                    return [
+                        'character' => $firstLog?->character,
+                        'shifts' => $participantLogs->count(),
+                        'credits' => (int) $participantLogs->sum('amount'),
+                        'xp' => (int) $participantLogs->sum(fn (Transaction $transaction) => (int) data_get($transaction->metadata, 'xp_earned', 0)),
+                        'last_worked_at' => $participantLogs->max('created_at'),
+                    ];
+                })
+                ->sortByDesc('shifts')
+                ->values();
+
+            return [
+                $event->id => [
+                    'participants' => $participants,
+                    'participant_count' => $participants->count(),
+                    'shift_count' => $eventLogs->count(),
+                    'credits' => (int) $eventLogs->sum('amount'),
+                    'xp' => (int) $eventLogs->sum(fn (Transaction $transaction) => (int) data_get($transaction->metadata, 'xp_earned', 0)),
+                ],
+            ];
+        });
+    }
+
+    private function transactionIncludesEvent(Transaction $transaction, GameEvent $event): bool
+    {
+        $eventEntries = collect([
+            ...collect(data_get($transaction->metadata, 'credit_multiplier_events', []))->all(),
+            ...collect(data_get($transaction->metadata, 'xp_multiplier_events', []))->all(),
+        ]);
+
+        return $eventEntries->contains(function (array $entry) use ($event) {
+            if ((int) ($entry['id'] ?? 0) === $event->id) {
+                return true;
+            }
+
+            return ($entry['name'] ?? null) === $event->title;
+        });
     }
 }

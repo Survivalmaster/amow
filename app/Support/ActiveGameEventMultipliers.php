@@ -31,6 +31,7 @@ class ActiveGameEventMultipliers
             ->filter(fn (GameEvent $event) => $event->{$enabledKey})
             ->map(function (GameEvent $event) use ($valueKey) {
                 return [
+                    'id' => $event->id,
                     'name' => $event->title,
                     'multiplier' => min(5, max(1, (float) $event->{$valueKey})),
                 ];

@@ -144,3 +144,88 @@ test('admin permissions can save multiple admin sections', function () {
 
     expect($permission->fresh()->admin_sections)->toBe(['users', 'characters', 'jobs']);
 });
+
+test('game master events show work participation stats', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $faction = Faction::query()->create([
+        'name' => 'Red',
+        'slug' => 'red',
+        'short_description' => 'Red nation.',
+    ]);
+
+    $job = GameJob::query()->create([
+        'name' => 'Mechanic',
+        'slug' => 'mechanic',
+        'description' => 'Fixes things.',
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'required_level' => 0,
+        'work_cooldown_minutes' => 5,
+        'stamina_decrease' => 5,
+        'experience_reward' => 8,
+        'working_display_message' => 'Fixing things.',
+        'is_active' => true,
+    ]);
+
+    $character = Character::query()->create([
+        'user_id' => User::factory()->create()->id,
+        'faction_id' => $faction->id,
+        'name' => 'Event Worker',
+        'age' => 30,
+        'biography' => 'A test character.',
+        'starting_occupation' => $job->name,
+        'current_job_id' => $job->id,
+        'plastic_credits' => 100,
+        'rank_id' => Rank::query()->where('name', 'Civilian')->firstOrFail()->id,
+        'role_type' => 'civilian',
+        'level' => 0,
+        'experience_points' => 0,
+        'health_points' => 100,
+        'stamina_points' => 100,
+        'armor_points' => 0,
+    ]);
+
+    $event = GameEvent::query()->create([
+        'created_by_user_id' => $admin->id,
+        'title' => 'Community Week',
+        'body' => 'A test event.',
+        'is_enabled' => true,
+        'ends_at' => now()->subDay(),
+        'xp_multiplier_enabled' => true,
+        'xp_multiplier' => 1.5,
+        'credit_multiplier_enabled' => true,
+        'credit_multiplier' => 1.5,
+    ]);
+
+    $character->transactions()->create([
+        'type' => 'work',
+        'amount' => 15,
+        'description' => 'Completed a Mechanic shift.',
+        'metadata' => [
+            'xp_earned' => 12,
+            'credit_multiplier_events' => [['id' => $event->id, 'name' => 'Community Week', 'multiplier' => 1.5]],
+        ],
+    ]);
+    $character->transactions()->create([
+        'type' => 'work',
+        'amount' => 20,
+        'description' => 'Completed another Mechanic shift.',
+        'metadata' => [
+            'xp_earned' => 16,
+            'xp_multiplier_events' => [['name' => 'Community Week', 'multiplier' => 1.5]],
+        ],
+    ]);
+
+    $this
+        ->actingAs($admin)
+        ->get(route('admin.game-master.index'))
+        ->assertOk()
+        ->assertSee('Community Week')
+        ->assertSee('Players:</span> 1', false)
+        ->assertSee('Shifts:</span> 2', false)
+        ->assertSee('Credits:</span> 35', false)
+        ->assertSee('XP:</span> 28', false)
+        ->assertSee('Event Worker x2');
+});

@@ -166,7 +166,9 @@ test('active game master events multiply work credits and experience', function 
     expect($transaction->amount)->toBe(15);
     expect($transaction->metadata['credit_multiplier'])->toBe(1.5);
     expect($transaction->metadata['xp_multiplier'])->toBe(1.5);
+    expect($transaction->metadata['credit_multiplier_events'][0]['id'])->toBeInt();
     expect($transaction->metadata['credit_multiplier_events'][0]['name'])->toBe('Factory Surge');
+    expect($transaction->metadata['xp_multiplier_events'][0]['id'])->toBeInt();
     expect($transaction->metadata['xp_multiplier_events'][0]['name'])->toBe('Factory Surge');
 
     Http::assertSent(function ($request) {

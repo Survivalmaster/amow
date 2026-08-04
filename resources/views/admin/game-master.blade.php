@@ -95,6 +95,7 @@
                             <th class="px-4 py-3 text-left">Boosts</th>
                             <th class="px-4 py-3 text-left">Deadline</th>
                             <th class="px-4 py-3 text-left">Status</th>
+                            <th class="px-4 py-3 text-left">Participation</th>
                             <th class="px-5 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -105,6 +106,7 @@
                                 $event->xp_multiplier_enabled ? 'XP '.$formatMultiplier($event->xp_multiplier).'x' : null,
                                 $event->credit_multiplier_enabled ? 'Credits '.$formatMultiplier($event->credit_multiplier).'x' : null,
                             ])->filter()->implode(' | '))
+                            @php($participation = $eventParticipation[$event->id] ?? ['participant_count' => 0, 'shift_count' => 0, 'credits' => 0, 'xp' => 0, 'participants' => collect()])
                             <tr
                                 data-admin-row
                                 data-status="{{ $status }}"
@@ -124,6 +126,26 @@
                                         {{ $status }}
                                     </span>
                                 </td>
+                                <td class="min-w-[22rem] px-4 py-4">
+                                    <div class="grid grid-cols-2 gap-2 text-xs text-white/65">
+                                        <span><span class="text-white/38">Players:</span> {{ number_format($participation['participant_count']) }}</span>
+                                        <span><span class="text-white/38">Shifts:</span> {{ number_format($participation['shift_count']) }}</span>
+                                        <span><span class="text-white/38">Credits:</span> {{ number_format($participation['credits']) }}</span>
+                                        <span><span class="text-white/38">XP:</span> {{ number_format($participation['xp']) }}</span>
+                                    </div>
+                                    <div class="mt-2 flex flex-wrap gap-1.5">
+                                        @forelse ($participation['participants']->take(4) as $participant)
+                                            <span class="rounded-lg border border-white/10 bg-black/20 px-2 py-1 text-[11px] text-white/60">
+                                                {{ $participant['character']?->name ?? 'Deleted character' }} x{{ number_format($participant['shifts']) }}
+                                            </span>
+                                        @empty
+                                            <span class="text-xs text-white/35">No work participation yet.</span>
+                                        @endforelse
+                                        @if ($participation['participants']->count() > 4)
+                                            <span class="rounded-lg border border-white/10 bg-black/20 px-2 py-1 text-[11px] text-white/38">+{{ number_format($participation['participants']->count() - 4) }} more</span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="px-5 py-4 text-right">
                                     <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openId = {{ $event->id }}" />
                                 </td>
@@ -142,7 +164,7 @@
                             </x-admin.modal>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-5 py-10 text-center text-sm text-white/55">No events created yet.</td>
+                                <td colspan="7" class="px-5 py-10 text-center text-sm text-white/55">No events created yet.</td>
                             </tr>
                         @endforelse
                     </tbody>
