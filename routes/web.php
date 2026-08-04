@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\UnitAdminController;
 use App\Http\Controllers\Admin\DiscordWebhookAdminController;
 use App\Http\Controllers\Admin\DiscordManagementController;
 use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\BannedAccountController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterStateController;
@@ -74,6 +75,8 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::get('/chat/global', [GlobalChatController::class, 'index'])->name('chat.global.index');
         Route::post('/chat/global', [GlobalChatController::class, 'store'])->name('chat.global.store');
         Route::post('/locations/{location}/work', [WorkController::class, 'store'])->name('work.store');
+        Route::get('/bank', [BankController::class, 'index'])->name('bank.index');
+        Route::post('/bank/transfers', [BankController::class, 'transfer'])->name('bank.transfers.store');
         Route::get('/store', [StoreController::class, 'index'])->name('store.index');
         Route::get('/license-center', [StoreController::class, 'licences'])->name('store.licences');
         Route::post('/store/purchase', [StoreController::class, 'purchase'])->name('store.purchase');

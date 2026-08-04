@@ -42,6 +42,7 @@ test('marketplace navigation splits store and license center', function () {
         ->get(route('store.index'))
         ->assertOk()
         ->assertSee('Marketplace')
+        ->assertSee('Bank')
         ->assertSee('Store')
         ->assertSee('License Center')
         ->assertSee('Player Businesses')
