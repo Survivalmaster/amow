@@ -111,6 +111,15 @@
             status.dataset.tone = tone;
         };
 
+        const setMode = async (nextMode) => {
+            mode = nextMode;
+            root.classList.toggle('is-admin-mode', mode === 'admin' && canManage);
+            root.querySelectorAll('[data-territory-mode]').forEach((candidate) => {
+                candidate.classList.toggle('is-active', candidate.dataset.territoryMode === mode);
+            });
+            await loadHexes();
+        };
+
         const updateSelectedPanel = () => {
             root.classList.toggle('has-selection', Boolean(selectedHex));
 
@@ -145,6 +154,10 @@
             selectedHex = null;
             layers.forEach((candidate) => candidate.setStyle(tileStyle(candidate.hexData, mode, null)));
             updateSelectedPanel();
+
+            if (mode === 'admin') {
+                setMode('hex');
+            }
         });
 
         const shouldDraw = (hex) => {
@@ -213,10 +226,7 @@
 
         root.querySelectorAll('[data-territory-mode]').forEach((button) => {
             button.addEventListener('click', async () => {
-                mode = button.dataset.territoryMode;
-                root.classList.toggle('is-admin-mode', mode === 'admin' && canManage);
-                root.querySelectorAll('[data-territory-mode]').forEach((candidate) => candidate.classList.toggle('is-active', candidate === button));
-                await loadHexes();
+                await setMode(button.dataset.territoryMode);
             });
         });
 

@@ -317,7 +317,8 @@
         transition: opacity 160ms ease, transform 160ms ease;
     }
 
-    .territory-fullscreen.has-selection .territory-panel {
+    .territory-fullscreen.has-selection .territory-panel,
+    .territory-fullscreen.is-admin-mode .territory-panel {
         opacity: 1;
         pointer-events: auto;
         transform: translateX(0);
