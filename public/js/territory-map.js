@@ -212,6 +212,7 @@
 
         const updateHex = async (hex, payload) => {
             try {
+                setStatus('Saving tile...');
                 const data = await jsonFetch(`/api/map/hexes/${hex.id}`, {
                     method: 'PATCH',
                     headers: { 'X-CSRF-TOKEN': csrfToken },

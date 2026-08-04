@@ -194,6 +194,22 @@ body {
     top: 0;
 }
 
+.leaflet-image-layer {
+    pointer-events: none;
+}
+
+.leaflet-overlay-pane svg {
+    pointer-events: none;
+}
+
+.leaflet-overlay-pane svg path.leaflet-interactive {
+    pointer-events: auto;
+}
+
+.leaflet-interactive {
+    cursor: pointer;
+}
+
 .leaflet-container {
     overflow: hidden;
 }
