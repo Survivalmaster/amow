@@ -30,8 +30,19 @@
         }
 
         .stats-ring {
+            width: 9.5rem;
+            height: 9.5rem;
+            flex: 0 0 9.5rem;
+            border-radius: 9999px !important;
             background:
                 conic-gradient(#38bdf8 0 var(--territory-claimed, 0%), #1f2937 var(--territory-claimed, 0%) 100%);
+        }
+
+        .stats-ring-core {
+            width: 72%;
+            height: 72%;
+            border-radius: 9999px !important;
+            background: #020617;
         }
 
         .stats-chart-frame {
@@ -234,12 +245,14 @@
                 ring.querySelector('[data-territory-percent]').textContent = `${percent}%`;
                 ring.querySelector('[data-territory-subtitle]').textContent = `${formatNumber(territory.claimed)} of ${formatNumber(territory.total)} claimed`;
 
-                types.innerHTML = (territory.types || []).map((item) => `
-                    <div>
-                        <div class="flex justify-between text-sm text-slate-400"><span>${escapeHtml(item.label)}</span><span>${formatNumber(item.value)}</span></div>
-                        <div class="stats-bar mt-2"><div class="h-full rounded-full bg-slate-300" style="width:${widthFor(item.value, max)}%;"></div></div>
-                    </div>
-                `).join('');
+                types.innerHTML = (territory.types || []).length
+                    ? (territory.types || []).map((item) => `
+                        <div>
+                            <div class="flex justify-between gap-3 text-sm text-slate-400"><span>${escapeHtml(item.label)}</span><span>${formatNumber(item.value)}</span></div>
+                            <div class="stats-bar mt-2"><div class="h-full rounded-full bg-slate-300" style="width:${widthFor(item.value, max)}%;"></div></div>
+                        </div>
+                    `).join('')
+                    : '<p class="rounded-lg border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-500">No territory tiles generated yet.</p>';
             };
 
             const render = (payload) => {
@@ -445,8 +458,8 @@
                     <i class="fa-solid fa-map-location-dot text-2xl text-emerald-200"></i>
                 </div>
                 <div class="mt-5 grid items-center gap-5 sm:grid-cols-[9.5rem_minmax(0,1fr)] xl:grid-cols-1 2xl:grid-cols-[9.5rem_minmax(0,1fr)]">
-                    <div data-stat-territory-ring class="stats-ring mx-auto grid aspect-square w-full max-w-[9.5rem] place-items-center rounded-full border border-slate-800" style="--territory-claimed: {{ $territoryClaimedPercent }}%;">
-                        <div class="grid h-[72%] w-[72%] place-items-center rounded-full bg-slate-950 text-center">
+                    <div data-stat-territory-ring class="stats-ring mx-auto grid place-items-center border border-slate-800" style="--territory-claimed: {{ $territoryClaimedPercent }}%;">
+                        <div class="stats-ring-core grid place-items-center text-center">
                             <div>
                                 <p class="font-['Teko'] text-4xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
                                 <p class="mt-1 px-2 text-[10px] font-semibold uppercase leading-tight text-slate-500" data-territory-subtitle>{{ number_format((int) ($territory['claimed'] ?? 0)) }} of {{ number_format((int) ($territory['total'] ?? 0)) }} claimed</p>
