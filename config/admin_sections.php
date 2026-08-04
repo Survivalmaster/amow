@@ -14,6 +14,7 @@ return [
     'skirmishes' => ['label' => 'Skirmishes', 'route' => 'admin.skirmishes.index'],
     'units' => ['label' => 'Units', 'route' => 'admin.units.index'],
     'permissions' => ['label' => 'Permissions', 'route' => 'admin.permissions.index'],
+    'statistics' => ['label' => 'Statistics', 'route' => 'admin.statistics.index'],
     'map_markers' => ['label' => 'Map Markers', 'route' => 'admin.map-markers.index'],
     'discord' => ['label' => 'Discord', 'route' => 'admin.discord.index'],
     'discord_management' => ['label' => 'Discord Management', 'route' => 'admin.discord-management.index'],

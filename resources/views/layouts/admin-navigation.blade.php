@@ -14,6 +14,7 @@
     'skirmishes' => 'fa-crosshairs',
     'units' => 'fa-shield-halved',
     'permissions' => 'fa-key',
+    'statistics' => 'fa-chart-pie',
     'map_markers' => 'fa-map-location-dot',
     'discord' => 'fa-brands fa-discord',
     'discord_management' => 'fa-brands fa-discord',

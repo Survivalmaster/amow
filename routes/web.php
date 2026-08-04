@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\PermissionAdminController;
 use App\Http\Controllers\Admin\GameMasterAdminController;
 use App\Http\Controllers\Admin\RefundAdminController;
 use App\Http\Controllers\Admin\StockMarketAdminController;
+use App\Http\Controllers\Admin\StatisticsAdminController;
 use App\Http\Controllers\Admin\SkirmishAdminController;
 use App\Http\Controllers\Admin\UnitAdminController;
 use App\Http\Controllers\Admin\DiscordWebhookAdminController;
@@ -154,6 +155,8 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::post('/permissions', [PermissionAdminController::class, 'store'])->middleware('admin.section:permissions')->name('permissions.store');
         Route::patch('/permissions/{permission}', [PermissionAdminController::class, 'update'])->middleware('admin.section:permissions')->name('permissions.update');
         Route::delete('/permissions/{permission}', [PermissionAdminController::class, 'destroy'])->middleware('admin.section:permissions')->name('permissions.destroy');
+        Route::get('/statistics', [StatisticsAdminController::class, 'index'])->middleware('admin.section:statistics')->name('statistics.index');
+        Route::get('/statistics/state', [StatisticsAdminController::class, 'state'])->middleware('admin.section:statistics')->name('statistics.state');
         Route::get('/jobs', [GameJobAdminController::class, 'index'])->middleware('admin.section:jobs')->name('jobs.index');
         Route::post('/jobs', [GameJobAdminController::class, 'store'])->middleware('admin.section:jobs')->name('jobs.store');
         Route::patch('/jobs/{gameJob}', [GameJobAdminController::class, 'update'])->middleware('admin.section:jobs')->name('jobs.update');
