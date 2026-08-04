@@ -30,9 +30,9 @@
         }
 
         .stats-ring {
-            width: 9.5rem;
-            height: 9.5rem;
-            flex: 0 0 9.5rem;
+            width: 6.5rem;
+            height: 6.5rem;
+            flex: 0 0 6.5rem;
             border-radius: 9999px !important;
             background:
                 conic-gradient(#38bdf8 0 var(--territory-claimed, 0%), #1f2937 var(--territory-claimed, 0%) 100%);
@@ -47,13 +47,13 @@
 
         .stats-chart-frame {
             display: grid;
-            grid-template-columns: 2.75rem minmax(0, 1fr);
-            gap: 0.75rem;
+            grid-template-columns: 2.35rem minmax(0, 1fr);
+            gap: 0.6rem;
         }
 
         .stats-chart-axis {
             display: grid;
-            height: 12rem;
+            height: 8rem;
             align-content: space-between;
             text-align: right;
             font-size: 0.68rem;
@@ -145,8 +145,8 @@
                             <span>0</span>
                         </div>
                         <div>
-                            <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-3">
-                                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-48 w-full overflow-visible">
+                            <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-2.5">
+                                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-32 w-full overflow-visible">
                                     ${series.map(([key, color]) => line(key, color)).join('')}
                                 </svg>
                             </div>
@@ -155,9 +155,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex flex-wrap justify-end gap-2">
+                    <div class="mt-3 flex flex-wrap justify-end gap-2">
                         ${series.map(([, color, label]) => `
-                            <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-3 py-2 text-xs font-semibold uppercase text-slate-400">
+                            <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-2.5 py-1.5 text-[11px] font-semibold uppercase text-slate-400">
                                 <span class="h-2 w-2 rounded-full" style="background:${color}"></span>${label}
                             </span>
                         `).join('')}
@@ -248,8 +248,8 @@
                 types.innerHTML = (territory.types || []).length
                     ? (territory.types || []).map((item) => `
                         <div>
-                            <div class="flex justify-between gap-3 text-sm text-slate-400"><span>${escapeHtml(item.label)}</span><span>${formatNumber(item.value)}</span></div>
-                            <div class="stats-bar mt-2"><div class="h-full rounded-full bg-slate-300" style="width:${widthFor(item.value, max)}%;"></div></div>
+                            <div class="flex justify-between gap-3 text-xs text-slate-400"><span>${escapeHtml(item.label)}</span><span>${formatNumber(item.value)}</span></div>
+                            <div class="stats-bar mt-1.5"><div class="h-full rounded-full bg-slate-300" style="width:${widthFor(item.value, max)}%;"></div></div>
                         </div>
                     `).join('')
                     : '<p class="rounded-lg border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-500">No territory tiles generated yet.</p>';
@@ -400,16 +400,16 @@
             @endforeach
         </section>
 
-        <div class="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-            <section class="stats-panel p-5">
+        <div class="grid gap-4 xl:grid-cols-2">
+            <section class="stats-panel p-4">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="font-['Teko'] text-3xl uppercase text-slate-100">Seven Day Pulse</p>
-                        <p class="mt-1 text-sm text-slate-400">Transactions, messages, users, and characters over the last week.</p>
+                        <p class="font-['Teko'] text-2xl uppercase text-slate-100">Seven Day Pulse</p>
+                        <p class="mt-0.5 text-xs text-slate-400">Last 7 days across activity streams.</p>
                     </div>
-                    <i class="fa-solid fa-chart-line text-2xl text-sky-300"></i>
+                    <i class="fa-solid fa-chart-line text-xl text-sky-300"></i>
                 </div>
-                <div class="mt-5" data-stat-activity>
+                <div class="mt-3" data-stat-activity>
                     <div class="stats-chart-frame">
                         <div class="stats-chart-axis">
                             <span>{{ number_format($activityMax) }}</span>
@@ -417,8 +417,8 @@
                             <span>0</span>
                         </div>
                         <div>
-                            <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-3">
-                                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-48 w-full overflow-visible">
+                            <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-2.5">
+                                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-32 w-full overflow-visible">
                                     @foreach ($activitySeries as $series)
                                         @php
                                             $points = $activity->values()->map(function ($item, $index) use ($activity, $activityMax, $series) {
@@ -439,9 +439,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex flex-wrap justify-end gap-2">
+                    <div class="mt-3 flex flex-wrap justify-end gap-2">
                         @foreach ($activitySeries as $series)
-                            <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-3 py-2 text-xs font-semibold uppercase text-slate-400">
+                            <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-2.5 py-1.5 text-[11px] font-semibold uppercase text-slate-400">
                                 <span class="h-2 w-2 rounded-full" style="background: {{ $series['color'] }}"></span>{{ $series['label'] }}
                             </span>
                         @endforeach
@@ -449,28 +449,28 @@
                 </div>
             </section>
 
-            <section class="stats-panel p-5">
+            <section class="stats-panel p-4">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="font-['Teko'] text-3xl uppercase text-slate-100">Territory Control</p>
-                        <p class="mt-1 text-sm text-slate-400">Claimed land against the generated map grid.</p>
+                        <p class="font-['Teko'] text-2xl uppercase text-slate-100">Territory Control</p>
+                        <p class="mt-0.5 text-xs text-slate-400">Claimed land against generated tiles.</p>
                     </div>
-                    <i class="fa-solid fa-map-location-dot text-2xl text-emerald-200"></i>
+                    <i class="fa-solid fa-map-location-dot text-xl text-emerald-200"></i>
                 </div>
-                <div class="mt-5 grid items-center gap-5 sm:grid-cols-[9.5rem_minmax(0,1fr)] xl:grid-cols-1 2xl:grid-cols-[9.5rem_minmax(0,1fr)]">
-                    <div data-stat-territory-ring class="stats-ring mx-auto grid place-items-center border border-slate-800" style="--territory-claimed: {{ $territoryClaimedPercent }}%;">
+                <div class="mt-3 grid items-center gap-4 sm:grid-cols-[6.5rem_minmax(0,1fr)]">
+                    <div data-stat-territory-ring class="stats-ring grid place-items-center border border-slate-800" style="--territory-claimed: {{ $territoryClaimedPercent }}%;">
                         <div class="stats-ring-core grid place-items-center text-center">
                             <div>
-                                <p class="font-['Teko'] text-4xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
-                                <p class="mt-1 px-2 text-[10px] font-semibold uppercase leading-tight text-slate-500" data-territory-subtitle>{{ number_format((int) ($territory['claimed'] ?? 0)) }} of {{ number_format((int) ($territory['total'] ?? 0)) }} claimed</p>
+                                <p class="font-['Teko'] text-3xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
+                                <p class="mt-0.5 px-2 text-[9px] font-semibold uppercase leading-tight text-slate-500" data-territory-subtitle>{{ number_format((int) ($territory['claimed'] ?? 0)) }} of {{ number_format((int) ($territory['total'] ?? 0)) }}</p>
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-3" data-stat-territory-types>
+                    <div class="space-y-2" data-stat-territory-types>
                         @forelse ($territoryTypes as $item)
                             <div>
-                                <div class="flex justify-between gap-3 text-sm text-slate-400"><span>{{ $item['label'] }}</span><span>{{ number_format((int) $item['value']) }}</span></div>
-                                <div class="stats-bar mt-2"><div class="h-full rounded-full bg-slate-300" style="width: {{ max((int) $item['value'] > 0 ? 5 : 0, ((int) $item['value'] / $territoryTypeMax) * 100) }}%;"></div></div>
+                                <div class="flex justify-between gap-3 text-xs text-slate-400"><span>{{ $item['label'] }}</span><span>{{ number_format((int) $item['value']) }}</span></div>
+                                <div class="stats-bar mt-1.5"><div class="h-full rounded-full bg-slate-300" style="width: {{ max((int) $item['value'] > 0 ? 5 : 0, ((int) $item['value'] / $territoryTypeMax) * 100) }}%;"></div></div>
                             </div>
                         @empty
                             <p class="rounded-lg border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-500">No territory tiles generated yet.</p>
