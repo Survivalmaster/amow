@@ -29,6 +29,36 @@
     @php($fieldClass = 'rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35')
     @php($canViewPlayerEmails = auth()->user()?->loadMissing('permissions')->hasPermission('developer'))
 
+    @push('styles')
+        <style>
+            .character-log-summary-top {
+                display: grid;
+                grid-template-columns: minmax(20rem, 1fr) minmax(34rem, 0.95fr);
+                gap: 1.5rem;
+                align-items: start;
+            }
+
+            .character-log-stat-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+                max-width: 52rem;
+                margin-left: auto;
+            }
+
+            @media (max-width: 1100px) {
+                .character-log-summary-top {
+                    grid-template-columns: 1fr;
+                }
+
+                .character-log-stat-grid {
+                    max-width: none;
+                    margin-left: 0;
+                }
+            }
+        </style>
+    @endpush
+
     <div class="space-y-5">
         <section
             x-data="{ characterSearch: '' }"
@@ -71,7 +101,7 @@
 
         @if ($selectedCharacter)
             <section class="rounded-[2rem] border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/30">
-                <div class="grid gap-6 xl:grid-cols-[minmax(20rem,1fr)_minmax(34rem,0.9fr)] xl:items-start">
+                <div class="character-log-summary-top">
                     <div>
                         <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em] text-white">{{ $selectedCharacter->name }}</p>
                         <div class="mt-4 space-y-2 text-sm text-white/65">
@@ -85,7 +115,7 @@
                     </div>
 
                     <div>
-                        <div class="grid gap-3 md:grid-cols-2">
+                        <div class="character-log-stat-grid">
                             <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                                 <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">Earned</p>
                                 <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['earned_credits'] ?? 0) }}</p>
