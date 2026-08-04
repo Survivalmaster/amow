@@ -115,7 +115,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::post('/refunds', [RefundAdminController::class, 'store'])->middleware('admin.section:refunds')->name('refunds.store');
         Route::get('/character-log', [CharacterLogAdminController::class, 'index'])->middleware('admin.section:characters')->name('character-log.index');
         Route::get('/character-logs', [CharacterLogAdminController::class, 'index'])->middleware('admin.section:characters')->name('character-logs.index');
-        Route::get('/nation-logs', [NationLogAdminController::class, 'index'])->middleware('admin.section:nation_logs')->name('nation-logs.index');
+        Route::get('/nation-logs', [NationLogAdminController::class, 'index'])->middleware('admin.section:characters')->name('nation-logs.index');
         Route::get('/factions', [FactionAdminController::class, 'index'])->middleware('admin.section:factions')->name('factions.index');
         Route::post('/factions', [FactionAdminController::class, 'store'])->middleware('admin.section:factions')->name('factions.store');
         Route::patch('/factions/{faction}', [FactionAdminController::class, 'update'])->middleware('admin.section:factions')->name('factions.update');

@@ -8,7 +8,7 @@
                 ['section' => 'characters'],
                 ['section' => 'refunds'],
                 ['label' => 'Character Logs', 'route' => 'admin.character-logs.index', 'match' => ['admin.character-log.*', 'admin.character-logs.*'], 'icon' => 'fa-solid fa-clock-rotate-left', 'access' => $adminNavUser->canAccessAdminSection('characters')],
-                ['section' => 'nation_logs'],
+                ['label' => 'Nation Logs', 'route' => 'admin.nation-logs.index', 'match' => ['admin.nation-logs.*'], 'icon' => 'fa-solid fa-building-columns', 'access' => $adminNavUser->canAccessAdminSection('characters')],
                 ['section' => 'permissions'],
             ],
         ],
