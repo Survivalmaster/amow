@@ -4,13 +4,16 @@ use App\Models\Character;
 use App\Models\Faction;
 use App\Models\Rank;
 use App\Models\User;
+use App\Models\Permission;
 use Database\Seeders\FactionSeeder;
+use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RankSeeder;
 
 beforeEach(function () {
     $this->seed([
         FactionSeeder::class,
         RankSeeder::class,
+        PermissionSeeder::class,
     ]);
 });
 
@@ -60,6 +63,27 @@ test('a player can transfer credits to a same faction character', function () {
         'type' => 'player_transfer_received',
         'amount' => 125,
     ]);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $this
+        ->actingAs($admin)
+        ->get(route('admin.character-logs.index', ['character_id' => $sender->id]))
+        ->assertOk()
+        ->assertSee('Money Sent')
+        ->assertSee('To Receiver')
+        ->assertSee('Balance 500 -&gt; 375', false)
+        ->assertSee('Note: Mission split');
+
+    $this
+        ->actingAs($admin)
+        ->get(route('admin.character-logs.index', ['character_id' => $recipient->id]))
+        ->assertOk()
+        ->assertSee('Money Received')
+        ->assertSee('From Sender')
+        ->assertSee('Balance 75 -&gt; 200', false)
+        ->assertSee('Note: Mission split');
 });
 
 test('a player cannot transfer credits outside their faction', function () {

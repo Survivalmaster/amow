@@ -162,6 +162,7 @@
                                     ['Work', $logStats['work_count'] ?? 0],
                                     ['Purchases', $logStats['purchase_count'] ?? 0],
                                     ['Market', $logStats['market_count'] ?? 0],
+                                    ['Transfers', $logStats['transfer_count'] ?? 0],
                                     ['Changes', $logStats['change_count'] ?? 0],
                                 ])
                                 @php($maxActivity = max(1, max(array_column($activityRows, 1))))
@@ -301,6 +302,8 @@
                                 'licence_purchase' => 'Licence Bought',
                                 'stock_buy' => 'Stock Bought',
                                 'stock_sell' => 'Stock Sold',
+                                'player_transfer_sent' => 'Money Sent',
+                                'player_transfer_received' => 'Money Received',
                                 'job_change' => 'Job Change',
                                 'rank_change' => 'Rank Change',
                                 'refund' => 'Refund',
@@ -310,6 +313,8 @@
                                 'work' => 'border-[#7ead59]/30 bg-[#7ead59]/10 text-[#d7edc7]',
                                 'item_purchase', 'licence_purchase', 'stock_buy' => 'border-[#c2a84f]/30 bg-[#c2a84f]/10 text-[#f4d77a]',
                                 'stock_sell' => 'border-[#7ec6ff]/30 bg-[#7ec6ff]/10 text-[#b9ddff]',
+                                'player_transfer_sent' => 'border-[#f0b29f]/30 bg-[#f0b29f]/10 text-[#f0b29f]',
+                                'player_transfer_received' => 'border-[#7ec6ff]/30 bg-[#7ec6ff]/10 text-[#b9ddff]',
                                 'refund' => 'border-[#7ead59]/30 bg-[#7ead59]/10 text-[#d7edc7]',
                                 'job_change', 'rank_change' => 'border-white/15 bg-white/8 text-white',
                                 default => 'border-white/10 bg-black/20 text-white/65',
@@ -318,6 +323,8 @@
                                 'work' => ($meta->get('job') ? $meta->get('job').' shift' : $transaction->description),
                                 'job_change' => ($meta->get('from_job') || $meta->get('to_job')) ? (($meta->get('from_job') ?: 'None').' -> '.($meta->get('to_job') ?: 'None')) : $transaction->description,
                                 'rank_change' => ($meta->get('from_rank') || $meta->get('to_rank')) ? (($meta->get('from_rank') ?: 'None').' -> '.($meta->get('to_rank') ?: 'None')) : $transaction->description,
+                                'player_transfer_sent' => 'To '.($meta->get('recipient_name') ?: 'Unknown recipient'),
+                                'player_transfer_received' => 'From '.($meta->get('sender_name') ?: 'Unknown sender'),
                                 'refund' => $meta->get('reason') ?: $transaction->description,
                                 default => $transaction->description,
                             })
@@ -338,6 +345,11 @@
                                 'work' => $workChanges !== '' ? trim($workChanges.($bonusTags !== '' ? ' | Bonus '.$bonusTags : '')) : 'Legacy work log - XP and level details were not recorded',
                                 'job_change' => $meta->get('changed_by') ? 'Changed by '.$meta->get('changed_by') : 'Cooldown updated',
                                 'rank_change' => $meta->get('changed_by') ? 'Changed by '.$meta->get('changed_by') : 'Rank updated',
+                                'player_transfer_sent', 'player_transfer_received' => collect([
+                                    $meta->has('credits_before') && $meta->has('credits_after') ? 'Balance '.number_format((int) $meta->get('credits_before')).' -> '.number_format((int) $meta->get('credits_after')) : null,
+                                    $meta->get('faction_name') ? 'Faction '.$meta->get('faction_name') : null,
+                                    $meta->get('note') ? 'Note: '.$meta->get('note') : null,
+                                ])->filter()->implode(' | '),
                                 'refund' => collect([
                                     $meta->get('refund_xp') ? 'XP +'.number_format((int) $meta->get('refund_xp')) : null,
                                     $meta->has('level_before') && $meta->has('level_after') ? 'Lv '.$meta->get('level_before').' -> '.$meta->get('level_after') : null,
