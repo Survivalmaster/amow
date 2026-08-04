@@ -25,6 +25,8 @@ class MarketController extends Controller
 
     public function index(Request $request): View
     {
+        $this->ensureDeveloper($request);
+
         $this->ticker->fluctuateIfDue();
 
         $character = $request->user()->character()->with('holdings.company')->firstOrFail();
@@ -35,8 +37,10 @@ class MarketController extends Controller
         ]);
     }
 
-    public function state(): JsonResponse
+    public function state(Request $request): JsonResponse
     {
+        $this->ensureDeveloper($request);
+
         $this->ticker->fluctuateIfDue();
 
         return response()->json([
@@ -54,6 +58,8 @@ class MarketController extends Controller
 
     public function buy(Request $request, Company $company): RedirectResponse
     {
+        $this->ensureDeveloper($request);
+
         $this->ticker->fluctuateIfDue();
         $company->refresh();
 
@@ -113,6 +119,8 @@ class MarketController extends Controller
 
     public function sell(Request $request, Company $company): RedirectResponse
     {
+        $this->ensureDeveloper($request);
+
         $this->ticker->fluctuateIfDue();
         $company->refresh();
 
@@ -161,5 +169,10 @@ class MarketController extends Controller
         });
 
         return back()->with('status', 'Shares sold.');
+    }
+
+    private function ensureDeveloper(Request $request): void
+    {
+        abort_unless($request->user()?->loadMissing('permissions')->hasPermission('developer'), 403);
     }
 }

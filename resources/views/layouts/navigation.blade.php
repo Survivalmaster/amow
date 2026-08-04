@@ -12,6 +12,7 @@
 @php($discordAvatarUrl = $navUser->discord_avatar_url)
 @php($canLeadNation = $navCharacter?->canLeadNation())
 @php($canAccessTerritoryMap = $navUser->hasPermission('developer'))
+@php($canAccessStockMarket = $navUser->hasPermission('developer'))
 @php(
     $formattedCredits = match (true) {
         $creditAmount >= 1000000 => rtrim(rtrim(number_format($creditAmount / 1000000, 1), '0'), '.') . 'M',
@@ -24,7 +25,7 @@
         ['label' => 'My Dashboard', 'route' => 'lobby', 'match' => ['lobby', 'cities.*', 'locations.*', 'messages.*', 'work.*'], 'icon' => 'fa-solid fa-gauge-high'],
         ['label' => 'World of Plastica', 'route' => 'territory-map.index', 'match' => ['territory-map.*'], 'icon' => 'fa-solid fa-map', 'locked' => ! $canAccessTerritoryMap],
         ['label' => 'Jobs', 'route' => 'jobs.index', 'match' => ['jobs.*'], 'icon' => 'fa-solid fa-briefcase'],
-        ['label' => 'Stock Market', 'route' => 'market.index', 'match' => ['market.*'], 'icon' => 'fa-solid fa-chart-line'],
+        ['label' => 'Stock Market', 'route' => 'market.index', 'match' => ['market.*'], 'icon' => 'fa-solid fa-chart-line', 'locked' => ! $canAccessStockMarket, 'locked_label' => 'DISABLED'],
         ['label' => 'Leaderboards', 'route' => 'leaderboards.index', 'match' => ['leaderboards.*'], 'icon' => 'fa-solid fa-trophy'],
     ]))
 )
@@ -144,11 +145,12 @@
                     @foreach ($primaryNav as $item)
                         @php($isActive = request()->routeIs(...$item['match']))
                         @if ($item['locked'] ?? false)
+                            @php($lockedPillClass = ($item['locked_label'] ?? null) === 'DISABLED' ? 'border-[#d75b5b]/35 bg-[#d75b5b]/10 text-[#ff9a9a]' : 'border-white/10 bg-black/25 text-white/38')
                             <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
                                 <span class="h-6 w-1 rounded-full bg-transparent"></span>
                                 <i class="{{ $item['icon'] }} w-5 text-center text-white/25"></i>
                                 <span class="flex-1">{{ $item['label'] }}</span>
-                                <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                                <span class="rounded-full border px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] {{ $lockedPillClass }}">{{ $item['locked_label'] ?? 'Coming Soon' }}</span>
                             </div>
                         @else
                             <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
@@ -404,11 +406,12 @@
             @foreach ($primaryNav as $item)
                 @php($isActive = request()->routeIs(...$item['match']))
                 @if ($item['locked'] ?? false)
+                    @php($lockedPillClass = ($item['locked_label'] ?? null) === 'DISABLED' ? 'border-[#d75b5b]/35 bg-[#d75b5b]/10 text-[#ff9a9a]' : 'border-white/10 bg-black/25 text-white/38')
                     <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
                         <span class="h-6 w-1 rounded-full bg-transparent"></span>
                         <i class="{{ $item['icon'] }} w-5 text-center text-white/25"></i>
                         <span class="flex-1">{{ $item['label'] }}</span>
-                        <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                        <span class="rounded-full border px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] {{ $lockedPillClass }}">{{ $item['locked_label'] ?? 'Coming Soon' }}</span>
                     </div>
                 @else
                     <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">

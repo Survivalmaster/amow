@@ -25,8 +25,14 @@ beforeEach(function () {
     ]);
 });
 
-function createMarketCharacter(User $user): Character
+function createMarketCharacter(User $user, bool $developer = true): Character
 {
+    if ($developer) {
+        $user->permissions()->syncWithoutDetaching(
+            Permission::query()->where('slug', 'developer')->firstOrFail()->id
+        );
+    }
+
     return Character::query()->create([
         'user_id' => $user->id,
         'faction_id' => Faction::query()->firstOrFail()->id,
@@ -45,6 +51,26 @@ function createMarketCharacter(User $user): Character
         'experience_points' => 0,
     ]);
 }
+
+test('non developers see the stock market as disabled and cannot access it directly', function () {
+    $user = User::factory()->create();
+    createMarketCharacter($user, developer: false);
+
+    $this->actingAs($user)
+        ->get(route('lobby'))
+        ->assertOk()
+        ->assertSee('Stock Market')
+        ->assertSee('DISABLED')
+        ->assertDontSee(route('market.index'), false);
+
+    $this->actingAs($user)
+        ->get(route('market.index'))
+        ->assertForbidden();
+
+    $this->actingAs($user)
+        ->getJson(route('market.state'))
+        ->assertForbidden();
+});
 
 test('market state fluctuates prices when they are due', function () {
     $user = User::factory()->create();
