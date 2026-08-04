@@ -18,7 +18,9 @@ class MapHexClaimController extends Controller
         try {
             $faction = Faction::query()->findOrFail($request->integer('faction_id'));
 
-            return MapHexResource::make($claimService->claim($mapHex, $faction, $request->user()));
+            return response()->json([
+                'data' => MapHexResource::make($claimService->claim($mapHex, $faction, $request->user()))->resolve($request),
+            ]);
         } catch (RuntimeException $exception) {
             return response()->json(['message' => $exception->getMessage()], 422);
         }

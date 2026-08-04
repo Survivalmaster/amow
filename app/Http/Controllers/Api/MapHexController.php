@@ -35,7 +35,7 @@ class MapHexController extends Controller
         return MapHexResource::make($mapHex->load('faction'));
     }
 
-    public function update(UpdateMapHexRequest $request, MapHex $mapHex): MapHexResource
+    public function update(UpdateMapHexRequest $request, MapHex $mapHex): JsonResponse
     {
         $validated = $request->validated();
 
@@ -49,13 +49,17 @@ class MapHexController extends Controller
 
         $mapHex->update($validated);
 
-        return MapHexResource::make($mapHex->fresh('faction'));
+        return response()->json([
+            'data' => MapHexResource::make($mapHex->fresh('faction'))->resolve($request),
+        ]);
     }
 
-    public function destroyClaim(Request $request, MapHex $mapHex, \App\Services\Maps\MapClaimService $claimService): MapHexResource
+    public function destroyClaim(Request $request, MapHex $mapHex, \App\Services\Maps\MapClaimService $claimService): JsonResponse
     {
         $this->authorize('removeClaim', $mapHex);
 
-        return MapHexResource::make($claimService->removeClaim($mapHex, $request->user()));
+        return response()->json([
+            'data' => MapHexResource::make($claimService->removeClaim($mapHex, $request->user()))->resolve($request),
+        ]);
     }
 }

@@ -202,7 +202,21 @@
             }
         };
 
+        const savedHexFrom = (payload) => {
+            const hex = payload?.data?.id ? payload.data : payload;
+
+            if (!hex?.id) {
+                throw new Error(payload?.message || 'Tile saved, but the server did not return the updated tile data.');
+            }
+
+            return hex;
+        };
+
         const upsertHex = (hex) => {
+            if (!hex?.id) {
+                throw new Error('Tile saved, but the server did not return the updated tile data.');
+            }
+
             const existing = layers.get(hex.id);
             if (existing) existing.hexData = hex;
             if (selectedHex?.id === hex.id) selectedHex = hex;
@@ -218,7 +232,7 @@
                     headers: { 'X-CSRF-TOKEN': csrfToken },
                     body: JSON.stringify(payload),
                 });
-                upsertHex(data.data);
+                upsertHex(savedHexFrom(data));
                 setStatus('Tile saved.', 'success');
             } catch (error) {
                 setStatus(error.message, 'error');
@@ -252,7 +266,7 @@
                         headers: { 'X-CSRF-TOKEN': csrfToken },
                         body: JSON.stringify({ faction_id: editor.faction_id.value }),
                     });
-                    upsertHex(data.data);
+                    upsertHex(savedHexFrom(data));
                     setStatus('Tile claimed.', 'success');
                 } catch (error) {
                     setStatus(error.message, 'error');
@@ -266,7 +280,7 @@
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': csrfToken },
                     });
-                    upsertHex(data.data);
+                    upsertHex(savedHexFrom(data));
                     setStatus('Claim removed.', 'success');
                 } catch (error) {
                     setStatus(error.message, 'error');
