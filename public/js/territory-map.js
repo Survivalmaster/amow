@@ -112,6 +112,34 @@
             status.dataset.tone = tone;
         };
 
+        const playPop = () => {
+            if (!canManage) return;
+
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+
+                const context = new AudioContext();
+                const oscillator = context.createOscillator();
+                const gain = context.createGain();
+                const now = context.currentTime;
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(620, now);
+                oscillator.frequency.exponentialRampToValueAtTime(180, now + 0.075);
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(0.08, now + 0.008);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+
+                oscillator.connect(gain);
+                gain.connect(context.destination);
+                oscillator.start(now);
+                oscillator.stop(now + 0.1);
+                oscillator.addEventListener('ended', () => context.close());
+            } catch (error) {
+            }
+        };
+
         const setMode = async (nextMode) => {
             mode = nextMode;
             root.classList.toggle('is-admin-mode', mode === 'admin' && canManage);
@@ -250,6 +278,7 @@
                     body: JSON.stringify(payload),
                 });
                 upsertHex(savedHexFrom(data) || await refreshedHex(hex.id));
+                playPop();
                 setStatus('Tile saved.', 'success');
             } catch (error) {
                 setStatus(error.message, 'error');
@@ -267,6 +296,7 @@
                     body: JSON.stringify({ faction_id: factionId }),
                 });
                 upsertHex(savedHexFrom(data) || await refreshedHex(hex.id));
+                playPop();
                 setStatus('Tile claimed.', 'success');
             } catch (error) {
                 setStatus(error.message, 'error');
@@ -305,6 +335,7 @@
                         headers: { 'X-CSRF-TOKEN': csrfToken },
                     });
                     upsertHex(savedHexFrom(data) || await refreshedHex(selectedHex.id));
+                    playPop();
                     setStatus('Claim removed.', 'success');
                 } catch (error) {
                     setStatus(error.message, 'error');
