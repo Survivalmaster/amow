@@ -23,9 +23,9 @@ class StockMarketAdminController extends Controller
                     'max_change_percent' => 3,
                     'buy_impact_percent_per_100_shares' => 0.35,
                     'sell_impact_percent_per_100_shares' => 0.45,
-                    'max_trade_impact_percent' => 12,
+                    'max_trade_impact_percent' => 99,
                     'crash_trade_threshold_shares' => 100,
-                    'crash_extra_percent' => 4,
+                    'crash_extra_percent' => 99,
                 ]
             ),
             'companies' => Company::query()->withCount('holdings')->orderBy('name')->get(),

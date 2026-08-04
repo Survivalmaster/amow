@@ -88,9 +88,9 @@ test('buying shares raises the company price', function () {
         'max_change_percent' => 0,
         'buy_impact_percent_per_100_shares' => 1,
         'sell_impact_percent_per_100_shares' => 1,
-        'max_trade_impact_percent' => 20,
+        'max_trade_impact_percent' => 99,
         'crash_trade_threshold_shares' => 100,
-        'crash_extra_percent' => 5,
+        'crash_extra_percent' => 99,
     ]);
 
     $user = User::factory()->create();
@@ -112,21 +112,21 @@ test('buying shares raises the company price', function () {
         ]);
 });
 
-test('selling one hundred shares drops the company price and crashes it', function () {
+test('selling one hundred shares can hard crash a company price', function () {
     StockMarketSetting::query()->updateOrCreate(['id' => 1], [
         'min_change_percent' => 0,
         'max_change_percent' => 0,
         'buy_impact_percent_per_100_shares' => 1,
         'sell_impact_percent_per_100_shares' => 1,
-        'max_trade_impact_percent' => 20,
+        'max_trade_impact_percent' => 99,
         'crash_trade_threshold_shares' => 100,
-        'crash_extra_percent' => 5,
+        'crash_extra_percent' => 99,
     ]);
 
     $user = User::factory()->create();
     $character = createMarketCharacter($user);
     $company = Company::query()->firstOrFail();
-    $company->update(['current_price' => 100, 'last_price_updated_at' => now()]);
+    $company->update(['current_price' => 1000, 'last_price_updated_at' => now()]);
 
     StockHolding::query()->create([
         'character_id' => $character->id,
@@ -139,11 +139,11 @@ test('selling one hundred shares drops the company price and crashes it', functi
         ->post(route('market.sell', $company), ['shares' => 100])
         ->assertRedirect();
 
-    expect((float) $company->fresh()->current_price)->toBeLessThan(100.0);
+    expect((float) $company->fresh()->current_price)->toBe(10.0);
     expect($character->transactions()->where('type', 'stock_sell')->first()?->metadata)
         ->toMatchArray([
             'shares' => 100,
-            'impact_percent' => -6.0,
+            'impact_percent' => -99.0,
             'crash_applied' => true,
         ]);
 });
