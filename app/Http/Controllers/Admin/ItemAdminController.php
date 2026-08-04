@@ -20,6 +20,7 @@ class ItemAdminController extends Controller
         return view('admin.items', [
             'items' => Item::query()->with(['requiredRank', 'requiredLicence', 'producingBuilding'])->orderBy('name')->get(),
             'buildingItems' => Item::query()->where('is_building', true)->orderBy('name')->get(),
+            'itemTypes' => Item::TYPES,
             'ranks' => Rank::query()->orderBy('order_index')->get(),
             'licences' => Licence::query()->with('requiredRank')->orderBy('name')->get(),
         ]);
@@ -31,7 +32,7 @@ class ItemAdminController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:items,slug'],
             'description' => ['required', 'string'],
-            'type' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'string', Rule::in(array_keys(Item::TYPES))],
             'icon_class' => ['nullable', 'string', 'max:255'],
             'is_home' => ['nullable', 'boolean'],
             'is_building' => ['nullable', 'boolean'],
@@ -67,7 +68,7 @@ class ItemAdminController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:items,slug,'.$item->id],
             'description' => ['required', 'string'],
-            'type' => ['required', 'string', 'max:255'],
+            'type' => ['required', 'string', Rule::in(array_keys(Item::TYPES))],
             'icon_class' => ['nullable', 'string', 'max:255'],
             'is_home' => ['nullable', 'boolean'],
             'is_building' => ['nullable', 'boolean'],

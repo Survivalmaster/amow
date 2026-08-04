@@ -9,6 +9,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Item extends Model
 {
+    public const TYPES = [
+        'consumable' => 'Consumable',
+        'weapon' => 'Weapon',
+        'armor' => 'Armor',
+        'utility' => 'Utility',
+        'tool' => 'Tool',
+        'material' => 'Material',
+        'trade' => 'Trade Good',
+        'backpack' => 'Backpack',
+        'building' => 'Building',
+        'business' => 'Business',
+        'military' => 'Military',
+        'misc' => 'Miscellaneous',
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -79,14 +94,24 @@ class Item extends Model
         }
 
         return match ($this->type) {
+            'consumable' => 'fa-solid fa-flask',
+            'weapon' => 'fa-solid fa-gun',
+            'armor' => 'fa-solid fa-shield-halved',
             'home' => 'fa-solid fa-house',
             'building' => 'fa-solid fa-tents',
             'backpack' => 'fa-solid fa-backpack',
             'military' => 'fa-solid fa-shield-halved',
             'business' => 'fa-solid fa-briefcase',
             'trade' => 'fa-solid fa-scroll',
+            'tool' => 'fa-solid fa-screwdriver-wrench',
+            'material' => 'fa-solid fa-boxes-stacked',
             'utility' => 'fa-solid fa-screwdriver-wrench',
             default => 'fa-solid fa-cube',
         };
+    }
+
+    public function getTypeLabelAttribute(): string
+    {
+        return self::TYPES[$this->type] ?? str($this->type)->replace('_', ' ')->title()->toString();
     }
 }

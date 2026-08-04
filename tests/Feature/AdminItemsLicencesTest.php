@@ -60,3 +60,38 @@ test('admin can link an item to a producing building', function () {
         'produced_by_building_item_id' => $building->id,
     ]);
 });
+
+test('admin can create categorized item types', function () {
+    $admin = User::factory()->create();
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $this->actingAs($admin)
+        ->post(route('admin.items.store'), [
+            'name' => 'Foam Chestplate',
+            'slug' => 'foam-chestplate',
+            'description' => 'A light armour plate for patrols.',
+            'type' => 'armor',
+            'price' => 175,
+        ])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('items', [
+        'slug' => 'foam-chestplate',
+        'type' => 'armor',
+    ]);
+});
+
+test('admin cannot create an unknown item type', function () {
+    $admin = User::factory()->create();
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $this->actingAs($admin)
+        ->post(route('admin.items.store'), [
+            'name' => 'Strange Object',
+            'slug' => 'strange-object',
+            'description' => 'Unknown equipment.',
+            'type' => 'banana',
+            'price' => 10,
+        ])
+        ->assertSessionHasErrors('type');
+});

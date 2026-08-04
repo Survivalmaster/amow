@@ -3,6 +3,12 @@
 
     @include('admin.partials.nav')
 
+    @php
+        $fieldClass = 'rounded-2xl border border-white/10 bg-black/25 px-4 py-3';
+        $labelClass = 'grid gap-2 text-sm text-white/70';
+        $labelTitleClass = 'text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45';
+    @endphp
+
     <div
         x-data="{
             openItemId: null,
@@ -44,48 +50,97 @@
             <form method="POST" action="{{ route('admin.items.store') }}" class="p-5">
                 @csrf
                 <div class="grid gap-4 lg:grid-cols-2">
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Name" required>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="Slug" required>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="type" placeholder="Type" value="utility" required>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" placeholder="Font Awesome icon class">
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Item Name</span>
+                        <input class="{{ $fieldClass }}" name="name" placeholder="Plastic Rifle" required>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Slug</span>
+                        <input class="{{ $fieldClass }}" name="slug" placeholder="plastic-rifle" required>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Item Type</span>
+                        <select class="{{ $fieldClass }}" name="type" required>
+                            @foreach ($itemTypes as $value => $label)
+                                <option value="{{ $value }}" @selected($value === 'utility')>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Icon Class</span>
+                        <input class="{{ $fieldClass }}" name="icon_class" placeholder="Font Awesome icon class">
+                    </label>
                     <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                         <input type="checkbox" name="is_building" value="1">
                         Building item
                     </label>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="build_time_minutes" placeholder="Build time (minutes)" min="0" value="0">
-                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="produced_by_building_item_id">
-                        <option value="">Not produced by a building</option>
-                        @foreach ($buildingItems as $buildingItem)
-                            <option value="{{ $buildingItem->id }}">{{ $buildingItem->name }}</option>
-                        @endforeach
-                    </select>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="footprint_width" placeholder="Footprint width" min="1" max="10" value="1">
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="footprint_height" placeholder="Footprint height" min="1" max="10" value="1">
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Build Time Minutes</span>
+                        <input class="{{ $fieldClass }}" type="number" name="build_time_minutes" min="0" value="0">
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Produced By Building</span>
+                        <select class="{{ $fieldClass }}" name="produced_by_building_item_id">
+                            <option value="">Not produced by a building</option>
+                            @foreach ($buildingItems as $buildingItem)
+                                <option value="{{ $buildingItem->id }}">{{ $buildingItem->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Footprint Width</span>
+                        <input class="{{ $fieldClass }}" type="number" name="footprint_width" min="1" max="10" value="1">
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Footprint Height</span>
+                        <input class="{{ $fieldClass }}" type="number" name="footprint_height" min="1" max="10" value="1">
+                    </label>
                     <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                         <input type="checkbox" name="is_home" value="1">
                         Legacy home item
                     </label>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="inventory_slot_bonus" placeholder="Extra inventory slots" min="0" value="0">
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="price" placeholder="Price" required>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="stock" placeholder="Stock">
-                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
-                        <option value="">No rank requirement</option>
-                        @foreach ($ranks as $rank)
-                            <option value="{{ $rank->id }}">{{ $rank->name }}</option>
-                        @endforeach
-                    </select>
-                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_role_type">
-                        <option value="">Any role</option>
-                        <option value="civilian">Civilian</option>
-                        <option value="military">Military</option>
-                    </select>
-                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="required_licence_id">
-                        <option value="">No licence requirement</option>
-                        @foreach ($licences as $licence)
-                            <option value="{{ $licence->id }}">{{ $licence->name }}</option>
-                        @endforeach
-                    </select>
-                    <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="description" placeholder="Description" required></textarea>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Inventory Slot Bonus</span>
+                        <input class="{{ $fieldClass }}" type="number" name="inventory_slot_bonus" min="0" value="0">
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Price</span>
+                        <input class="{{ $fieldClass }}" type="number" name="price" placeholder="Price" required>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Stock</span>
+                        <input class="{{ $fieldClass }}" type="number" name="stock" placeholder="Blank for unlimited">
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Required Rank</span>
+                        <select class="{{ $fieldClass }}" name="required_rank_id">
+                            <option value="">No rank requirement</option>
+                            @foreach ($ranks as $rank)
+                                <option value="{{ $rank->id }}">{{ $rank->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Required Role</span>
+                        <select class="{{ $fieldClass }}" name="required_role_type">
+                            <option value="">Any role</option>
+                            <option value="civilian">Civilian</option>
+                            <option value="military">Military</option>
+                        </select>
+                    </label>
+                    <label class="{{ $labelClass }} lg:col-span-2">
+                        <span class="{{ $labelTitleClass }}">Required Licence</span>
+                        <select class="{{ $fieldClass }}" name="required_licence_id">
+                            <option value="">No licence requirement</option>
+                            @foreach ($licences as $licence)
+                                <option value="{{ $licence->id }}">{{ $licence->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="{{ $labelClass }} lg:col-span-2">
+                        <span class="{{ $labelTitleClass }}">Description</span>
+                        <textarea class="min-h-28 {{ $fieldClass }}" name="description" placeholder="What does this item do?" required></textarea>
+                    </label>
                 </div>
                 <div class="mt-5 flex justify-end gap-2 border-t border-white/10 pt-3">
                     <button type="button" @click="showItemCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
@@ -139,7 +194,7 @@
                         @foreach ($items as $item)
                             <tr data-admin-row data-search="{{ str($item->name.' '.$item->slug.' '.$item->type.' '.$item->description.' '.$item->requiredRank?->name.' '.$item->required_role_type.' '.$item->requiredLicence?->name.' '.$item->producingBuilding?->name)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $item->name }}</td>
-                                <td class="px-5 py-4">{{ $item->type }}</td>
+                                <td class="px-5 py-4">{{ $item->type_label }}</td>
                                 <td class="px-5 py-4">{{ $item->is_building ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ $item->footprint_width }}x{{ $item->footprint_height }}</td>
                                 <td class="px-5 py-4">{{ $item->build_time_minutes }} min</td>
@@ -156,54 +211,103 @@
                                     </div>
                                 </td>
                             </tr>
-                            <x-admin.modal open="openItemId === {{ $item->id }}" close="openItemId = null" title="Edit {{ $item->name }}" subtitle="{{ $item->type }}" max-width="56rem">
+                            <x-admin.modal open="openItemId === {{ $item->id }}" close="openItemId = null" title="Edit {{ $item->name }}" subtitle="{{ $item->type_label }}" max-width="56rem">
                                     <form method="POST" action="{{ route('admin.items.update', $item) }}" class="grid gap-4 p-5 lg:grid-cols-2">
                                         @csrf
                                         @method('PATCH')
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $item->name }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" value="{{ $item->slug }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="type" value="{{ $item->type }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="icon_class" value="{{ $item->icon_class }}" placeholder="Font Awesome icon class">
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Item Name</span>
+                                            <input class="{{ $fieldClass }}" name="name" value="{{ $item->name }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Slug</span>
+                                            <input class="{{ $fieldClass }}" name="slug" value="{{ $item->slug }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Item Type</span>
+                                            <select class="{{ $fieldClass }}" name="type" required>
+                                                @foreach ($itemTypes as $value => $label)
+                                                    <option value="{{ $value }}" @selected($item->type === $value)>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Icon Class</span>
+                                            <input class="{{ $fieldClass }}" name="icon_class" value="{{ $item->icon_class }}" placeholder="Font Awesome icon class">
+                                        </label>
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                                             <input type="checkbox" name="is_building" value="1" @checked($item->is_building)>
                                             Building item
                                         </label>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="build_time_minutes" value="{{ $item->build_time_minutes }}" min="0">
-                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="produced_by_building_item_id">
-                                            <option value="">Not produced by a building</option>
-                                            @foreach ($buildingItems as $buildingItem)
-                                                @if ($buildingItem->id !== $item->id)
-                                                    <option value="{{ $buildingItem->id }}" @selected($item->produced_by_building_item_id === $buildingItem->id)>{{ $buildingItem->name }}</option>
-                                                @endif
-                                            @endforeach
-                                        </select>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="footprint_width" value="{{ $item->footprint_width }}" min="1" max="10">
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="footprint_height" value="{{ $item->footprint_height }}" min="1" max="10">
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Build Time Minutes</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="build_time_minutes" value="{{ $item->build_time_minutes }}" min="0">
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Produced By Building</span>
+                                            <select class="{{ $fieldClass }}" name="produced_by_building_item_id">
+                                                <option value="">Not produced by a building</option>
+                                                @foreach ($buildingItems as $buildingItem)
+                                                    @if ($buildingItem->id !== $item->id)
+                                                        <option value="{{ $buildingItem->id }}" @selected($item->produced_by_building_item_id === $buildingItem->id)>{{ $buildingItem->name }}</option>
+                                                    @endif
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Footprint Width</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="footprint_width" value="{{ $item->footprint_width }}" min="1" max="10">
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Footprint Height</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="footprint_height" value="{{ $item->footprint_height }}" min="1" max="10">
+                                        </label>
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                                             <input type="checkbox" name="is_home" value="1" @checked($item->is_home)>
                                             Legacy home item
                                         </label>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="inventory_slot_bonus" value="{{ $item->inventory_slot_bonus }}" min="0">
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="price" value="{{ $item->price }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="stock" value="{{ $item->stock }}" placeholder="Stock">
-                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
-                                            <option value="">No rank requirement</option>
-                                            @foreach ($ranks as $rank)
-                                                <option value="{{ $rank->id }}" @selected($item->required_rank_id === $rank->id)>{{ $rank->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_role_type">
-                                            <option value="">Any role</option>
-                                            <option value="civilian" @selected($item->required_role_type === 'civilian')>Civilian</option>
-                                            <option value="military" @selected($item->required_role_type === 'military')>Military</option>
-                                        </select>
-                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="required_licence_id">
-                                            <option value="">No licence requirement</option>
-                                            @foreach ($licences as $licence)
-                                                <option value="{{ $licence->id }}" @selected($item->required_licence_id === $licence->id)>{{ $licence->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="description" required>{{ $item->description }}</textarea>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Inventory Slot Bonus</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="inventory_slot_bonus" value="{{ $item->inventory_slot_bonus }}" min="0">
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Price</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="price" value="{{ $item->price }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Stock</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="stock" value="{{ $item->stock }}" placeholder="Blank for unlimited">
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Required Rank</span>
+                                            <select class="{{ $fieldClass }}" name="required_rank_id">
+                                                <option value="">No rank requirement</option>
+                                                @foreach ($ranks as $rank)
+                                                    <option value="{{ $rank->id }}" @selected($item->required_rank_id === $rank->id)>{{ $rank->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Required Role</span>
+                                            <select class="{{ $fieldClass }}" name="required_role_type">
+                                                <option value="">Any role</option>
+                                                <option value="civilian" @selected($item->required_role_type === 'civilian')>Civilian</option>
+                                                <option value="military" @selected($item->required_role_type === 'military')>Military</option>
+                                            </select>
+                                        </label>
+                                        <label class="{{ $labelClass }} lg:col-span-2">
+                                            <span class="{{ $labelTitleClass }}">Required Licence</span>
+                                            <select class="{{ $fieldClass }}" name="required_licence_id">
+                                                <option value="">No licence requirement</option>
+                                                @foreach ($licences as $licence)
+                                                    <option value="{{ $licence->id }}" @selected($item->required_licence_id === $licence->id)>{{ $licence->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="{{ $labelClass }} lg:col-span-2">
+                                            <span class="{{ $labelTitleClass }}">Description</span>
+                                            <textarea class="min-h-28 {{ $fieldClass }}" name="description" required>{{ $item->description }}</textarea>
+                                        </label>
                                         <div class="flex justify-end gap-2 border-t border-white/10 pt-3 lg:col-span-2">
                                             <button type="button" @click="openItemId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
                                             <button class="inline-flex items-center gap-2 rounded-full bg-[#7ead59] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Save</button>
