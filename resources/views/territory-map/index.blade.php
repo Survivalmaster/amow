@@ -16,7 +16,8 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=rajdhani:500,600,700|teko:500,600,700&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQZNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+        <link rel="stylesheet" href="{{ asset('css/territory-map.css') }}?v={{ filemtime(public_path('css/territory-map.css')) }}">
     </head>
     <body class="territory-body">
         <div
@@ -81,8 +82,8 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
                 <div>
-                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em]">Territory Intel</p>
-                    <p class="mt-1 text-sm text-white/55" data-selected-summary>Click a visible tile to inspect it.</p>
+                    <p class="territory-panel-title">Territory Intel</p>
+                    <p class="territory-panel-summary" data-selected-summary>Click a visible tile to inspect it.</p>
                 </div>
 
                 <dl class="territory-details">
@@ -140,7 +141,7 @@
                 @endif
 
                 <div class="territory-legend">
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">Legend</p>
+                    <p class="territory-legend-title">Legend</p>
                     <div class="territory-legend-row"><span style="background:#8b949e"></span>Unclaimed land</div>
                     <div class="territory-legend-row"><span style="background:#3478c5"></span>Water</div>
                     <div class="territory-legend-row"><span style="background:#1f2937"></span>Blocked</div>
@@ -150,5 +151,7 @@
                 </div>
             </aside>
         </div>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script src="{{ asset('js/territory-map.js') }}?v={{ filemtime(public_path('js/territory-map.js')) }}" defer></script>
     </body>
 </html>
