@@ -49,6 +49,7 @@
                             <th class="px-5 py-4 text-left">Faction</th>
                             <th class="px-5 py-4 text-left">Rank</th>
                             <th class="px-5 py-4 text-left">Level</th>
+                            <th class="px-5 py-4 text-left">Firepower</th>
                             <th class="px-5 py-4 text-left">Job</th>
                             <th class="px-5 py-4 text-left">Credits</th>
                             <th class="px-5 py-4 text-right">Actions</th>
@@ -56,12 +57,13 @@
                     </thead>
                     <tbody x-ref="rows" class="divide-y divide-white/10">
                         @foreach ($characters as $character)
-                            <tr data-admin-row data-search="{{ str($character->name.' '.$character->user->name.' '.($canViewPlayerEmails ? $character->user->email : '').' '.$character->faction->name.' '.$character->rank->name.' '.$character->displayed_job_name)->lower() }}">
+                            <tr data-admin-row data-search="{{ str($character->name.' '.$character->user->name.' '.($canViewPlayerEmails ? $character->user->email : '').' '.$character->faction->name.' '.$character->rank->name.' '.$character->displayed_job_name.' '.$character->level.' '.$character->firepower_score)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $character->name }}</td>
                                 <td class="px-5 py-4">{{ $canViewPlayerEmails ? $character->user->email : ($character->user->name ?? 'User #'.$character->user_id) }}</td>
                                 <td class="px-5 py-4">{{ $character->faction->name }}</td>
                                 <td class="px-5 py-4">{{ $character->rank->name }}</td>
                                 <td class="px-5 py-4">Lv {{ number_format($character->level) }}</td>
+                                <td class="px-5 py-4">{{ number_format($character->firepower_score ?? 0) }}</td>
                                 <td class="px-5 py-4">{{ $character->displayed_job_name }}</td>
                                 <td class="px-5 py-4">{{ number_format($character->plastic_credits) }}</td>
                                 <td class="px-5 py-4 text-right">
@@ -165,6 +167,10 @@
                                         <label class="grid gap-2 text-sm text-white/70">
                                             <span class="uppercase tracking-[0.18em] text-white/45">Economic Score</span>
                                             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="economic_score" type="number" min="0" value="{{ $character->economic_score }}" required>
+                                        </label>
+                                        <label class="grid gap-2 text-sm text-white/70">
+                                            <span class="uppercase tracking-[0.18em] text-white/45">Firepower</span>
+                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="firepower_score" type="number" min="0" value="{{ $character->firepower_score ?? 0 }}" required>
                                         </label>
                                         <label class="grid gap-2 text-sm text-white/70">
                                             <span class="uppercase tracking-[0.18em] text-white/45">Job Change Timestamp</span>

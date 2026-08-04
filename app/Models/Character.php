@@ -24,6 +24,7 @@ class Character extends Model
         'influence_score',
         'military_score',
         'economic_score',
+        'firepower_score',
         'level',
         'experience_points',
         'health_points',
@@ -42,6 +43,7 @@ class Character extends Model
         return [
             'is_business_owner' => 'boolean',
             'is_nation_leader' => 'boolean',
+            'firepower_score' => 'integer',
             'last_worked_at' => 'datetime',
             'job_changed_at' => 'datetime',
             'last_business_payout_at' => 'datetime',

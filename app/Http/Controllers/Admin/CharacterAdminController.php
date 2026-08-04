@@ -46,6 +46,7 @@ class CharacterAdminController extends Controller
             'influence_score' => ['required', 'integer', 'min:0'],
             'military_score' => ['required', 'integer', 'min:0'],
             'economic_score' => ['required', 'integer', 'min:0'],
+            'firepower_score' => ['required', 'integer', 'min:0'],
             'level' => ['required', 'integer', 'min:0'],
             'experience_points' => ['required', 'integer', 'min:0'],
             'health_points' => ['required', 'integer', 'min:0', 'max:100'],

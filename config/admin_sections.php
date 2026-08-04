@@ -9,6 +9,8 @@ return [
     'locations' => ['label' => 'Locations', 'route' => 'admin.locations.index'],
     'items' => ['label' => 'Items', 'route' => 'admin.items.index'],
     'jobs' => ['label' => 'Jobs', 'route' => 'admin.jobs.index'],
+    'skirmishes' => ['label' => 'Skirmishes', 'route' => 'admin.skirmishes.index'],
+    'units' => ['label' => 'Units', 'route' => 'admin.units.index'],
     'permissions' => ['label' => 'Permissions', 'route' => 'admin.permissions.index'],
     'map_markers' => ['label' => 'Map Markers', 'route' => 'admin.map-markers.index'],
     'discord' => ['label' => 'Discord', 'route' => 'admin.discord.index'],
