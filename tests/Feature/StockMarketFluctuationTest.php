@@ -299,6 +299,87 @@ test('low price recovery can lift crashed stocks without player buying', functio
     expect((float) Company::query()->firstOrFail()->current_price)->toBeGreaterThan(1.0);
 });
 
+test('penny stocks visibly recover by at least one cent when growth is positive', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'passive_growth_bias_percent' => 10,
+        'low_price_recovery_percent' => 5,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    createMarketCharacter($user);
+    Company::query()->update([
+        'current_price' => 0.01,
+        'last_price_updated_at' => now()->subMinutes(2),
+    ]);
+
+    $this->actingAs($user)
+        ->getJson(route('market.state'))
+        ->assertOk();
+
+    expect((float) Company::query()->firstOrFail()->current_price)->toBe(0.02);
+});
+
+test('one freshly updated company does not block due companies from ticking', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'passive_growth_bias_percent' => 10,
+        'low_price_recovery_percent' => 0,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    createMarketCharacter($user);
+    $companies = Company::query()->orderBy('id')->take(2)->get();
+    $companies[0]->update(['current_price' => 10, 'last_price_updated_at' => now()]);
+    $companies[1]->update(['current_price' => 10, 'last_price_updated_at' => now()->subMinutes(2)]);
+
+    $this->actingAs($user)
+        ->getJson(route('market.state'))
+        ->assertOk();
+
+    expect((float) $companies[0]->fresh()->current_price)->toBe(10.0);
+    expect((float) $companies[1]->fresh()->current_price)->toBe(11.0);
+});
+
+test('future stock timestamps are corrected instead of freezing the ticker', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'passive_growth_bias_percent' => 10,
+        'low_price_recovery_percent' => 0,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    createMarketCharacter($user);
+    Company::query()->update([
+        'current_price' => 10,
+        'last_price_updated_at' => now()->addMinutes(5),
+    ]);
+
+    $this->actingAs($user)
+        ->getJson(route('market.state'))
+        ->assertOk();
+
+    expect((float) Company::query()->firstOrFail()->current_price)->toBe(11.0);
+});
+
 test('selling one hundred shares can hard crash a company price', function () {
     StockMarketSetting::query()->updateOrCreate(['id' => 1], [
         'min_change_percent' => 0,

@@ -4,7 +4,6 @@ namespace App\Support;
 
 use App\Models\Company;
 use App\Models\StockMarketSetting;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class StockMarketTicker
@@ -15,12 +14,6 @@ class StockMarketTicker
 
     public function fluctuateIfDue(): void
     {
-        $latestUpdate = Company::query()->max('last_price_updated_at');
-
-        if ($latestUpdate && Carbon::parse($latestUpdate)->gt(now()->subMinute())) {
-            return;
-        }
-
         DB::transaction(function () {
             $settings = StockMarketSetting::query()->firstOrCreate(
                 ['id' => 1],
@@ -33,7 +26,7 @@ class StockMarketTicker
             );
 
             Company::query()->lockForUpdate()->get()->each(function (Company $company) use ($settings) {
-                if ($company->last_price_updated_at && $company->last_price_updated_at->gt(now()->subMinute())) {
+                if (! $this->isDue($company)) {
                     return;
                 }
 
@@ -56,7 +49,7 @@ class StockMarketTicker
                 }
 
                 $multiplier = 1 + ($totalChangePercent / 100);
-                $nextPrice = StockMarketPrice::clamp((float) $company->current_price * $multiplier);
+                $nextPrice = $this->visibleNextPrice((float) $company->current_price, $multiplier, $totalChangePercent);
 
                 $company->update([
                     'current_price' => $nextPrice,
@@ -64,6 +57,34 @@ class StockMarketTicker
                 ]);
             });
         });
+    }
+
+    private function isDue(Company $company): bool
+    {
+        if (! $company->last_price_updated_at) {
+            return true;
+        }
+
+        if ($company->last_price_updated_at->gt(now()->addMinute())) {
+            return true;
+        }
+
+        return $company->last_price_updated_at->lte(now()->subMinute());
+    }
+
+    private function visibleNextPrice(float $currentPrice, float $multiplier, float $totalChangePercent): float
+    {
+        $nextPrice = StockMarketPrice::clamp($currentPrice * $multiplier);
+
+        if ($totalChangePercent > 0 && $nextPrice <= $currentPrice) {
+            return StockMarketPrice::clamp($currentPrice + 0.01);
+        }
+
+        if ($totalChangePercent < 0 && $nextPrice >= $currentPrice && $currentPrice > StockMarketPrice::MIN_PRICE) {
+            return StockMarketPrice::clamp($currentPrice - 0.01);
+        }
+
+        return $nextPrice;
     }
 
     private function lowPriceRecoveryPercent(float $price, float $configuredRecoveryPercent): float
