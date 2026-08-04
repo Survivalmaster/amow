@@ -39,6 +39,7 @@ class Item extends Model
         'inventory_slot_bonus',
         'price',
         'required_rank_id',
+        'required_level',
         'required_role_type',
         'required_licence_id',
         'stock',
@@ -84,6 +85,7 @@ class Item extends Model
             'build_time_minutes' => 'integer',
             'produced_by_building_item_id' => 'integer',
             'inventory_slot_bonus' => 'integer',
+            'required_level' => 'integer',
         ];
     }
 

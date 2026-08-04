@@ -195,7 +195,7 @@ class Character extends Model
             return false;
         }
 
-        if ($item->required_rank_id && $this->rank->order_index < $item->requiredRank->order_index) {
+        if ($item->required_level !== null && $this->level < $item->required_level) {
             return false;
         }
 

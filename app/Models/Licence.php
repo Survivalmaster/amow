@@ -15,12 +15,14 @@ class Licence extends Model
         'description',
         'cost',
         'required_rank_id',
+        'required_level',
         'grants_business_creation',
     ];
 
     protected function casts(): array
     {
         return [
+            'required_level' => 'integer',
             'grants_business_creation' => 'boolean',
         ];
     }

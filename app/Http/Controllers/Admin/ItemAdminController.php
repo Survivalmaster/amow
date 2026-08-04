@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Item;
 use App\Models\Licence;
-use App\Models\Rank;
 use App\Services\Discord\AdminActionLogger;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
@@ -18,11 +17,10 @@ class ItemAdminController extends Controller
     public function index(): View
     {
         return view('admin.items', [
-            'items' => Item::query()->with(['requiredRank', 'requiredLicence', 'producingBuilding'])->orderBy('name')->get(),
+            'items' => Item::query()->with(['requiredLicence', 'producingBuilding'])->orderBy('name')->get(),
             'buildingItems' => Item::query()->where('is_building', true)->orderBy('name')->get(),
             'itemTypes' => Item::TYPES,
-            'ranks' => Rank::query()->orderBy('order_index')->get(),
-            'licences' => Licence::query()->with('requiredRank')->orderBy('name')->get(),
+            'licences' => Licence::query()->orderBy('name')->get(),
         ]);
     }
 
@@ -42,7 +40,7 @@ class ItemAdminController extends Controller
             'produced_by_building_item_id' => ['nullable', Rule::exists('items', 'id')->where('is_building', true)],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
             'price' => ['required', 'integer', 'min:1'],
-            'required_rank_id' => ['nullable', 'exists:ranks,id'],
+            'required_level' => ['nullable', 'integer', 'min:0'],
             'required_role_type' => ['nullable', 'in:civilian,military'],
             'required_licence_id' => ['nullable', 'exists:licences,id'],
             'stock' => ['nullable', 'integer', 'min:0'],
@@ -53,6 +51,7 @@ class ItemAdminController extends Controller
             'footprint_height' => (int) $request->input('footprint_height', 1),
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
+            'required_rank_id' => null,
         ];
 
         $item = Item::query()->create($validated);
@@ -78,7 +77,7 @@ class ItemAdminController extends Controller
             'produced_by_building_item_id' => ['nullable', Rule::exists('items', 'id')->where('is_building', true)],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
             'price' => ['required', 'integer', 'min:1'],
-            'required_rank_id' => ['nullable', 'exists:ranks,id'],
+            'required_level' => ['nullable', 'integer', 'min:0'],
             'required_role_type' => ['nullable', 'in:civilian,military'],
             'required_licence_id' => ['nullable', 'exists:licences,id'],
             'stock' => ['nullable', 'integer', 'min:0'],
@@ -89,6 +88,7 @@ class ItemAdminController extends Controller
             'footprint_height' => (int) $request->input('footprint_height', 1),
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
+            'required_rank_id' => null,
         ];
 
         if ((int) ($validated['produced_by_building_item_id'] ?? 0) === $item->id) {

@@ -97,7 +97,7 @@ class CharacterController extends Controller
             'faction',
             'rank',
             'currentJob',
-            'licences.requiredRank',
+            'licences',
             'inventory',
             'transactions' => fn ($query) => $query->latest()->limit(12),
             'holdings.company',

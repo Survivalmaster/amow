@@ -31,14 +31,14 @@
                                     @endif
                                 </div>
                                 <p class="mt-2 text-sm text-white/70">{{ $licence->description }}</p>
-                                <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $licence->requiredRank?->name ?? 'No rank requirement' }}</p>
+                                <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $licence->required_level !== null ? 'Requires Level '.$licence->required_level : 'No level requirement' }}</p>
                             </div>
                             <div class="text-right">
                                 <p class="font-['Teko'] text-3xl uppercase text-[#7ead59]">{{ number_format($licence->cost) }}</p>
                                 <p class="text-xs uppercase tracking-[0.22em] text-white/45">Credits</p>
                             </div>
                         </div>
-                        <button class="mt-4 rounded-full bg-[#c2a84f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]" @disabled($owned)>Purchase Licence</button>
+                        <button class="mt-4 rounded-full bg-[#c2a84f] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c] disabled:cursor-not-allowed disabled:opacity-45" @disabled($owned || ($licence->required_level !== null && $character->level < $licence->required_level))>Purchase Licence</button>
                     </form>
                 @endforeach
             </div>
@@ -71,7 +71,7 @@
                                         </span>
                                         <div>
                                             <p class="text-sm text-white/70">{{ $item->description }}</p>
-                                            <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $item->type }}</p>
+                                            <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $item->type_label }} | {{ $item->required_level !== null ? 'Requires Level '.$item->required_level : 'No level requirement' }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -80,7 +80,7 @@
                                     <p class="text-xs uppercase tracking-[0.22em] text-white/45">Credits</p>
                                 </div>
                             </div>
-                            <button class="mt-4 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Purchase Building</button>
+                            <button class="mt-4 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c] disabled:cursor-not-allowed disabled:opacity-45" @disabled(! $character->canPurchaseItem($item))>Purchase Building</button>
                         </form>
                     @endforeach
                 </div>
@@ -120,7 +120,7 @@
                                         </span>
                                         <div>
                                             <p class="text-sm text-white/70">{{ $item->description }}</p>
-                                            <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $item->type }}</p>
+                                            <p class="mt-2 text-xs uppercase tracking-[0.2em] text-white/40">{{ $item->type_label }} | {{ $item->required_level !== null ? 'Requires Level '.$item->required_level : 'No level requirement' }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -129,7 +129,7 @@
                                     <p class="text-xs uppercase tracking-[0.22em] text-white/45">Credits</p>
                                 </div>
                             </div>
-                            <button class="mt-4 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Purchase Item</button>
+                            <button class="mt-4 rounded-full bg-[#7ead59] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c] disabled:cursor-not-allowed disabled:opacity-45" @disabled(! $character->canPurchaseItem($item))>Purchase Item</button>
                         </form>
                     @endforeach
                 </div>

@@ -26,8 +26,8 @@ class DiscordStoreController extends Controller
             ], 404);
         }
 
-        $licences = Licence::query()->with('requiredRank')->orderBy('cost')->get();
-        $items = Item::query()->with(['requiredRank', 'requiredLicence'])->orderBy('type')->orderBy('price')->get();
+        $licences = Licence::query()->orderBy('cost')->get();
+        $items = Item::query()->with('requiredLicence')->orderBy('type')->orderBy('price')->get();
 
         return response()->json([
             'linked' => true,
@@ -45,7 +45,7 @@ class DiscordStoreController extends Controller
                 'description' => $licence->description,
                 'price' => $licence->cost,
                 'owned' => $character->licences->contains('id', $licence->id),
-                'required_rank' => $licence->requiredRank?->name,
+                'required_level' => $licence->required_level,
             ])->values(),
             'items' => $items->map(fn (Item $item) => [
                 'id' => $item->id,
@@ -55,7 +55,7 @@ class DiscordStoreController extends Controller
                 'price' => $item->price,
                 'stock' => $item->stock,
                 'can_purchase' => $character->canPurchaseItem($item) && $character->canStoreAdditionalItem($item),
-                'required_rank' => $item->requiredRank?->name,
+                'required_level' => $item->required_level,
                 'required_role_type' => $item->required_role_type,
                 'required_licence' => $item->requiredLicence?->name,
             ])->values(),

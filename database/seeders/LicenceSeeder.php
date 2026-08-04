@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Licence;
-use App\Models\Rank;
 use Illuminate\Database\Seeder;
 
 class LicenceSeeder extends Seeder
@@ -13,8 +12,6 @@ class LicenceSeeder extends Seeder
      */
     public function run(): void
     {
-        $captain = Rank::query()->where('name', 'Captain')->first();
-
         $licences = [
             [
                 'name' => 'Land',
@@ -22,6 +19,7 @@ class LicenceSeeder extends Seeder
                 'description' => 'Unlocks a personal 10x10 land plot where buildings can be placed and constructed.',
                 'cost' => 260,
                 'required_rank_id' => null,
+                'required_level' => null,
                 'grants_business_creation' => false,
             ],
             [
@@ -30,6 +28,7 @@ class LicenceSeeder extends Seeder
                 'description' => 'Access to civic power, debate chambers, and upper-political buildings.',
                 'cost' => 400,
                 'required_rank_id' => null,
+                'required_level' => 3,
                 'grants_business_creation' => false,
             ],
             [
@@ -38,6 +37,7 @@ class LicenceSeeder extends Seeder
                 'description' => 'Allows service inside faction temples and ceremonial locations.',
                 'cost' => 250,
                 'required_rank_id' => null,
+                'required_level' => 2,
                 'grants_business_creation' => false,
             ],
             [
@@ -45,7 +45,8 @@ class LicenceSeeder extends Seeder
                 'slug' => 'business-owner',
                 'description' => 'Unlocks passive daily income, commercial prestige, and player business creation.',
                 'cost' => 600,
-                'required_rank_id' => $captain?->id,
+                'required_rank_id' => null,
+                'required_level' => 5,
                 'grants_business_creation' => true,
             ],
         ];

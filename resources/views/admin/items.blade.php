@@ -112,13 +112,8 @@
                         <input class="{{ $fieldClass }}" type="number" name="stock" placeholder="Blank for unlimited">
                     </label>
                     <label class="{{ $labelClass }}">
-                        <span class="{{ $labelTitleClass }}">Required Rank</span>
-                        <select class="{{ $fieldClass }}" name="required_rank_id">
-                            <option value="">No rank requirement</option>
-                            @foreach ($ranks as $rank)
-                                <option value="{{ $rank->id }}">{{ $rank->name }}</option>
-                            @endforeach
-                        </select>
+                        <span class="{{ $labelTitleClass }}">Required Level</span>
+                        <input class="{{ $fieldClass }}" type="number" name="required_level" min="0" placeholder="No level requirement">
                     </label>
                     <label class="{{ $labelClass }}">
                         <span class="{{ $labelTitleClass }}">Required Role</span>
@@ -166,13 +161,8 @@
                         <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="cost" placeholder="Cost" min="1" required>
                     </label>
                     <label class="{{ $labelClass }}">
-                        <span class="{{ $labelTitleClass }}">Required Rank</span>
-                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
-                            <option value="">No rank requirement</option>
-                            @foreach ($ranks as $rank)
-                                <option value="{{ $rank->id }}">{{ $rank->name }}</option>
-                            @endforeach
-                        </select>
+                        <span class="{{ $labelTitleClass }}">Required Level</span>
+                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="required_level" min="0" placeholder="No level requirement">
                     </label>
                     <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                         <input type="checkbox" name="grants_business_creation" value="1">
@@ -205,19 +195,21 @@
                             <th class="px-5 py-4 text-left">Footprint</th>
                             <th class="px-5 py-4 text-left">Build Time</th>
                             <th class="px-5 py-4 text-left">Produced By</th>
+                            <th class="px-5 py-4 text-left">Required Level</th>
                             <th class="px-5 py-4 text-left">Price</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody x-ref="itemRows" class="divide-y divide-white/10">
                         @foreach ($items as $item)
-                            <tr data-admin-row data-search="{{ str($item->name.' '.$item->slug.' '.$item->type.' '.$item->description.' '.$item->requiredRank?->name.' '.$item->required_role_type.' '.$item->requiredLicence?->name.' '.$item->producingBuilding?->name)->lower() }}">
+                            <tr data-admin-row data-search="{{ str($item->name.' '.$item->slug.' '.$item->type.' '.$item->description.' level '.$item->required_level.' '.$item->required_role_type.' '.$item->requiredLicence?->name.' '.$item->producingBuilding?->name)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $item->name }}</td>
                                 <td class="px-5 py-4">{{ $item->type_label }}</td>
                                 <td class="px-5 py-4">{{ $item->is_building ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ $item->footprint_width }}x{{ $item->footprint_height }}</td>
                                 <td class="px-5 py-4">{{ $item->build_time_minutes }} min</td>
                                 <td class="px-5 py-4">{{ $item->producingBuilding?->name ?? 'None' }}</td>
+                                <td class="px-5 py-4">{{ $item->required_level !== null ? 'Level '.$item->required_level : 'None' }}</td>
                                 <td class="px-5 py-4">{{ number_format($item->price) }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
@@ -298,13 +290,8 @@
                                             <input class="{{ $fieldClass }}" type="number" name="stock" value="{{ $item->stock }}" placeholder="Blank for unlimited">
                                         </label>
                                         <label class="{{ $labelClass }}">
-                                            <span class="{{ $labelTitleClass }}">Required Rank</span>
-                                            <select class="{{ $fieldClass }}" name="required_rank_id">
-                                                <option value="">No rank requirement</option>
-                                                @foreach ($ranks as $rank)
-                                                    <option value="{{ $rank->id }}" @selected($item->required_rank_id === $rank->id)>{{ $rank->name }}</option>
-                                                @endforeach
-                                            </select>
+                                            <span class="{{ $labelTitleClass }}">Required Level</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="required_level" value="{{ $item->required_level }}" min="0" placeholder="No level requirement">
                                         </label>
                                         <label class="{{ $labelClass }}">
                                             <span class="{{ $labelTitleClass }}">Required Role</span>
@@ -359,18 +346,18 @@
                             <th class="px-5 py-4 text-left">Name</th>
                             <th class="px-5 py-4 text-left">Slug</th>
                             <th class="px-5 py-4 text-left">Cost</th>
-                            <th class="px-5 py-4 text-left">Required Rank</th>
+                            <th class="px-5 py-4 text-left">Required Level</th>
                             <th class="px-5 py-4 text-left">Business</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody x-ref="licenceRows" class="divide-y divide-white/10">
                         @foreach ($licences as $licence)
-                            <tr data-admin-row data-search="{{ str($licence->name.' '.$licence->slug.' '.$licence->description.' '.$licence->requiredRank?->name)->lower() }}">
+                            <tr data-admin-row data-search="{{ str($licence->name.' '.$licence->slug.' '.$licence->description.' level '.$licence->required_level)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $licence->name }}</td>
                                 <td class="px-5 py-4">{{ $licence->slug }}</td>
                                 <td class="px-5 py-4">{{ number_format($licence->cost) }}</td>
-                                <td class="px-5 py-4">{{ $licence->requiredRank?->name ?? 'None' }}</td>
+                                <td class="px-5 py-4">{{ $licence->required_level !== null ? 'Level '.$licence->required_level : 'None' }}</td>
                                 <td class="px-5 py-4">{{ $licence->grants_business_creation ? 'Creates businesses' : 'No' }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
@@ -400,13 +387,8 @@
                                             <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="cost" value="{{ $licence->cost }}" min="1" required>
                                         </label>
                                         <label class="{{ $labelClass }}">
-                                            <span class="{{ $labelTitleClass }}">Required Rank</span>
-                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
-                                                <option value="">No rank requirement</option>
-                                                @foreach ($ranks as $rank)
-                                                    <option value="{{ $rank->id }}" @selected($licence->required_rank_id === $rank->id)>{{ $rank->name }}</option>
-                                                @endforeach
-                                            </select>
+                                            <span class="{{ $labelTitleClass }}">Required Level</span>
+                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="required_level" value="{{ $licence->required_level }}" min="0" placeholder="No level requirement">
                                         </label>
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                                             <input type="checkbox" name="grants_business_creation" value="1" @checked($licence->grants_business_creation)>

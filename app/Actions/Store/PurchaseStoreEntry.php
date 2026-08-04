@@ -28,14 +28,14 @@ class PurchaseStoreEntry
 
     private function purchaseLicence(Character $character, int $id): array
     {
-        $licence = Licence::query()->with('requiredRank')->findOrFail($id);
+        $licence = Licence::query()->findOrFail($id);
 
         if ($character->licences->contains('id', $licence->id)) {
             throw new RuntimeException('Licence already owned.');
         }
 
-        if ($licence->required_rank_id && $character->rank->order_index < $licence->requiredRank->order_index) {
-            throw new RuntimeException('Rank requirement not met.');
+        if ($licence->required_level !== null && $character->level < $licence->required_level) {
+            throw new RuntimeException('Level requirement not met.');
         }
 
         if ($character->plastic_credits < $licence->cost) {
@@ -68,7 +68,7 @@ class PurchaseStoreEntry
 
     private function purchaseItem(Character $character, int $id): array
     {
-        $item = Item::query()->with(['requiredRank', 'requiredLicence'])->findOrFail($id);
+        $item = Item::query()->with('requiredLicence')->findOrFail($id);
 
         if (! $character->canPurchaseItem($item)) {
             throw new RuntimeException('Your rank, role, or licences do not allow this purchase.');
