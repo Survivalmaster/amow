@@ -5,6 +5,7 @@
     'users' => 'fa-users',
     'characters' => 'fa-id-card',
     'refunds' => 'fa-rotate-left',
+    'nation_logs' => 'fa-building-columns',
     'factions' => 'fa-flag',
     'cities' => 'fa-city',
     'locations' => 'fa-location-dot',

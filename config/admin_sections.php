@@ -5,6 +5,7 @@ return [
     'users' => ['label' => 'Users', 'route' => 'admin.users.index'],
     'characters' => ['label' => 'Characters', 'route' => 'admin.characters.index'],
     'refunds' => ['label' => 'Refunds', 'route' => 'admin.refunds.index'],
+    'nation_logs' => ['label' => 'Nation Logs', 'route' => 'admin.nation-logs.index'],
     'factions' => ['label' => 'Factions', 'route' => 'admin.factions.index'],
     'cities' => ['label' => 'Cities', 'route' => 'admin.cities.index'],
     'locations' => ['label' => 'Locations', 'route' => 'admin.locations.index'],
