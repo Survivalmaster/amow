@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Models\Character;
 use App\Models\GameEvent;
+use App\Models\MapHex;
 use App\Policies\CharacterPolicy;
+use App\Policies\MapHexPolicy;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
@@ -26,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Character::class, CharacterPolicy::class);
+        Gate::policy(MapHex::class, MapHexPolicy::class);
         Gate::define('access-admin', fn ($user) => $user->loadMissing('permissions')->canAccessAdmin());
 
         view()->composer('layouts.app', function (View $view): void {

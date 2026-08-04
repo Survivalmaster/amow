@@ -48,4 +48,9 @@ class Faction extends Model
     {
         return $this->hasMany(MapMarker::class);
     }
+
+    public function mapHexes(): HasMany
+    {
+        return $this->hasMany(MapHex::class);
+    }
 }

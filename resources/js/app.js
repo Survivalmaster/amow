@@ -1,5 +1,6 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
+import { bootTerritoryMap } from './territory-map';
 
 window.globalChatBox = function globalChatBox({ stateUrl, sendUrl, csrfToken, currentCharacter, currentFaction }) {
     return {
@@ -382,4 +383,5 @@ document.addEventListener('DOMContentLoaded', () => {
     startPresenceHeartbeat();
     startCharacterStatePolling();
     startConstructionTimers();
+    bootTerritoryMap(document.getElementById('territory-map-app'));
 });

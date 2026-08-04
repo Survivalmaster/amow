@@ -70,6 +70,18 @@ class PermissionSeeder extends Seeder
                 'admin_sections' => [],
                 'sort_order' => 50,
             ],
+            [
+                'name' => 'Territory Management',
+                'slug' => 'territory-management',
+                'description' => 'Can classify, claim, and administer World of Plastica territory tiles.',
+                'icon_type' => 'fontawesome',
+                'icon_value' => 'fa-solid fa-map',
+                'icon_color' => '#a9d6e5',
+                'icon_tooltip' => 'Territory Management',
+                'grants_admin_access' => false,
+                'admin_sections' => [],
+                'sort_order' => 60,
+            ],
         ];
 
         foreach ($permissions as $attributes) {

@@ -56,6 +56,10 @@ class FactionAdminController extends Controller
 
     public function destroy(Request $request, Faction $faction, AdminActionLogger $adminActionLogger): RedirectResponse
     {
+        if ($faction->mapHexes()->exists()) {
+            return back()->withErrors('Faction could not be deleted because it owns territory tiles.');
+        }
+
         $snapshot = $adminActionLogger->snapshot($faction);
         try {
             $faction->delete();

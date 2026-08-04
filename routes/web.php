@@ -44,7 +44,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\PublicDiscordRosterController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\TerritoryMapController;
 use App\Http\Controllers\WorkController;
+use App\Http\Controllers\Api\MapHexClaimController;
+use App\Http\Controllers\Api\MapHexController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [GameController::class, 'home'])->name('home');
@@ -90,6 +93,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::get('/nation/requisitions', [NationRequisitionController::class, 'index'])->name('nation.requisitions.index');
         Route::post('/nation/requisitions', [NationRequisitionController::class, 'store'])->name('nation.requisitions.store');
         Route::get('/leaderboards', [LeaderboardController::class, 'index'])->name('leaderboards.index');
+        Route::get('/territory-map', TerritoryMapController::class)->name('territory-map.index');
         Route::get('/stocks', [MarketController::class, 'index'])->name('market.index');
         Route::get('/stocks/state', [MarketController::class, 'state'])->name('market.state');
         Route::post('/stocks/{company}/buy', [MarketController::class, 'buy'])->name('market.buy');
@@ -101,6 +105,12 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/discord-link', [DiscordLinkController::class, 'store'])->name('profile.discord-link.store');
     Route::delete('/profile/discord-link', [DiscordLinkController::class, 'destroy'])->name('profile.discord-link.destroy');
+
+    Route::get('/api/map/hexes', [MapHexController::class, 'index'])->name('api.map.hexes.index');
+    Route::get('/api/map/hexes/{mapHex}', [MapHexController::class, 'show'])->name('api.map.hexes.show');
+    Route::patch('/api/map/hexes/{mapHex}', [MapHexController::class, 'update'])->name('api.map.hexes.update');
+    Route::post('/api/map/hexes/{mapHex}/claim', MapHexClaimController::class)->name('api.map.hexes.claim');
+    Route::delete('/api/map/hexes/{mapHex}/claim', [MapHexController::class, 'destroyClaim'])->name('api.map.hexes.claim.destroy');
 
     Route::prefix('admin')->middleware('can:access-admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
