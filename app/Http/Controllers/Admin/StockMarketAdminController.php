@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\StockMarketSetting;
+use App\Support\StockMarketPrice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -105,7 +106,7 @@ class StockMarketAdminController extends Controller
         );
         $priceBefore = (float) $company->current_price;
         $impactPercent = (float) $settings->max_trade_impact_percent;
-        $priceAfter = max(5, round($priceBefore * (1 - ($impactPercent / 100)), 2));
+        $priceAfter = StockMarketPrice::clamp($priceBefore * (1 - ($impactPercent / 100)));
 
         $company->update([
             'current_price' => $priceAfter,
@@ -122,7 +123,7 @@ class StockMarketAdminController extends Controller
     {
         return $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('companies', 'name')->ignore($company)],
-            'current_price' => ['required', 'numeric', 'min:5', 'max:99999999.99'],
+            'current_price' => ['required', 'numeric', 'min:'.StockMarketPrice::MIN_PRICE, 'max:99999999.99'],
             'max_shares_per_character' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             'description' => ['required', 'string', 'max:2000'],
         ]);

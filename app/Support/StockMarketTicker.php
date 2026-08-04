@@ -37,7 +37,7 @@ class StockMarketTicker
 
                 $basisPoints = random_int($minBasisPoints, $maxBasisPoints);
                 $multiplier = 1 + ($basisPoints / 10000);
-                $nextPrice = max(5, round((float) $company->current_price * $multiplier, 2));
+                $nextPrice = StockMarketPrice::clamp((float) $company->current_price * $multiplier);
 
                 $company->update([
                     'current_price' => $nextPrice,

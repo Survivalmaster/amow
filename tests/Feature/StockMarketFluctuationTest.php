@@ -105,6 +105,28 @@ test('admins can manually hard crash a listed company', function () {
     expect((float) $company->fresh()->current_price)->toBe(10.0);
 });
 
+test('manual crashes can push a low stock below five credits', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+    $company = Company::query()->firstOrFail();
+    $company->update(['current_price' => 100, 'last_price_updated_at' => now()]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.stock-market.companies.crash', $company))
+        ->assertRedirect();
+
+    expect((float) $company->fresh()->current_price)->toBe(1.0);
+});
+
 test('buying shares raises the company price', function () {
     StockMarketSetting::query()->updateOrCreate(['id' => 1], [
         'min_change_percent' => 0,
@@ -221,6 +243,31 @@ test('random ticker cannot raise a company by more than ten percent at once', fu
         ->assertOk();
 
     expect((float) Company::query()->firstOrFail()->current_price)->toBe(110.0);
+});
+
+test('random ticker can move a five credit stock below the old floor', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => -7,
+        'max_change_percent' => -7,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    createMarketCharacter($user);
+    Company::query()->update([
+        'current_price' => 5,
+        'last_price_updated_at' => now()->subMinutes(2),
+    ]);
+
+    $this->actingAs($user)
+        ->getJson(route('market.state'))
+        ->assertOk();
+
+    expect((float) Company::query()->firstOrFail()->current_price)->toBe(4.65);
 });
 
 test('selling one hundred shares can hard crash a company price', function () {

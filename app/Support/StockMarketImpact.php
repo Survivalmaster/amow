@@ -62,7 +62,7 @@ class StockMarketImpact
         $multiplier = $direction === 'buy'
             ? 1 + ($totalImpact / 100)
             : 1 - ($totalImpact / 100);
-        $priceAfter = max(5, round($priceBefore * $multiplier, 2));
+        $priceAfter = StockMarketPrice::clamp($priceBefore * $multiplier);
 
         $company->update([
             'current_price' => $priceAfter,

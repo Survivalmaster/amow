@@ -74,7 +74,7 @@
                     </label>
                     <label class="grid gap-2 text-sm text-slate-300">
                         <span class="text-xs font-semibold uppercase text-slate-500">Starting Price</span>
-                        <input type="number" step="0.01" min="5" name="current_price" value="{{ old('current_price', 25) }}" required>
+                        <input type="number" step="0.01" min="0.01" name="current_price" value="{{ old('current_price', 25) }}" required>
                     </label>
                     <label class="grid gap-2 text-sm text-slate-300">
                         <span class="text-xs font-semibold uppercase text-slate-500">Max Shares / Character</span>
@@ -109,7 +109,7 @@
                                 </label>
                                 <label class="grid gap-2 text-sm text-slate-300">
                                     <span class="text-xs font-semibold uppercase text-slate-500">Current Price</span>
-                                    <input type="number" step="0.01" min="5" name="current_price" value="{{ old("companies.{$company->id}.current_price", $company->current_price) }}" required>
+                                    <input type="number" step="0.01" min="0.01" name="current_price" value="{{ old("companies.{$company->id}.current_price", $company->current_price) }}" required>
                                 </label>
                                 <label class="grid gap-2 text-sm text-slate-300">
                                     <span class="text-xs font-semibold uppercase text-slate-500">Max Shares / Character</span>
