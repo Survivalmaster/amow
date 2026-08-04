@@ -109,7 +109,7 @@
                     align-items: center;
                     gap: 0.75rem;
                     border-radius: 0.5rem;
-                    padding: 0.625rem 0.75rem;
+                    padding: 0.55rem 0.75rem;
                     color: #9ca3af !important;
                     font-size: 0.875rem;
                     font-weight: 650;
@@ -131,6 +131,45 @@
                     width: 1.25rem;
                     text-align: center;
                     color: currentColor !important;
+                }
+
+                .amow-admin-nav-group {
+                    border: 1px solid #1f2937;
+                    border-radius: 0.75rem;
+                    background: rgba(15, 23, 42, 0.45);
+                    padding: 0.35rem;
+                }
+
+                .amow-admin-group-toggle {
+                    display: flex;
+                    width: 100%;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 0.75rem;
+                    border: 0;
+                    border-radius: 0.5rem;
+                    background: transparent !important;
+                    color: #d1d5db !important;
+                    padding: 0.55rem 0.65rem;
+                    font-size: 0.72rem;
+                    font-weight: 750;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    cursor: pointer;
+                }
+
+                .amow-admin-group-toggle:hover {
+                    background: #1f2937 !important;
+                }
+
+                .amow-admin-group-toggle i {
+                    color: #6b7280;
+                    font-size: 0.75rem;
+                    transition: transform 160ms ease;
+                }
+
+                .amow-admin-group-toggle i.rotate-180 {
+                    transform: rotate(180deg);
                 }
 
                 .amow-admin-shell main section,

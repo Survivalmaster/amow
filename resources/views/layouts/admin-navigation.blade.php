@@ -24,21 +24,16 @@
 
 <nav x-data="{ open: false }" class="amow-admin-sidebar">
     <div class="amow-admin-mobile-bar flex items-center justify-between px-4 py-4">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 font-semibold text-slate-100">
-            <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-950">AM</span>
-            <span>Admin</span>
+        <a href="{{ route('admin.dashboard') }}" class="font-semibold text-slate-100">
+            <span>AMOW Admin</span>
         </a>
         <button @click="open = ! open" class="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200">Menu</button>
     </div>
 
     <div class="amow-admin-desktop-nav">
         <div class="border-b border-slate-800 px-5 py-5">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
-                <span class="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-sm font-bold text-slate-950">AM</span>
-                <span>
-                    <span class="block text-sm font-semibold text-slate-100">AMOW Admin</span>
-                    <span class="block text-xs text-slate-500">Operations Console</span>
-                </span>
+            <a href="{{ route('admin.dashboard') }}" class="block text-sm font-semibold text-slate-100">
+                AMOW Admin
             </a>
         </div>
 
