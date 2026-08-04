@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 class GenerateMapHexes extends Command
 {
     protected $signature = 'map:generate-hexes
-        {--radius=18 : Hex radius in image pixels}
+        {--radius=14 : Hex radius in image pixels}
         {--width=1280 : Map image width in pixels}
         {--height=1280 : Map image height in pixels}
         {--orientation=pointy-top : pointy-top or flat-top}
