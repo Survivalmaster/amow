@@ -93,6 +93,59 @@ test('an authorised user can update a tile', function () {
         ->assertJsonPath('data.terrain_type', 'forest');
 });
 
+test('an authorised user can update a tile through the post fallback', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+    createTerritoryCharacter($admin);
+    $faction = Faction::query()->firstOrCreate(['slug' => 'post-update-faction'], ['name' => 'Post Update Faction', 'short_description' => 'Updates.', 'color' => '#3478c5']);
+    $hex = MapHex::factory()->create(['tile_type' => MapHex::TYPE_CLAIMABLE, 'is_visible' => true]);
+
+    $this
+        ->actingAs($admin)
+        ->postJson(route('api.map.hexes.update.post', $hex), [
+            'tile_type' => MapHex::TYPE_CLAIMABLE,
+            'terrain_type' => 'coastal city',
+            'faction_id' => $faction->id,
+            'claim_strength' => 42,
+            'is_visible' => true,
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.terrain_type', 'coastal city')
+        ->assertJsonPath('data.faction.id', $faction->id)
+        ->assertJsonPath('data.claim_strength', 42);
+
+    expect($hex->fresh())
+        ->terrain_type->toBe('coastal city')
+        ->faction_id->toBe($faction->id)
+        ->claim_strength->toBe(42);
+});
+
+test('a claim can be removed through the post fallback', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+    createTerritoryCharacter($admin);
+    $faction = Faction::query()->firstOrCreate(['slug' => 'post-remove-faction'], ['name' => 'Post Remove Faction', 'short_description' => 'Removes.', 'color' => '#3478c5']);
+    $hex = MapHex::factory()->create([
+        'tile_type' => MapHex::TYPE_CLAIMABLE,
+        'is_visible' => true,
+        'faction_id' => $faction->id,
+        'claim_strength' => 10,
+        'claimed_at' => now(),
+    ]);
+
+    $this
+        ->actingAs($admin)
+        ->postJson(route('api.map.hexes.claim.destroy.post', $hex))
+        ->assertOk()
+        ->assertJsonPath('data.faction', null)
+        ->assertJsonPath('data.claim_strength', 0);
+
+    expect($hex->fresh())
+        ->faction_id->toBeNull()
+        ->claim_strength->toBe(0)
+        ->claimed_at->toBeNull();
+});
+
 test('a claimable tile can be claimed and removed', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());

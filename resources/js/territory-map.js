@@ -216,8 +216,8 @@ export function bootTerritoryMap(root) {
     const updateHex = async (hex, payload) => {
         try {
             setStatus('Saving tile...');
-            const data = await jsonFetch(`/api/map/hexes/${hex.id}`, {
-                method: 'PATCH',
+            const data = await jsonFetch(`/api/map/hexes/${hex.id}/update`, {
+                method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken },
                 body: JSON.stringify(payload),
             });
@@ -265,8 +265,8 @@ export function bootTerritoryMap(root) {
         root.querySelector('[data-remove-claim]')?.addEventListener('click', async () => {
             if (!selectedHex) return;
             try {
-                const data = await jsonFetch(`/api/map/hexes/${selectedHex.id}/claim`, {
-                    method: 'DELETE',
+                const data = await jsonFetch(`/api/map/hexes/${selectedHex.id}/claim/remove`, {
+                    method: 'POST',
                     headers: { 'X-CSRF-TOKEN': csrfToken },
                 });
                 upsertHex(data.data);

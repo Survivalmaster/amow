@@ -109,8 +109,10 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
     Route::get('/api/map/hexes', [MapHexController::class, 'index'])->name('api.map.hexes.index');
     Route::get('/api/map/hexes/{mapHex}', [MapHexController::class, 'show'])->name('api.map.hexes.show');
     Route::patch('/api/map/hexes/{mapHex}', [MapHexController::class, 'update'])->name('api.map.hexes.update');
+    Route::post('/api/map/hexes/{mapHex}/update', [MapHexController::class, 'update'])->name('api.map.hexes.update.post');
     Route::post('/api/map/hexes/{mapHex}/claim', MapHexClaimController::class)->name('api.map.hexes.claim');
     Route::delete('/api/map/hexes/{mapHex}/claim', [MapHexController::class, 'destroyClaim'])->name('api.map.hexes.claim.destroy');
+    Route::post('/api/map/hexes/{mapHex}/claim/remove', [MapHexController::class, 'destroyClaim'])->name('api.map.hexes.claim.destroy.post');
 
     Route::prefix('admin')->middleware('can:access-admin')->name('admin.')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
