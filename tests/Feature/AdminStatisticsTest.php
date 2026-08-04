@@ -42,7 +42,8 @@ test('admins can view the live statistics page', function () {
         ->get(route('admin.statistics.index'))
         ->assertOk()
         ->assertSee('Statistics')
-        ->assertSee('Updates every 5 seconds')
+        ->assertSee('Live refresh')
+        ->assertSee('AMOW system telemetry')
         ->assertSee('data-admin-statistics', false);
 });
 
