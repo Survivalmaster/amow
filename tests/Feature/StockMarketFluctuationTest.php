@@ -305,6 +305,7 @@ test('penny stocks visibly recover by at least one cent when growth is positive'
         'max_change_percent' => 0,
         'passive_growth_bias_percent' => 10,
         'low_price_recovery_percent' => 5,
+        'low_price_minimum_lift' => 0,
         'buy_impact_percent_per_100_shares' => 1,
         'sell_impact_percent_per_100_shares' => 1,
         'max_trade_impact_percent' => 99,
@@ -324,6 +325,34 @@ test('penny stocks visibly recover by at least one cent when growth is positive'
         ->assertOk();
 
     expect((float) Company::query()->firstOrFail()->current_price)->toBe(0.02);
+});
+
+test('low price recovery uses a minimum lift so penny stocks do not crawl', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'passive_growth_bias_percent' => 0,
+        'low_price_recovery_percent' => 5,
+        'low_price_minimum_lift' => 0.25,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    createMarketCharacter($user);
+    Company::query()->update([
+        'current_price' => 0.01,
+        'last_price_updated_at' => now()->subMinutes(2),
+    ]);
+
+    $this->actingAs($user)
+        ->getJson(route('market.state'))
+        ->assertOk();
+
+    expect((float) Company::query()->firstOrFail()->current_price)->toBe(0.26);
 });
 
 test('one freshly updated company does not block due companies from ticking', function () {

@@ -28,6 +28,7 @@ class StockMarketImpact
                 'max_change_percent' => 3,
                 'passive_growth_bias_percent' => 2,
                 'low_price_recovery_percent' => 30,
+                'low_price_minimum_lift' => 0.25,
                 'buy_impact_percent_per_100_shares' => 0.35,
                 'sell_impact_percent_per_100_shares' => 0.45,
                 'max_trade_impact_percent' => 99,

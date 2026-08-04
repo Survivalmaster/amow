@@ -22,6 +22,7 @@ class StockMarketTicker
                     'max_change_percent' => 3,
                     'passive_growth_bias_percent' => 2,
                     'low_price_recovery_percent' => 30,
+                    'low_price_minimum_lift' => 0.25,
                 ]
             );
 
@@ -49,7 +50,13 @@ class StockMarketTicker
                 }
 
                 $multiplier = 1 + ($totalChangePercent / 100);
-                $nextPrice = $this->visibleNextPrice((float) $company->current_price, $multiplier, $totalChangePercent);
+                $nextPrice = $this->visibleNextPrice(
+                    (float) $company->current_price,
+                    $multiplier,
+                    $totalChangePercent,
+                    $lowPriceRecoveryPercent,
+                    max(0, (float) ($settings->low_price_minimum_lift ?? 0.25))
+                );
 
                 $company->update([
                     'current_price' => $nextPrice,
@@ -72,9 +79,19 @@ class StockMarketTicker
         return $company->last_price_updated_at->lte(now()->subMinute());
     }
 
-    private function visibleNextPrice(float $currentPrice, float $multiplier, float $totalChangePercent): float
+    private function visibleNextPrice(
+        float $currentPrice,
+        float $multiplier,
+        float $totalChangePercent,
+        float $lowPriceRecoveryPercent,
+        float $lowPriceMinimumLift
+    ): float
     {
         $nextPrice = StockMarketPrice::clamp($currentPrice * $multiplier);
+
+        if ($lowPriceRecoveryPercent > 0 && $totalChangePercent > 0) {
+            $nextPrice = max($nextPrice, StockMarketPrice::clamp($currentPrice + $lowPriceMinimumLift));
+        }
 
         if ($totalChangePercent > 0 && $nextPrice <= $currentPrice) {
             return StockMarketPrice::clamp($currentPrice + 0.01);
