@@ -36,7 +36,15 @@ class CharacterLogAdminController extends Controller
         }
 
         if ($selectedCharacter) {
-            $selectedCharacter->loadMissing(['user', 'faction', 'rank', 'currentJob']);
+            $selectedCharacter->loadMissing([
+                'user',
+                'faction',
+                'rank',
+                'currentJob',
+                'inventory',
+                'landTiles',
+                'landBuildings.item',
+            ]);
 
             $baseTransactionsQuery = $selectedCharacter
                 ->transactions()
@@ -97,6 +105,15 @@ class CharacterLogAdminController extends Controller
                 ...$day,
                 'percent' => (int) round(($day['count'] / $maxDailyLogs) * 100),
             ]),
+            'inventory_count' => $character->inventory->count(),
+            'inventory_quantity' => (int) $character->inventory->sum(fn ($item) => max(1, (int) ($item->pivot->quantity ?? 1))),
+            'land_tiles' => $character->landTiles->count(),
+            'open_land_tiles' => $character->landTiles->where('state', 'open')->count(),
+            'blocked_land_tiles' => $character->landTiles->where('state', 'blocked')->count(),
+            'clearing_land_tiles' => $character->landTiles->where('state', 'clearing')->count(),
+            'land_buildings' => $character->landBuildings->count(),
+            'complete_land_buildings' => $character->landBuildings->filter(fn ($building) => $building->isComplete())->count(),
+            'building_land_buildings' => $character->landBuildings->reject(fn ($building) => $building->isComplete())->count(),
         ];
     }
 }

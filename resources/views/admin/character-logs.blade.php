@@ -154,13 +154,69 @@
                             <div class="mt-4 flex h-28 items-end gap-2">
                                 @foreach (($logStats['activity_days'] ?? collect()) as $day)
                                     <div class="flex flex-1 flex-col items-center gap-2">
-                                        <div class="flex h-20 w-full items-end rounded bg-white/5 px-1">
+                                        <div class="relative flex h-20 w-full items-end rounded bg-white/5 px-1">
+                                            <span class="absolute left-1/2 top-2 -translate-x-1/2 text-xs font-semibold text-white">{{ number_format($day['count']) }}</span>
                                             @php($barColor = sprintf('hsl(%d 70%% 45%%)', (int) round(($day['percent'] / 100) * 130)))
                                             <div class="w-full rounded" style="height: {{ max(5, $day['percent']) }}%; background: {{ $barColor }};"></div>
                                         </div>
                                         <span class="text-[10px] uppercase text-white/40">{{ $day['label'] }}</span>
                                     </div>
                                 @endforeach
+                            </div>
+                        </div>
+
+                        <div class="grid gap-4 xl:grid-cols-3">
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs uppercase tracking-[0.14em] text-white/45">Level</p>
+                                        <p class="mt-2 text-2xl font-semibold text-white">Lv {{ number_format($selectedCharacter->level) }}</p>
+                                    </div>
+                                    <span class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/55">{{ number_format($selectedCharacter->experience_points) }} XP</span>
+                                </div>
+                                <p class="mt-3 text-xs text-white/45">Next level at {{ number_format($selectedCharacter->experienceRequiredForNextLevel()) }} XP.</p>
+                            </div>
+
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs uppercase tracking-[0.14em] text-white/45">Inventory</p>
+                                        <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['inventory_quantity'] ?? 0) }} items</p>
+                                    </div>
+                                    <span class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/55">{{ number_format($logStats['inventory_count'] ?? 0) }} slots</span>
+                                </div>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @forelse ($selectedCharacter->inventory->take(5) as $item)
+                                        <span class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/65">{{ $item->name }} x{{ max(1, (int) ($item->pivot->quantity ?? 1)) }}</span>
+                                    @empty
+                                        <span class="text-xs text-white/40">No inventory items.</span>
+                                    @endforelse
+                                    @if ($selectedCharacter->inventory->count() > 5)
+                                        <span class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/45">+{{ number_format($selectedCharacter->inventory->count() - 5) }} more</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs uppercase tracking-[0.14em] text-white/45">Land</p>
+                                        <p class="mt-2 text-2xl font-semibold text-white">{{ number_format($logStats['open_land_tiles'] ?? 0) }}/{{ number_format($logStats['land_tiles'] ?? 0) }} open</p>
+                                    </div>
+                                    <span class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/55">{{ number_format($logStats['complete_land_buildings'] ?? 0) }} buildings</span>
+                                </div>
+                                <div class="mt-3 grid grid-cols-3 gap-2 text-xs text-white/55">
+                                    <span>Blocked {{ number_format($logStats['blocked_land_tiles'] ?? 0) }}</span>
+                                    <span>Clearing {{ number_format($logStats['clearing_land_tiles'] ?? 0) }}</span>
+                                    <span>Building {{ number_format($logStats['building_land_buildings'] ?? 0) }}</span>
+                                </div>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    @forelse ($selectedCharacter->landBuildings->take(3) as $building)
+                                        <span class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/65">{{ $building->item?->name ?? 'Building' }} {{ $building->isComplete() ? 'ready' : 'building' }}</span>
+                                    @empty
+                                        <span class="text-xs text-white/40">No land buildings.</span>
+                                    @endforelse
+                                </div>
                             </div>
                         </div>
                     </div>
