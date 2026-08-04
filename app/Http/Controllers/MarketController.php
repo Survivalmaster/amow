@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class MarketController extends Controller
@@ -76,6 +77,13 @@ class MarketController extends Controller
             );
 
             $newShares = $holding->shares + $validated['shares'];
+
+            if ($company->max_shares_per_character !== null && $newShares > $company->max_shares_per_character) {
+                throw ValidationException::withMessages([
+                    'stocks' => "You can only hold {$company->max_shares_per_character} shares of {$company->name}.",
+                ]);
+            }
+
             $newAverage = (($holding->shares * $holding->average_buy_price) + ($validated['shares'] * $company->current_price)) / $newShares;
 
             $holding->update([

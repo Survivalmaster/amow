@@ -67,7 +67,7 @@
 
             <form method="POST" action="{{ route('admin.stock-market.companies.store') }}" class="grid gap-4 xl:grid-cols-[1fr_12rem]">
                 @csrf
-                <div class="grid gap-4 md:grid-cols-2">
+                <div class="grid gap-4 md:grid-cols-3">
                     <label class="grid gap-2 text-sm text-slate-300">
                         <span class="text-xs font-semibold uppercase text-slate-500">Company Name</span>
                         <input name="name" value="{{ old('name') }}" required>
@@ -76,7 +76,11 @@
                         <span class="text-xs font-semibold uppercase text-slate-500">Starting Price</span>
                         <input type="number" step="0.01" min="5" name="current_price" value="{{ old('current_price', 25) }}" required>
                     </label>
-                    <label class="grid gap-2 text-sm text-slate-300 md:col-span-2">
+                    <label class="grid gap-2 text-sm text-slate-300">
+                        <span class="text-xs font-semibold uppercase text-slate-500">Max Shares / Character</span>
+                        <input type="number" min="1" name="max_shares_per_character" value="{{ old('max_shares_per_character', 1000) }}" placeholder="Blank for no cap">
+                    </label>
+                    <label class="grid gap-2 text-sm text-slate-300 md:col-span-3">
                         <span class="text-xs font-semibold uppercase text-slate-500">Description</span>
                         <textarea name="description" rows="3" required>{{ old('description') }}</textarea>
                     </label>
@@ -98,7 +102,7 @@
                         <form method="POST" action="{{ route('admin.stock-market.companies.update', $company) }}" class="grid gap-4 xl:grid-cols-[1fr_11rem_9rem]">
                             @csrf
                             @method('PATCH')
-                            <div class="grid gap-4 md:grid-cols-2">
+                            <div class="grid gap-4 md:grid-cols-3">
                                 <label class="grid gap-2 text-sm text-slate-300">
                                     <span class="text-xs font-semibold uppercase text-slate-500">Name</span>
                                     <input name="name" value="{{ old("companies.{$company->id}.name", $company->name) }}" required>
@@ -107,13 +111,18 @@
                                     <span class="text-xs font-semibold uppercase text-slate-500">Current Price</span>
                                     <input type="number" step="0.01" min="5" name="current_price" value="{{ old("companies.{$company->id}.current_price", $company->current_price) }}" required>
                                 </label>
-                                <label class="grid gap-2 text-sm text-slate-300 md:col-span-2">
+                                <label class="grid gap-2 text-sm text-slate-300">
+                                    <span class="text-xs font-semibold uppercase text-slate-500">Max Shares / Character</span>
+                                    <input type="number" min="1" name="max_shares_per_character" value="{{ old("companies.{$company->id}.max_shares_per_character", $company->max_shares_per_character) }}" placeholder="Blank for no cap">
+                                </label>
+                                <label class="grid gap-2 text-sm text-slate-300 md:col-span-3">
                                     <span class="text-xs font-semibold uppercase text-slate-500">Description</span>
                                     <textarea name="description" rows="2" required>{{ old("companies.{$company->id}.description", $company->description) }}</textarea>
                                 </label>
                             </div>
                             <div class="grid content-end gap-2 text-xs uppercase text-slate-500">
                                 <span>{{ number_format($company->holdings_count) }} holders</span>
+                                <span>{{ $company->max_shares_per_character ? number_format($company->max_shares_per_character).' max shares' : 'No share cap' }}</span>
                                 <span>Updated {{ optional($company->last_price_updated_at)->format('d M H:i') ?? 'never' }}</span>
                             </div>
                             <div class="flex items-end gap-2">

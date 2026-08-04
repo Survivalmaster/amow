@@ -61,6 +61,7 @@ class StockMarketAdminController extends Controller
         $validated = $this->validateCompany($request);
         $validated['slug'] = $this->uniqueSlug($validated['name']);
         $validated['last_price_updated_at'] = now();
+        $validated['max_shares_per_character'] ??= 1000;
 
         Company::query()->create($validated);
 
@@ -122,6 +123,7 @@ class StockMarketAdminController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('companies', 'name')->ignore($company)],
             'current_price' => ['required', 'numeric', 'min:5', 'max:99999999.99'],
+            'max_shares_per_character' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             'description' => ['required', 'string', 'max:2000'],
         ]);
     }

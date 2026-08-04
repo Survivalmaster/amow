@@ -159,6 +159,45 @@ test('buying shares cannot raise a company by more than ten percent at once', fu
     expect((float) $company->fresh()->current_price)->toBe(110.0);
 });
 
+test('players cannot buy more than a company share limit allows', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    $character = createMarketCharacter($user);
+    $character->update(['plastic_credits' => 100000]);
+    $company = Company::query()->firstOrFail();
+    $company->update([
+        'current_price' => 100,
+        'max_shares_per_character' => 50,
+        'last_price_updated_at' => now(),
+    ]);
+
+    StockHolding::query()->create([
+        'character_id' => $character->id,
+        'company_id' => $company->id,
+        'shares' => 45,
+        'average_buy_price' => 80,
+    ]);
+
+    $this->actingAs($user)
+        ->from(route('market.index'))
+        ->post(route('market.buy', $company), ['shares' => 10])
+        ->assertRedirect(route('market.index'))
+        ->assertSessionHasErrors('stocks');
+
+    expect((int) StockHolding::query()->where('character_id', $character->id)->where('company_id', $company->id)->firstOrFail()->shares)->toBe(45);
+    expect((float) $company->fresh()->current_price)->toBe(100.0);
+    expect($character->transactions()->where('type', 'stock_buy')->exists())->toBeFalse();
+});
+
 test('random ticker cannot raise a company by more than ten percent at once', function () {
     StockMarketSetting::query()->updateOrCreate(['id' => 1], [
         'min_change_percent' => 99,

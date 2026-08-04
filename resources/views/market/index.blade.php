@@ -80,11 +80,25 @@
             <p class="mt-2 text-sm text-white/60">Values drift about once a minute. Player buying adds upward pressure, while heavy selling can knock prices down hard.</p>
             <div class="mt-5 space-y-4">
                 @foreach ($companies as $company)
+                    @php
+                        $ownedShares = (int) optional($character->holdings->firstWhere('company_id', $company->id))->shares;
+                        $remainingCap = $company->max_shares_per_character === null
+                            ? null
+                            : max(0, $company->max_shares_per_character - $ownedShares);
+                    @endphp
                     <div data-company-id="{{ $company->id }}" class="rounded-3xl border border-white/10 bg-black/20 p-4">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                                 <p class="font-['Teko'] text-3xl uppercase tracking-[0.08em]">{{ $company->name }}</p>
                                 <p class="mt-2 text-sm text-white/70">{{ $company->description }}</p>
+                                <p class="mt-3 text-xs uppercase tracking-[0.18em] text-white/45">
+                                    You hold {{ number_format($ownedShares) }}
+                                    @if ($company->max_shares_per_character)
+                                        / {{ number_format($company->max_shares_per_character) }} shares
+                                    @else
+                                        shares
+                                    @endif
+                                </p>
                             </div>
                             <div class="text-right">
                                 <p class="font-['Teko'] text-4xl uppercase text-[#7ead59]" data-company-price>{{ number_format($company->current_price, 2) }}</p>
@@ -98,9 +112,9 @@
                             <form method="POST" action="{{ route('market.buy', $company) }}" class="rounded-2xl border border-white/10 bg-white/5 p-4">
                                 @csrf
                                 <label class="text-xs uppercase tracking-[0.22em] text-white/45">Buy shares
-                                    <input class="mt-2 w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" min="1" name="shares" value="1" required>
+                                    <input class="mt-2 w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" min="1" @if ($remainingCap !== null) max="{{ min(1000, $remainingCap) }}" @endif name="shares" value="{{ $remainingCap === 0 ? 0 : 1 }}" required @disabled($remainingCap === 0)>
                                 </label>
-                                <button class="mt-3 w-full rounded-full bg-[#7ead59] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]">Buy</button>
+                                <button class="mt-3 w-full rounded-full bg-[#7ead59] px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#07100c]" @disabled($remainingCap === 0)>{{ $remainingCap === 0 ? 'Limit Reached' : 'Buy' }}</button>
                             </form>
                             <form method="POST" action="{{ route('market.sell', $company) }}" class="rounded-2xl border border-white/10 bg-white/5 p-4">
                                 @csrf

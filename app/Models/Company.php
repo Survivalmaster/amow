@@ -11,6 +11,7 @@ class Company extends Model
         'name',
         'slug',
         'current_price',
+        'max_shares_per_character',
         'last_price_updated_at',
         'description',
     ];
@@ -19,6 +20,7 @@ class Company extends Model
     {
         return [
             'current_price' => 'decimal:2',
+            'max_shares_per_character' => 'integer',
             'last_price_updated_at' => 'datetime',
         ];
     }
