@@ -150,7 +150,6 @@ class StatisticsAdminController extends Controller
     {
         return collect(range(6, 0))
             ->map(fn (int $daysAgo) => now()->subDays($daysAgo)->startOfDay())
-            ->push(now()->startOfDay())
             ->map(function (Carbon $day) {
                 $nextDay = $day->copy()->addDay();
 

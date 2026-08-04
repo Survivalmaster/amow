@@ -40,6 +40,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const root = document.querySelector('[data-admin-statistics]');
+            const initialState = document.querySelector('[data-initial-statistics-json]');
 
             if (!root) return;
 
@@ -246,11 +247,56 @@
                 }
             };
 
-            render(JSON.parse(root.dataset.initialStatistics));
+            if (initialState) {
+                render(JSON.parse(initialState.textContent));
+            }
+
             window.setInterval(fetchState, 5000);
         });
     </script>
 @endpush
+
+@php
+    $summary = collect($statistics['summary'] ?? []);
+    $activity = collect($statistics['activity'] ?? []);
+    $economy = $statistics['economy'] ?? [];
+    $factions = collect($statistics['factions'] ?? []);
+    $territory = $statistics['territory'] ?? [];
+    $world = collect($statistics['world'] ?? []);
+    $content = collect($statistics['content'] ?? []);
+
+    $heroUsers = (int) ($summary->firstWhere('label', 'Users')['value'] ?? 0);
+    $heroCharacters = (int) ($summary->firstWhere('label', 'Characters')['value'] ?? 0);
+    $heroOnline = (int) ($summary->firstWhere('label', 'Online Now')['value'] ?? 0);
+    $heroCredits = (int) ($summary->firstWhere('label', 'Player Credits')['value'] ?? 0);
+    $heroMovement = (int) (($economy['earned'] ?? 0) + ($economy['spent'] ?? 0));
+    $activityMax = max(1, $activity->flatMap(fn ($item) => [
+        (int) ($item['transactions'] ?? 0),
+        (int) ($item['messages'] ?? 0),
+        (int) ($item['users'] ?? 0),
+        (int) ($item['characters'] ?? 0),
+    ])->max() ?? 1);
+    $activitySeries = [
+        ['key' => 'transactions', 'label' => 'Transactions', 'color' => '#38bdf8'],
+        ['key' => 'messages', 'label' => 'Messages', 'color' => '#a78bfa'],
+        ['key' => 'users', 'label' => 'Users', 'color' => '#facc15'],
+        ['key' => 'characters', 'label' => 'Characters', 'color' => '#4ade80'],
+    ];
+    $economyRows = collect([
+        ['label' => 'Work earned', 'value' => $economy['work_earned'] ?? 0, 'color' => '#4ade80'],
+        ['label' => 'Marketplace spend', 'value' => $economy['marketplace_spend'] ?? 0, 'color' => '#facc15'],
+        ['label' => 'Bank transfers', 'value' => $economy['bank_transfers'] ?? 0, 'color' => '#38bdf8'],
+        ['label' => 'Nation donations', 'value' => $economy['nation_donations'] ?? 0, 'color' => '#a3e635'],
+        ['label' => 'Stock volume', 'value' => $economy['stock_volume'] ?? 0, 'color' => '#93c5fd'],
+        ['label' => 'Refunds issued', 'value' => $economy['refunds'] ?? 0, 'color' => '#86efac'],
+    ]);
+    $economyMax = max(1, (int) $economyRows->max('value'));
+    $factionCharacterMax = max(1, (int) $factions->max('characters'));
+    $factionCreditMax = max(1, (int) $factions->max('credits'));
+    $territoryTypes = collect($territory['types'] ?? []);
+    $territoryTypeMax = max(1, (int) $territoryTypes->max('value'));
+    $territoryClaimedPercent = (float) ($territory['claimed_percent'] ?? 0);
+@endphp
 
 <x-app-layout>
     <x-slot name="header">
@@ -273,25 +319,26 @@
     <div
         data-admin-statistics
         data-statistics-state-url="{{ route('admin.statistics.state') }}"
-        data-initial-statistics='@json($statistics)'
         class="space-y-6"
     >
+        <script type="application/json" data-initial-statistics-json>@json($statistics)</script>
+
         <section class="stats-panel overflow-hidden">
             <div class="stats-grid-bg grid gap-6 p-6 xl:grid-cols-[1.15fr_0.85fr]">
                 <div>
                     <p class="text-xs font-semibold uppercase text-slate-500">AMOW system telemetry</p>
                     <p class="mt-3 max-w-3xl font-['Teko'] text-5xl leading-none text-slate-50 lg:text-6xl">Operational snapshot</p>
                     <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Users</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-slate-50" data-stat-hero-users>0</p></div>
-                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Characters</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-slate-50" data-stat-hero-characters>0</p></div>
-                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Online</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-sky-200" data-stat-hero-online>0</p></div>
-                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Movement</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-emerald-200" data-stat-hero-movement>0</p></div>
+                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Users</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-slate-50" data-stat-hero-users>{{ number_format($heroUsers) }}</p></div>
+                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Characters</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-slate-50" data-stat-hero-characters>{{ number_format($heroCharacters) }}</p></div>
+                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Online</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-sky-200" data-stat-hero-online>{{ number_format($heroOnline) }}</p></div>
+                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Movement</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-emerald-200" data-stat-hero-movement>{{ number_format($heroMovement) }}</p></div>
                     </div>
                 </div>
                 <div class="grid content-between rounded-lg border border-slate-800 bg-slate-950/50 p-5">
                     <div>
                         <p class="text-xs font-semibold uppercase text-slate-500">Circulating player credits</p>
-                        <p class="mt-3 font-['Teko'] text-6xl leading-none text-slate-50" data-stat-hero-credits>0</p>
+                        <p class="mt-3 font-['Teko'] text-6xl leading-none text-slate-50" data-stat-hero-credits>{{ number_format($heroCredits) }}</p>
                     </div>
                     <div class="mt-8 grid grid-cols-3 gap-2 text-center">
                         <div class="rounded-lg bg-slate-900/70 p-3"><p class="text-[10px] uppercase text-slate-500">Economy</p><i class="fa-solid fa-coins mt-2 text-2xl text-amber-200"></i></div>
@@ -302,7 +349,17 @@
             </div>
         </section>
 
-        <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-stat-summary></section>
+        <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-stat-summary>
+            @foreach ($summary as $item)
+                <article class="stats-kpi p-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-[11px] font-semibold uppercase text-slate-400">{{ $item['label'] }}</span>
+                        <i class="fa-solid {{ $item['icon'] ?? 'fa-chart-simple' }} text-slate-500"></i>
+                    </div>
+                    <p class="mt-3 font-['Teko'] text-[2.55rem] leading-none text-slate-50">{{ number_format((int) $item['value']) }}</p>
+                </article>
+            @endforeach
+        </section>
 
         <div class="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
             <section class="stats-panel p-5">
@@ -313,21 +370,56 @@
                     </div>
                     <i class="fa-solid fa-chart-line text-2xl text-sky-300"></i>
                 </div>
-                <div class="mt-5" data-stat-activity></div>
+                <div class="mt-5" data-stat-activity>
+                    <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-4">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-72 w-full overflow-visible">
+                            @foreach ($activitySeries as $series)
+                                @php
+                                    $points = $activity->values()->map(function ($item, $index) use ($activity, $activityMax, $series) {
+                                        $x = $activity->count() <= 1 ? 0 : ($index / ($activity->count() - 1)) * 100;
+                                        $y = 92 - (((int) ($item[$series['key']] ?? 0) / $activityMax) * 76);
+
+                                        return number_format($x, 2, '.', '').','.number_format($y, 2, '.', '');
+                                    })->implode(' ');
+                                @endphp
+                                <polyline points="{{ $points }}" fill="none" stroke="{{ $series['color'] }}" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                            @endforeach
+                        </svg>
+                        <div class="grid grid-cols-7 gap-2 text-center text-[11px] uppercase text-slate-500">
+                            @foreach ($activity as $item)
+                                <span>{{ $item['label'] }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @foreach ($activitySeries as $series)
+                            <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-3 py-2 text-xs font-semibold uppercase text-slate-400">
+                                <span class="h-2 w-2 rounded-full" style="background: {{ $series['color'] }}"></span>{{ $series['label'] }}
+                            </span>
+                        @endforeach
+                    </div>
+                </div>
             </section>
 
             <section class="stats-panel p-5">
                 <p class="font-['Teko'] text-3xl uppercase text-slate-100">Territory Control</p>
                 <div class="mt-5 grid gap-5 sm:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-1">
-                    <div data-stat-territory-ring class="stats-ring grid aspect-square place-items-center rounded-full border border-slate-800">
+                    <div data-stat-territory-ring class="stats-ring grid aspect-square place-items-center rounded-full border border-slate-800" style="--territory-claimed: {{ $territoryClaimedPercent }}%;">
                         <div class="grid h-[72%] w-[72%] place-items-center rounded-full bg-slate-950 text-center">
                             <div>
-                                <p class="font-['Teko'] text-6xl leading-none text-slate-50" data-territory-percent>0%</p>
-                                <p class="mt-1 text-xs uppercase text-slate-500" data-territory-subtitle>0 of 0 claimed</p>
+                                <p class="font-['Teko'] text-6xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
+                                <p class="mt-1 text-xs uppercase text-slate-500" data-territory-subtitle>{{ number_format((int) ($territory['claimed'] ?? 0)) }} of {{ number_format((int) ($territory['total'] ?? 0)) }} claimed</p>
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-4" data-stat-territory-types></div>
+                    <div class="space-y-4" data-stat-territory-types>
+                        @foreach ($territoryTypes as $item)
+                            <div>
+                                <div class="flex justify-between text-sm text-slate-400"><span>{{ $item['label'] }}</span><span>{{ number_format((int) $item['value']) }}</span></div>
+                                <div class="stats-bar mt-2"><div class="h-full rounded-full bg-slate-300" style="width: {{ max((int) $item['value'] > 0 ? 5 : 0, ((int) $item['value'] / $territoryTypeMax) * 100) }}%;"></div></div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </section>
         </div>
@@ -336,25 +428,86 @@
             <section class="stats-panel p-5">
                 <p class="font-['Teko'] text-3xl uppercase text-slate-100">Economy Movement</p>
                 <p class="mt-1 text-sm text-slate-400">Where credits are being generated, spent, traded, or corrected.</p>
-                <div class="mt-5 grid gap-3" data-stat-economy></div>
+                <div class="mt-5 grid gap-3" data-stat-economy>
+                    @foreach ($economyRows as $item)
+                        <div class="rounded-lg border border-slate-800 bg-slate-950/40 p-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <p class="text-sm font-semibold text-slate-300">{{ $item['label'] }}</p>
+                                <p class="font-['Teko'] text-3xl leading-none text-slate-50">{{ number_format((int) $item['value']) }}</p>
+                            </div>
+                            <div class="stats-bar mt-3">
+                                <div class="h-full rounded-full" style="width: {{ max((int) $item['value'] > 0 ? 5 : 0, ((int) $item['value'] / $economyMax) * 100) }}%; background: {{ $item['color'] }};"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </section>
 
             <section class="stats-panel p-5">
                 <p class="font-['Teko'] text-3xl uppercase text-slate-100">Faction Matrix</p>
                 <p class="mt-1 text-sm text-slate-400">Nation population, wealth, and claimed territory at a glance.</p>
-                <div class="mt-5 grid gap-3 lg:grid-cols-2" data-stat-factions></div>
+                <div class="mt-5 grid gap-3 lg:grid-cols-2" data-stat-factions>
+                    @foreach ($factions as $item)
+                        <div class="rounded-lg border border-slate-800 bg-slate-950/40 p-4">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="h-3 w-3 rounded-full" style="background: {{ $item['color'] }}"></span>
+                                        <p class="truncate font-semibold text-slate-100">{{ $item['label'] }}</p>
+                                    </div>
+                                    <p class="mt-1 text-xs uppercase text-slate-500">{{ number_format((int) $item['territory']) }} territory hexes</p>
+                                </div>
+                                <p class="font-['Teko'] text-3xl leading-none text-slate-50">{{ number_format((int) $item['characters']) }}</p>
+                            </div>
+                            <div class="mt-4 grid gap-3">
+                                <div>
+                                    <div class="flex justify-between text-xs text-slate-500"><span>Characters</span><span>{{ number_format((int) $item['characters']) }}</span></div>
+                                    <div class="stats-bar mt-1"><div class="h-full rounded-full" style="width: {{ max((int) $item['characters'] > 0 ? 5 : 0, ((int) $item['characters'] / $factionCharacterMax) * 100) }}%; background: {{ $item['color'] }};"></div></div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs text-slate-500"><span>Player credits</span><span>{{ number_format((int) $item['credits']) }}</span></div>
+                                    <div class="stats-bar mt-1"><div class="h-full rounded-full bg-sky-300" style="width: {{ max((int) $item['credits'] > 0 ? 5 : 0, ((int) $item['credits'] / $factionCreditMax) * 100) }}%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </section>
         </div>
 
         <div class="grid gap-6 xl:grid-cols-2">
             <section class="stats-panel p-5">
                 <p class="font-['Teko'] text-3xl uppercase text-slate-100">World Systems</p>
-                <div class="mt-5 grid gap-3 md:grid-cols-2" data-stat-world></div>
+                <div class="mt-5 grid gap-3 md:grid-cols-2" data-stat-world>
+                    @foreach ($world as $item)
+                        <div class="rounded-lg border border-slate-800 bg-slate-950/40 p-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="inline-flex items-center gap-3 text-sm font-medium text-slate-300">
+                                    <i class="fa-solid {{ $item['icon'] ?? 'fa-circle' }} w-5 text-center text-slate-500"></i>
+                                    {{ $item['label'] }}
+                                </span>
+                                <span class="font-['Teko'] text-3xl leading-none text-slate-100">{{ number_format((int) $item['value']) }}</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </section>
 
             <section class="stats-panel p-5">
                 <p class="font-['Teko'] text-3xl uppercase text-slate-100">Content & Combat</p>
-                <div class="mt-5 grid gap-3 md:grid-cols-2" data-stat-content></div>
+                <div class="mt-5 grid gap-3 md:grid-cols-2" data-stat-content>
+                    @foreach ($content as $item)
+                        <div class="rounded-lg border border-slate-800 bg-slate-950/40 p-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="inline-flex items-center gap-3 text-sm font-medium text-slate-300">
+                                    <i class="fa-solid {{ $item['icon'] ?? 'fa-circle' }} w-5 text-center text-slate-500"></i>
+                                    {{ $item['label'] }}
+                                </span>
+                                <span class="font-['Teko'] text-3xl leading-none text-slate-100">{{ number_format((int) $item['value']) }}</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </section>
         </div>
     </div>
