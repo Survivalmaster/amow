@@ -82,6 +82,29 @@ test('admins can add companies to the stock market', function () {
     ]);
 });
 
+test('admins can manually hard crash a listed company', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => 0,
+        'max_change_percent' => 0,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+    $company = Company::query()->firstOrFail();
+    $company->update(['current_price' => 1000, 'last_price_updated_at' => now()]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.stock-market.companies.crash', $company))
+        ->assertRedirect()
+        ->assertSessionHas('status');
+
+    expect((float) $company->fresh()->current_price)->toBe(10.0);
+});
+
 test('buying shares raises the company price', function () {
     StockMarketSetting::query()->updateOrCreate(['id' => 1], [
         'min_change_percent' => 0,

@@ -123,14 +123,23 @@
                                 </button>
                             </div>
                         </form>
-                        <form method="POST" action="{{ route('admin.stock-market.companies.destroy', $company) }}" class="mt-3 flex justify-end">
-                            @csrf
-                            @method('DELETE')
-                            <button class="inline-flex items-center gap-2 rounded-lg border border-red-500/30 px-4 py-2 text-xs font-semibold uppercase text-red-200" @disabled($company->holdings_count > 0)>
-                                <i class="fa-solid fa-trash"></i>
-                                {{ $company->holdings_count > 0 ? 'Cannot delete with holders' : 'Delete Company' }}
-                            </button>
-                        </form>
+                        <div class="mt-3 flex flex-wrap justify-end gap-2">
+                            <form method="POST" action="{{ route('admin.stock-market.companies.crash', $company) }}" onsubmit="return confirm('Crash {{ addslashes($company->name) }} now? This will immediately slash the live share price.');">
+                                @csrf
+                                <button class="inline-flex items-center gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-xs font-semibold uppercase text-red-100">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                    CRASH
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('admin.stock-market.companies.destroy', $company) }}">
+                                @csrf
+                                @method('DELETE')
+                                <button class="inline-flex items-center gap-2 rounded-lg border border-red-500/30 px-4 py-2 text-xs font-semibold uppercase text-red-200" @disabled($company->holdings_count > 0)>
+                                    <i class="fa-solid fa-trash"></i>
+                                    {{ $company->holdings_count > 0 ? 'Cannot delete with holders' : 'Delete Company' }}
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 @empty
                     <div class="rounded-lg border border-dashed border-slate-800 p-8 text-center text-sm uppercase text-slate-500">

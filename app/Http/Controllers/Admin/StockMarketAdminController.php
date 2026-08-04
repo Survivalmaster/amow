@@ -88,6 +88,35 @@ class StockMarketAdminController extends Controller
         return back()->with('status', 'Company removed from the stock market.');
     }
 
+    public function crashCompany(Company $company): RedirectResponse
+    {
+        $settings = StockMarketSetting::query()->firstOrCreate(
+            ['id' => 1],
+            [
+                'min_change_percent' => -3,
+                'max_change_percent' => 3,
+                'buy_impact_percent_per_100_shares' => 0.35,
+                'sell_impact_percent_per_100_shares' => 0.45,
+                'max_trade_impact_percent' => 99,
+                'crash_trade_threshold_shares' => 100,
+                'crash_extra_percent' => 99,
+            ]
+        );
+        $priceBefore = (float) $company->current_price;
+        $impactPercent = (float) $settings->max_trade_impact_percent;
+        $priceAfter = max(5, round($priceBefore * (1 - ($impactPercent / 100)), 2));
+
+        $company->update([
+            'current_price' => $priceAfter,
+            'last_price_updated_at' => now(),
+        ]);
+
+        return back()->with(
+            'status',
+            "{$company->name} manually crashed from ".number_format($priceBefore, 2).' to '.number_format($priceAfter, 2).'.'
+        );
+    }
+
     private function validateCompany(Request $request, ?Company $company = null): array
     {
         return $request->validate([
