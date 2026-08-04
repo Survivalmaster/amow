@@ -33,6 +33,23 @@
             background:
                 conic-gradient(#38bdf8 0 var(--territory-claimed, 0%), #1f2937 var(--territory-claimed, 0%) 100%);
         }
+
+        .stats-chart-frame {
+            display: grid;
+            grid-template-columns: 2.75rem minmax(0, 1fr);
+            gap: 0.75rem;
+        }
+
+        .stats-chart-axis {
+            display: grid;
+            height: 12rem;
+            align-content: space-between;
+            text-align: right;
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #64748b;
+        }
     </style>
 @endpush
 
@@ -110,15 +127,24 @@
                 };
 
                 target.innerHTML = `
-                    <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-4">
-                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-72 w-full overflow-visible">
-                            ${series.map(([key, color]) => line(key, color)).join('')}
-                        </svg>
-                        <div class="grid grid-cols-7 gap-2 text-center text-[11px] uppercase text-slate-500">
-                            ${activity.map((item) => `<span>${escapeHtml(item.label)}</span>`).join('')}
+                    <div class="stats-chart-frame">
+                        <div class="stats-chart-axis">
+                            <span>${formatNumber(max)}</span>
+                            <span>${formatNumber(Math.round(max / 2))}</span>
+                            <span>0</span>
+                        </div>
+                        <div>
+                            <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+                                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-48 w-full overflow-visible">
+                                    ${series.map(([key, color]) => line(key, color)).join('')}
+                                </svg>
+                            </div>
+                            <div class="mt-2 grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase text-slate-500">
+                                ${activity.map((item) => `<span>${escapeHtml(item.label)}</span>`).join('')}
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex flex-wrap gap-2">
+                    <div class="mt-4 flex flex-wrap justify-end gap-2">
                         ${series.map(([, color, label]) => `
                             <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-3 py-2 text-xs font-semibold uppercase text-slate-400">
                                 <span class="h-2 w-2 rounded-full" style="background:${color}"></span>${label}
@@ -361,7 +387,7 @@
             @endforeach
         </section>
 
-        <div class="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <div class="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
             <section class="stats-panel p-5">
                 <div class="flex items-start justify-between gap-4">
                     <div>
@@ -371,27 +397,36 @@
                     <i class="fa-solid fa-chart-line text-2xl text-sky-300"></i>
                 </div>
                 <div class="mt-5" data-stat-activity>
-                    <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-4">
-                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-72 w-full overflow-visible">
-                            @foreach ($activitySeries as $series)
-                                @php
-                                    $points = $activity->values()->map(function ($item, $index) use ($activity, $activityMax, $series) {
-                                        $x = $activity->count() <= 1 ? 0 : ($index / ($activity->count() - 1)) * 100;
-                                        $y = 92 - (((int) ($item[$series['key']] ?? 0) / $activityMax) * 76);
+                    <div class="stats-chart-frame">
+                        <div class="stats-chart-axis">
+                            <span>{{ number_format($activityMax) }}</span>
+                            <span>{{ number_format((int) round($activityMax / 2)) }}</span>
+                            <span>0</span>
+                        </div>
+                        <div>
+                            <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-3">
+                                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-48 w-full overflow-visible">
+                                    @foreach ($activitySeries as $series)
+                                        @php
+                                            $points = $activity->values()->map(function ($item, $index) use ($activity, $activityMax, $series) {
+                                                $x = $activity->count() <= 1 ? 0 : ($index / ($activity->count() - 1)) * 100;
+                                                $y = 92 - (((int) ($item[$series['key']] ?? 0) / $activityMax) * 76);
 
-                                        return number_format($x, 2, '.', '').','.number_format($y, 2, '.', '');
-                                    })->implode(' ');
-                                @endphp
-                                <polyline points="{{ $points }}" fill="none" stroke="{{ $series['color'] }}" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"></polyline>
-                            @endforeach
-                        </svg>
-                        <div class="grid grid-cols-7 gap-2 text-center text-[11px] uppercase text-slate-500">
-                            @foreach ($activity as $item)
-                                <span>{{ $item['label'] }}</span>
-                            @endforeach
+                                                return number_format($x, 2, '.', '').','.number_format($y, 2, '.', '');
+                                            })->implode(' ');
+                                        @endphp
+                                        <polyline points="{{ $points }}" fill="none" stroke="{{ $series['color'] }}" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                                    @endforeach
+                                </svg>
+                            </div>
+                            <div class="mt-2 grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase text-slate-500">
+                                @foreach ($activity as $item)
+                                    <span>{{ $item['label'] }}</span>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex flex-wrap gap-2">
+                    <div class="mt-4 flex flex-wrap justify-end gap-2">
                         @foreach ($activitySeries as $series)
                             <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-3 py-2 text-xs font-semibold uppercase text-slate-400">
                                 <span class="h-2 w-2 rounded-full" style="background: {{ $series['color'] }}"></span>{{ $series['label'] }}
@@ -402,23 +437,31 @@
             </section>
 
             <section class="stats-panel p-5">
-                <p class="font-['Teko'] text-3xl uppercase text-slate-100">Territory Control</p>
-                <div class="mt-5 grid gap-5 sm:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-1">
-                    <div data-stat-territory-ring class="stats-ring grid aspect-square place-items-center rounded-full border border-slate-800" style="--territory-claimed: {{ $territoryClaimedPercent }}%;">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="font-['Teko'] text-3xl uppercase text-slate-100">Territory Control</p>
+                        <p class="mt-1 text-sm text-slate-400">Claimed land against the generated map grid.</p>
+                    </div>
+                    <i class="fa-solid fa-map-location-dot text-2xl text-emerald-200"></i>
+                </div>
+                <div class="mt-5 grid items-center gap-5 sm:grid-cols-[9.5rem_minmax(0,1fr)] xl:grid-cols-1 2xl:grid-cols-[9.5rem_minmax(0,1fr)]">
+                    <div data-stat-territory-ring class="stats-ring mx-auto grid aspect-square w-full max-w-[9.5rem] place-items-center rounded-full border border-slate-800" style="--territory-claimed: {{ $territoryClaimedPercent }}%;">
                         <div class="grid h-[72%] w-[72%] place-items-center rounded-full bg-slate-950 text-center">
                             <div>
-                                <p class="font-['Teko'] text-6xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
-                                <p class="mt-1 text-xs uppercase text-slate-500" data-territory-subtitle>{{ number_format((int) ($territory['claimed'] ?? 0)) }} of {{ number_format((int) ($territory['total'] ?? 0)) }} claimed</p>
+                                <p class="font-['Teko'] text-4xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
+                                <p class="mt-1 px-2 text-[10px] font-semibold uppercase leading-tight text-slate-500" data-territory-subtitle>{{ number_format((int) ($territory['claimed'] ?? 0)) }} of {{ number_format((int) ($territory['total'] ?? 0)) }} claimed</p>
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-4" data-stat-territory-types>
-                        @foreach ($territoryTypes as $item)
+                    <div class="space-y-3" data-stat-territory-types>
+                        @forelse ($territoryTypes as $item)
                             <div>
-                                <div class="flex justify-between text-sm text-slate-400"><span>{{ $item['label'] }}</span><span>{{ number_format((int) $item['value']) }}</span></div>
+                                <div class="flex justify-between gap-3 text-sm text-slate-400"><span>{{ $item['label'] }}</span><span>{{ number_format((int) $item['value']) }}</span></div>
                                 <div class="stats-bar mt-2"><div class="h-full rounded-full bg-slate-300" style="width: {{ max((int) $item['value'] > 0 ? 5 : 0, ((int) $item['value'] / $territoryTypeMax) * 100) }}%;"></div></div>
                             </div>
-                        @endforeach
+                        @empty
+                            <p class="rounded-lg border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-500">No territory tiles generated yet.</p>
+                        @endforelse
                     </div>
                 </div>
             </section>
