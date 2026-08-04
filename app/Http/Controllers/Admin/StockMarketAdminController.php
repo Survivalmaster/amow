@@ -22,6 +22,8 @@ class StockMarketAdminController extends Controller
                 [
                     'min_change_percent' => -3,
                     'max_change_percent' => 3,
+                    'passive_growth_bias_percent' => 2,
+                    'low_price_recovery_percent' => 30,
                     'buy_impact_percent_per_100_shares' => 0.35,
                     'sell_impact_percent_per_100_shares' => 0.45,
                     'max_trade_impact_percent' => 99,
@@ -38,6 +40,8 @@ class StockMarketAdminController extends Controller
         $validated = $request->validate([
             'min_change_percent' => ['required', 'numeric', 'between:-99,99'],
             'max_change_percent' => ['required', 'numeric', 'between:-99,10'],
+            'passive_growth_bias_percent' => ['required', 'numeric', 'between:0,10'],
+            'low_price_recovery_percent' => ['required', 'numeric', 'between:0,35'],
             'buy_impact_percent_per_100_shares' => ['required', 'numeric', 'between:0,99'],
             'sell_impact_percent_per_100_shares' => ['required', 'numeric', 'between:0,99'],
             'max_trade_impact_percent' => ['required', 'numeric', 'between:0,99'],
@@ -97,6 +101,8 @@ class StockMarketAdminController extends Controller
             [
                 'min_change_percent' => -3,
                 'max_change_percent' => 3,
+                'passive_growth_bias_percent' => 2,
+                'low_price_recovery_percent' => 30,
                 'buy_impact_percent_per_100_shares' => 0.35,
                 'sell_impact_percent_per_100_shares' => 0.45,
                 'max_trade_impact_percent' => 99,

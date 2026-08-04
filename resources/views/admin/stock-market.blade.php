@@ -31,6 +31,14 @@
                     <input type="number" step="0.01" name="max_change_percent" value="{{ old('max_change_percent', $settings->max_change_percent) }}" required>
                 </label>
                 <label class="grid gap-2 text-sm text-slate-300">
+                    <span class="text-xs font-semibold uppercase text-slate-500">Passive Growth Bias %</span>
+                    <input type="number" step="0.01" min="0" max="10" name="passive_growth_bias_percent" value="{{ old('passive_growth_bias_percent', $settings->passive_growth_bias_percent) }}" required>
+                </label>
+                <label class="grid gap-2 text-sm text-slate-300">
+                    <span class="text-xs font-semibold uppercase text-slate-500">Low Price Recovery %</span>
+                    <input type="number" step="0.01" min="0" max="35" name="low_price_recovery_percent" value="{{ old('low_price_recovery_percent', $settings->low_price_recovery_percent) }}" required>
+                </label>
+                <label class="grid gap-2 text-sm text-slate-300">
                     <span class="text-xs font-semibold uppercase text-slate-500">Buy Impact / 100 Shares %</span>
                     <input type="number" step="0.01" min="0" name="buy_impact_percent_per_100_shares" value="{{ old('buy_impact_percent_per_100_shares', $settings->buy_impact_percent_per_100_shares) }}" required>
                 </label>

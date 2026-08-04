@@ -249,6 +249,8 @@ test('random ticker can move a five credit stock below the old floor', function 
     StockMarketSetting::query()->updateOrCreate(['id' => 1], [
         'min_change_percent' => -7,
         'max_change_percent' => -7,
+        'passive_growth_bias_percent' => 0,
+        'low_price_recovery_percent' => 0,
         'buy_impact_percent_per_100_shares' => 1,
         'sell_impact_percent_per_100_shares' => 1,
         'max_trade_impact_percent' => 99,
@@ -268,6 +270,33 @@ test('random ticker can move a five credit stock below the old floor', function 
         ->assertOk();
 
     expect((float) Company::query()->firstOrFail()->current_price)->toBe(4.65);
+});
+
+test('low price recovery can lift crashed stocks without player buying', function () {
+    StockMarketSetting::query()->updateOrCreate(['id' => 1], [
+        'min_change_percent' => -7,
+        'max_change_percent' => -7,
+        'passive_growth_bias_percent' => 2,
+        'low_price_recovery_percent' => 30,
+        'buy_impact_percent_per_100_shares' => 1,
+        'sell_impact_percent_per_100_shares' => 1,
+        'max_trade_impact_percent' => 99,
+        'crash_trade_threshold_shares' => 100,
+        'crash_extra_percent' => 99,
+    ]);
+
+    $user = User::factory()->create();
+    createMarketCharacter($user);
+    Company::query()->update([
+        'current_price' => 1,
+        'last_price_updated_at' => now()->subMinutes(2),
+    ]);
+
+    $this->actingAs($user)
+        ->getJson(route('market.state'))
+        ->assertOk();
+
+    expect((float) Company::query()->firstOrFail()->current_price)->toBeGreaterThan(1.0);
 });
 
 test('selling one hundred shares can hard crash a company price', function () {
