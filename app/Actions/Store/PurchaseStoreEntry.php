@@ -46,7 +46,7 @@ class PurchaseStoreEntry
             $character->decrement('plastic_credits', $licence->cost);
             $character->licences()->attach($licence->id);
 
-            if ($licence->slug === 'business-owner') {
+            if ($licence->slug === 'business-owner' || $licence->grants_business_creation) {
                 $character->forceFill(['is_business_owner' => true])->save();
             }
 

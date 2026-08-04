@@ -52,8 +52,8 @@ class HomeController extends Controller
         abort_unless($character->hasLand(), 404);
         $this->completeFinishedTileClears($character);
 
-        if (! $character->hasCompletedLandBuilding()) {
-            return back()->withErrors(['home' => 'You need at least one completed building on your land before you can rest there.']);
+        if (! $character->hasCompletedSleepBuilding()) {
+            return back()->withErrors(['home' => 'You need at least one completed sleep-capable building on your land before you can rest there.']);
         }
 
         if ((int) $character->stamina_points >= 100) {

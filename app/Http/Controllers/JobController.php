@@ -14,13 +14,14 @@ class JobController extends Controller
 {
     public function index(Request $request): View
     {
-        $character = $request->user()->character()->with('currentJob')->firstOrFail();
+        $character = $request->user()->character()->with(['currentJob', 'licences', 'landBuildings.item'])->firstOrFail();
         $workLocation = Location::query()->where('slug', 'go-to-work')->first();
 
         return view('jobs.index', [
             'character' => $character,
             'jobs' => GameJob::query()->orderBy('required_level')->orderBy('name')->get(),
             'workLocation' => $workLocation,
+            'sleepBuilding' => $character->completedSleepBuildings()->first(),
         ]);
     }
 

@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('amow:fluctuate-stock-prices')->everyMinute();
+Schedule::command('amow:process-player-business-wages')->hourly();

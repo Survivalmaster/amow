@@ -47,12 +47,17 @@ class LicenceAdminController extends Controller
 
     protected function validatedData(Request $request, ?Licence $licence = null): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('licences', 'slug')->ignore($licence?->id)],
             'description' => ['required', 'string'],
             'cost' => ['required', 'integer', 'min:1'],
             'required_rank_id' => ['nullable', 'exists:ranks,id'],
+            'grants_business_creation' => ['nullable', 'boolean'],
         ]);
+
+        $validated['grants_business_creation'] = $request->boolean('grants_business_creation');
+
+        return $validated;
     }
 }

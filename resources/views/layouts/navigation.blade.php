@@ -54,7 +54,7 @@
     </style>
 @endpush
 
-<nav x-data="{ open: false, marketplaceOpen: {{ request()->routeIs('bank.*', 'store.*') ? 'true' : 'false' }}, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }}, nationOpen: {{ request()->routeIs('nation.*') ? 'true' : 'false' }}, adminOpen: {{ request()->routeIs('admin.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
+<nav x-data="{ open: false, marketplaceOpen: {{ request()->routeIs('bank.*', 'store.*', 'businesses.*') ? 'true' : 'false' }}, ucpOpen: {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'true' : 'false' }}, nationOpen: {{ request()->routeIs('nation.*') ? 'true' : 'false' }}, adminOpen: {{ request()->routeIs('admin.*') ? 'true' : 'false' }} }" class="border-b border-white/10 bg-black/25 backdrop-blur lg:min-h-screen lg:border-b-0 lg:border-r">
     <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:hidden">
         <a href="{{ route('dashboard') }}" class="font-['Teko'] text-3xl uppercase tracking-[0.16em] text-[#f4ecd0]">AMOW</a>
         <button @click="open = ! open" class="rounded-2xl border border-white/10 px-3 py-2 text-sm">Menu</button>
@@ -163,7 +163,7 @@
                                 @click="marketplaceOpen = !marketplaceOpen"
                                 class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/82 transition hover:bg-white/[0.05]"
                             >
-                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('bank.*', 'store.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('bank.*', 'store.*', 'businesses.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                                 <i class="fa-solid fa-store w-5 text-center text-[#7ead59]"></i>
                                 <span class="flex-1 text-left">Marketplace</span>
                                 <i class="fa-solid text-xs text-white/45" :class="marketplaceOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
@@ -185,12 +185,20 @@
                                     <i class="fa-solid fa-id-card w-5 text-center text-[#7ead59]"></i>
                                     <span>License Center</span>
                                 </a>
-                                <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
-                                    <span class="h-6 w-1 rounded-full bg-transparent"></span>
-                                    <i class="fa-solid fa-shop-lock w-5 text-center text-white/25"></i>
-                                    <span class="flex-1">Player Businesses</span>
-                                    <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
-                                </div>
+                                @if ($canAccessTerritoryMap)
+                                    <a href="{{ route('businesses.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('businesses.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('businesses.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                        <i class="fa-solid fa-shop w-5 text-center text-[#7ead59]"></i>
+                                        <span>Player Businesses</span>
+                                    </a>
+                                @else
+                                    <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                                        <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                                        <i class="fa-solid fa-shop-lock w-5 text-center text-white/25"></i>
+                                        <span class="flex-1">Player Businesses</span>
+                                        <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                                    </div>
+                                @endif
                             </div>
                         @endif
                         @if ($item['label'] === 'Leaderboards')
@@ -415,7 +423,7 @@
                         @click="marketplaceOpen = !marketplaceOpen"
                         class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/82 transition hover:bg-white/[0.05]"
                     >
-                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('bank.*', 'store.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('bank.*', 'store.*', 'businesses.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="fa-solid fa-store w-5 text-center text-[#7ead59]"></i>
                         <span class="flex-1 text-left">Marketplace</span>
                         <i class="fa-solid text-xs text-white/45" :class="marketplaceOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
@@ -437,12 +445,20 @@
                             <i class="fa-solid fa-id-card w-5 text-center text-[#7ead59]"></i>
                             <span>License Center</span>
                         </a>
-                        <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
-                            <span class="h-6 w-1 rounded-full bg-transparent"></span>
-                            <i class="fa-solid fa-shop-lock w-5 text-center text-white/25"></i>
-                            <span class="flex-1">Player Businesses</span>
-                            <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
-                        </div>
+                        @if ($canAccessTerritoryMap)
+                            <a href="{{ route('businesses.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('businesses.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('businesses.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="fa-solid fa-shop w-5 text-center text-[#7ead59]"></i>
+                                <span>Player Businesses</span>
+                            </a>
+                        @else
+                            <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                                <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                                <i class="fa-solid fa-shop-lock w-5 text-center text-white/25"></i>
+                                <span class="flex-1">Player Businesses</span>
+                                <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                            </div>
+                        @endif
                     </div>
                 @endif
                 @if ($item['label'] === 'Leaderboards')

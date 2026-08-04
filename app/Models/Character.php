@@ -231,6 +231,33 @@ class Character extends Model
         return $this->completedLandBuildings()->isNotEmpty();
     }
 
+    public function completedSleepBuildings(): Collection
+    {
+        return $this->completedLandBuildings()
+            ->filter(fn (CharacterLandBuilding $building) => (bool) $building->item?->is_home)
+            ->values();
+    }
+
+    public function hasCompletedSleepBuilding(): bool
+    {
+        return $this->completedSleepBuildings()->isNotEmpty();
+    }
+
+    public function canCreatePlayerBusiness(): bool
+    {
+        return $this->licences->contains(fn (Licence $licence) => $licence->grants_business_creation);
+    }
+
+    public function ownedPlayerBusinesses(): HasMany
+    {
+        return $this->hasMany(PlayerBusiness::class, 'owner_character_id');
+    }
+
+    public function playerBusinessMemberships(): HasMany
+    {
+        return $this->hasMany(PlayerBusinessMember::class);
+    }
+
     public function inventorySlotCapacity(): int
     {
         return 12 + $this->inventory->sum(function (Item $item) {

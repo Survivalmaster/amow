@@ -76,6 +76,32 @@
                     <p>Finishing a work cycle awards the XP set for your current job.</p>
                     <p>Pay, XP, stamina use, and work cooldown are controlled per job in the admin panel.</p>
                 </div>
+                <div class="mt-6 rounded-[1.5rem] border border-[#7ead59]/25 bg-[#7ead59]/10 p-5">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#d7edc7]">Rest Shortcut</p>
+                            <p class="mt-2 text-sm leading-6 text-white/70">
+                                @if ($sleepBuilding)
+                                    Sleep at your {{ $sleepBuilding->item?->name ?? 'completed building' }} without leaving the jobs board.
+                                @elseif ($character->hasLand())
+                                    Build a sleep-capable structure on your land to rest from here.
+                                @else
+                                    Buy the Land licence and build a sleep-capable structure to rest from here.
+                                @endif
+                            </p>
+                        </div>
+                        <form method="POST" action="{{ route('home.sleep') }}">
+                            @csrf
+                            <button
+                                class="amow-action-button inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-xs font-semibold uppercase tracking-[0.2em] transition {{ $sleepBuilding ? 'bg-[#7ead59] text-[#07100c] hover:bg-[#92c46a]' : 'cursor-not-allowed border border-white/10 bg-white/5 text-white/38' }}"
+                                @disabled(! $sleepBuilding)
+                            >
+                                <i class="fa-solid fa-bed"></i>
+                                Sleep
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </section>
 

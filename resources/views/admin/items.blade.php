@@ -97,7 +97,7 @@
                     </label>
                     <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                         <input type="checkbox" name="is_home" value="1">
-                        Legacy home item
+                        Can be slept in
                     </label>
                     <label class="{{ $labelClass }}">
                         <span class="{{ $labelTitleClass }}">Inventory Slot Bonus</span>
@@ -153,16 +153,35 @@
             <form method="POST" action="{{ route('admin.licences.store') }}" class="p-5">
                 @csrf
                 <div class="grid gap-4">
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Name" required>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="Slug" required>
-                    <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="cost" placeholder="Cost" min="1" required>
-                    <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
-                        <option value="">No rank requirement</option>
-                        @foreach ($ranks as $rank)
-                            <option value="{{ $rank->id }}">{{ $rank->name }}</option>
-                        @endforeach
-                    </select>
-                    <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Description" required></textarea>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Licence Name</span>
+                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" placeholder="Business Owner" required>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Slug</span>
+                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" placeholder="business-owner" required>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Cost</span>
+                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="cost" placeholder="Cost" min="1" required>
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Required Rank</span>
+                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
+                            <option value="">No rank requirement</option>
+                            @foreach ($ranks as $rank)
+                                <option value="{{ $rank->id }}">{{ $rank->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                        <input type="checkbox" name="grants_business_creation" value="1">
+                        Allows player business creation
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Description</span>
+                        <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" placeholder="Description" required></textarea>
+                    </label>
                 </div>
                 <div class="mt-5 flex justify-end gap-2 border-t border-white/10 pt-3">
                     <button type="button" @click="showLicenceCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
@@ -264,7 +283,7 @@
                                         </label>
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                                             <input type="checkbox" name="is_home" value="1" @checked($item->is_home)>
-                                            Legacy home item
+                                            Can be slept in
                                         </label>
                                         <label class="{{ $labelClass }}">
                                             <span class="{{ $labelTitleClass }}">Inventory Slot Bonus</span>
@@ -341,6 +360,7 @@
                             <th class="px-5 py-4 text-left">Slug</th>
                             <th class="px-5 py-4 text-left">Cost</th>
                             <th class="px-5 py-4 text-left">Required Rank</th>
+                            <th class="px-5 py-4 text-left">Business</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -351,6 +371,7 @@
                                 <td class="px-5 py-4">{{ $licence->slug }}</td>
                                 <td class="px-5 py-4">{{ number_format($licence->cost) }}</td>
                                 <td class="px-5 py-4">{{ $licence->requiredRank?->name ?? 'None' }}</td>
+                                <td class="px-5 py-4">{{ $licence->grants_business_creation ? 'Creates businesses' : 'No' }}</td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
                                         <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openLicenceId = {{ $licence->id }}" />
@@ -366,16 +387,35 @@
                                     <form method="POST" action="{{ route('admin.licences.update', $licence) }}" class="grid gap-4 p-5 lg:grid-cols-2">
                                         @csrf
                                         @method('PATCH')
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $licence->name }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" value="{{ $licence->slug }}" required>
-                                        <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="cost" value="{{ $licence->cost }}" min="1" required>
-                                        <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
-                                            <option value="">No rank requirement</option>
-                                            @foreach ($ranks as $rank)
-                                                <option value="{{ $rank->id }}" @selected($licence->required_rank_id === $rank->id)>{{ $rank->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 lg:col-span-2" name="description" required>{{ $licence->description }}</textarea>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Licence Name</span>
+                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="name" value="{{ $licence->name }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Slug</span>
+                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="slug" value="{{ $licence->slug }}" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Cost</span>
+                                            <input class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" type="number" name="cost" value="{{ $licence->cost }}" min="1" required>
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Required Rank</span>
+                                            <select class="rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="required_rank_id">
+                                                <option value="">No rank requirement</option>
+                                                @foreach ($ranks as $rank)
+                                                    <option value="{{ $rank->id }}" @selected($licence->required_rank_id === $rank->id)>{{ $rank->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </label>
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                                            <input type="checkbox" name="grants_business_creation" value="1" @checked($licence->grants_business_creation)>
+                                            Allows player business creation
+                                        </label>
+                                        <label class="{{ $labelClass }} lg:col-span-2">
+                                            <span class="{{ $labelTitleClass }}">Description</span>
+                                            <textarea class="min-h-28 rounded-2xl border border-white/10 bg-black/25 px-4 py-3" name="description" required>{{ $licence->description }}</textarea>
+                                        </label>
                                         <div class="flex justify-end gap-2 border-t border-white/10 pt-3 lg:col-span-2">
                                             <button type="button" @click="openLicenceId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">Cancel</button>
                                             <button class="inline-flex items-center gap-2 rounded-full bg-[#c2a84f] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#07100c]"><i class="fa-solid fa-check"></i>Save</button>

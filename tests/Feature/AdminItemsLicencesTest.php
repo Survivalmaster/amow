@@ -22,12 +22,14 @@ test('admin can create a licence from the items admin area', function () {
             'description' => 'Allows harbour ownership.',
             'cost' => 300,
             'required_rank_id' => null,
+            'grants_business_creation' => '1',
         ])
         ->assertRedirect();
 
     $this->assertDatabaseHas('licences', [
         'slug' => 'harbour-permit',
         'name' => 'Harbour Permit',
+        'grants_business_creation' => true,
     ]);
 });
 

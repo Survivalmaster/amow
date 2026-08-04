@@ -22,6 +22,7 @@ class LicenceSeeder extends Seeder
                 'description' => 'Unlocks a personal 10x10 land plot where buildings can be placed and constructed.',
                 'cost' => 260,
                 'required_rank_id' => null,
+                'grants_business_creation' => false,
             ],
             [
                 'name' => 'Senator',
@@ -29,6 +30,7 @@ class LicenceSeeder extends Seeder
                 'description' => 'Access to civic power, debate chambers, and upper-political buildings.',
                 'cost' => 400,
                 'required_rank_id' => null,
+                'grants_business_creation' => false,
             ],
             [
                 'name' => 'Priest',
@@ -36,13 +38,15 @@ class LicenceSeeder extends Seeder
                 'description' => 'Allows service inside faction temples and ceremonial locations.',
                 'cost' => 250,
                 'required_rank_id' => null,
+                'grants_business_creation' => false,
             ],
             [
                 'name' => 'Business Owner',
                 'slug' => 'business-owner',
-                'description' => 'Unlocks passive daily income and commercial prestige.',
+                'description' => 'Unlocks passive daily income, commercial prestige, and player business creation.',
                 'cost' => 600,
                 'required_rank_id' => $captain?->id,
+                'grants_business_creation' => true,
             ],
         ];
 

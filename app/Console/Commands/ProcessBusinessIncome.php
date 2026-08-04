@@ -29,7 +29,7 @@ class ProcessBusinessIncome extends Command
     {
         $eligible = Character::query()
             ->where('is_business_owner', true)
-            ->whereHas('licences', fn ($query) => $query->where('slug', 'business-owner'))
+            ->whereHas('licences', fn ($query) => $query->where('grants_business_creation', true))
             ->get();
 
         $paid = 0;
