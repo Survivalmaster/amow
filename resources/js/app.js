@@ -1,23 +1,6 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
-import {
-    Chart,
-    Filler,
-    Legend,
-    LineController,
-    LineElement,
-    LinearScale,
-    PointElement,
-    CategoryScale,
-    Tooltip,
-} from 'chart.js';
 import { bootTerritoryMap } from './territory-map';
-
-Chart.register(CategoryScale, Filler, Legend, LineController, LineElement, LinearScale, PointElement, Tooltip);
-
-window.amowCharts = {
-    Chart,
-};
 
 window.globalChatBox = function globalChatBox({ stateUrl, sendUrl, csrfToken, currentCharacter, currentFaction }) {
     return {

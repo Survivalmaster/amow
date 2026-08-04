@@ -29,25 +29,13 @@
             background-size: 28px 28px;
         }
 
-        .stats-ring {
-            width: 6.5rem;
-            height: 6.5rem;
-            flex: 0 0 6.5rem;
-            border-radius: 9999px !important;
-            background:
-                conic-gradient(#38bdf8 0 var(--territory-claimed, 0%), #1f2937 var(--territory-claimed, 0%) 100%);
+        .stats-type-chip {
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            border-radius: 0.65rem;
+            background: rgba(2, 6, 23, 0.36);
         }
 
-        .stats-ring-core {
-            width: 72%;
-            height: 72%;
-            border-radius: 9999px !important;
-            background: #020617;
-        }
-
-        .stats-chart-wrap {
-            position: relative;
-            height: 15rem;
+        .stats-activity-chart {
             border: 1px solid rgba(51, 65, 85, 0.85);
             border-radius: 0.7rem;
             background:
@@ -55,18 +43,28 @@
                 linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px),
                 rgba(2, 6, 23, 0.38);
             background-size: 28px 28px;
-            padding: 0.75rem;
+            padding: 0.85rem;
         }
 
-        .stats-chart-wrap canvas {
-            height: 100% !important;
-            width: 100% !important;
+        .stats-day-bars {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            align-items: end;
+            gap: 0.2rem;
+            height: 8.75rem;
         }
 
-        .stats-type-chip {
-            border: 1px solid rgba(51, 65, 85, 0.8);
-            border-radius: 0.65rem;
-            background: rgba(2, 6, 23, 0.36);
+        .stats-activity-bar {
+            min-height: 0.2rem;
+            border-radius: 0.45rem 0.45rem 0.15rem 0.15rem;
+        }
+
+        .stats-territory-meter {
+            height: 0.85rem;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(30, 41, 59, 0.9);
+            outline: 1px solid rgba(51, 65, 85, 0.75);
         }
     </style>
 @endpush
@@ -81,7 +79,6 @@
 
             const stateUrl = root.dataset.statisticsStateUrl;
             let isFetching = false;
-            let pulseChart = null;
 
             const formatNumber = (value) => new Intl.NumberFormat().format(Number(value || 0));
             const escapeHtml = (value) => String(value ?? '')
@@ -94,23 +91,6 @@
             const widthFor = (value, max) => Math.max(Number(value || 0) > 0 ? 5 : 0, (Number(value || 0) / max) * 100);
 
             const iconClass = (icon) => icon?.startsWith('fa-') ? `fa-solid ${icon}` : 'fa-solid fa-chart-simple';
-
-            const renderHero = (payload) => {
-                const summary = payload.summary || [];
-                const users = summary.find((item) => item.label === 'Users')?.value || 0;
-                const characters = summary.find((item) => item.label === 'Characters')?.value || 0;
-                const credits = summary.find((item) => item.label === 'Player Credits')?.value || 0;
-                const online = summary.find((item) => item.label === 'Online Now')?.value || 0;
-                const earned = payload.economy?.earned || 0;
-                const spent = payload.economy?.spent || 0;
-                const movement = earned + spent;
-
-                root.querySelector('[data-stat-hero-users]').textContent = formatNumber(users);
-                root.querySelector('[data-stat-hero-characters]').textContent = formatNumber(characters);
-                root.querySelector('[data-stat-hero-credits]').textContent = formatNumber(credits);
-                root.querySelector('[data-stat-hero-online]').textContent = formatNumber(online);
-                root.querySelector('[data-stat-hero-movement]').textContent = formatNumber(movement);
-            };
 
             const renderCards = (items) => {
                 const target = root.querySelector('[data-stat-summary]');
@@ -126,15 +106,31 @@
             };
 
             const renderActivity = (activity) => {
-                const canvas = root.querySelector('[data-stat-pulse-chart]');
+                const chart = root.querySelector('[data-stat-pulse-chart]');
                 const legend = root.querySelector('[data-stat-pulse-legend]');
-                const Chart = window.amowCharts?.Chart;
                 const series = [
                     ['transactions', '#38bdf8', 'Transactions'],
                     ['messages', '#a78bfa', 'Messages'],
                     ['users', '#facc15', 'Users'],
                     ['characters', '#4ade80', 'Characters'],
                 ];
+                const max = maxOf(activity, series.map(([key]) => key));
+
+                if (chart) {
+                    chart.innerHTML = activity.map((item) => `
+                        <div class="min-w-0">
+                            <div class="stats-day-bars">
+                                ${series.map(([key, color]) => {
+                                    const value = Number(item[key] || 0);
+                                    const height = value > 0 ? Math.max(8, (value / max) * 100) : 0;
+
+                                    return `<div class="stats-activity-bar" title="${escapeHtml(key)}: ${formatNumber(value)}" style="height:${height}%; background:${color};"></div>`;
+                                }).join('')}
+                            </div>
+                            <p class="mt-2 text-center text-[11px] font-semibold uppercase text-slate-500">${escapeHtml(item.label)}</p>
+                        </div>
+                    `).join('');
+                }
 
                 if (legend) {
                     legend.innerHTML = series.map(([key, color, label]) => {
@@ -149,66 +145,6 @@
                             </div>
                         `;
                     }).join('');
-                }
-
-                if (!canvas || !Chart) return;
-
-                const chartData = {
-                    labels: activity.map((item) => item.label),
-                    datasets: series.map(([key, color, label]) => ({
-                        label,
-                        data: activity.map((item) => Number(item[key] || 0)),
-                        borderColor: color,
-                        backgroundColor: `${color}22`,
-                        borderWidth: key === 'transactions' ? 3 : 2,
-                        pointRadius: 2.5,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: color,
-                        pointBorderWidth: 0,
-                        tension: 0.35,
-                        fill: key === 'transactions',
-                    })),
-                };
-
-                if (!pulseChart) {
-                    pulseChart = new Chart(canvas, {
-                        type: 'line',
-                        data: chartData,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            interaction: { intersect: false, mode: 'index' },
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: '#020617',
-                                    borderColor: '#334155',
-                                    borderWidth: 1,
-                                    titleColor: '#f8fafc',
-                                    bodyColor: '#cbd5e1',
-                                },
-                            },
-                            scales: {
-                                x: {
-                                    grid: { color: 'rgba(148, 163, 184, 0.08)', drawTicks: false },
-                                    ticks: { color: '#94a3b8', font: { size: 11, weight: 700 } },
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { color: 'rgba(148, 163, 184, 0.1)', drawTicks: false },
-                                    ticks: {
-                                        color: '#94a3b8',
-                                        precision: 0,
-                                        font: { size: 11, weight: 700 },
-                                        callback: (value) => formatNumber(value),
-                                    },
-                                },
-                            },
-                        },
-                    });
-                } else {
-                    pulseChart.data = chartData;
-                    pulseChart.update('none');
                 }
             };
 
@@ -283,13 +219,13 @@
             };
 
             const renderTerritory = (territory) => {
-                const ring = root.querySelector('[data-stat-territory-ring]');
+                const meter = root.querySelector('[data-stat-territory-meter]');
                 const types = root.querySelector('[data-stat-territory-types]');
                 const percent = Number(territory.claimed_percent || 0);
                 const max = Math.max(1, ...(territory.types || []).map((item) => Number(item.value || 0)));
 
-                ring.style.setProperty('--territory-claimed', `${percent}%`);
-                ring.querySelector('[data-territory-percent]').textContent = `${percent}%`;
+                root.querySelector('[data-territory-percent]').textContent = `${percent}%`;
+                if (meter) meter.style.width = `${Math.min(100, Math.max(0, percent))}%`;
                 root.querySelector('[data-territory-claimed]').textContent = formatNumber(territory.claimed);
                 root.querySelector('[data-territory-total]').textContent = formatNumber(territory.total);
                 root.querySelector('[data-territory-open]').textContent = formatNumber(Math.max(0, Number(territory.total || 0) - Number(territory.claimed || 0)));
@@ -306,7 +242,6 @@
 
             const render = (payload) => {
                 root.querySelector('[data-stat-generated-at]').textContent = payload.generated_at || '-';
-                renderHero(payload);
                 renderCards(payload.summary || []);
                 renderActivity(payload.activity || []);
                 renderEconomy(payload.economy || {});
@@ -353,17 +288,13 @@
     $world = collect($statistics['world'] ?? []);
     $content = collect($statistics['content'] ?? []);
 
-    $heroUsers = (int) ($summary->firstWhere('label', 'Users')['value'] ?? 0);
-    $heroCharacters = (int) ($summary->firstWhere('label', 'Characters')['value'] ?? 0);
-    $heroOnline = (int) ($summary->firstWhere('label', 'Online Now')['value'] ?? 0);
-    $heroCredits = (int) ($summary->firstWhere('label', 'Player Credits')['value'] ?? 0);
-    $heroMovement = (int) (($economy['earned'] ?? 0) + ($economy['spent'] ?? 0));
     $activitySeries = [
         ['key' => 'transactions', 'label' => 'Transactions', 'color' => '#38bdf8'],
         ['key' => 'messages', 'label' => 'Messages', 'color' => '#a78bfa'],
         ['key' => 'users', 'label' => 'Users', 'color' => '#facc15'],
         ['key' => 'characters', 'label' => 'Characters', 'color' => '#4ade80'],
     ];
+    $activityValueMax = max(1, $activity->flatMap(fn ($item) => collect($activitySeries)->map(fn ($series) => (int) ($item[$series['key']] ?? 0)))->max() ?? 1);
     $economyRows = collect([
         ['label' => 'Work earned', 'value' => $economy['work_earned'] ?? 0, 'color' => '#4ade80'],
         ['label' => 'Marketplace spend', 'value' => $economy['marketplace_spend'] ?? 0, 'color' => '#facc15'],
@@ -405,32 +336,6 @@
     >
         <script type="application/json" data-initial-statistics-json>@json($statistics)</script>
 
-        <section class="stats-panel overflow-hidden">
-            <div class="stats-grid-bg grid gap-6 p-6 xl:grid-cols-[1.15fr_0.85fr]">
-                <div>
-                    <p class="text-xs font-semibold uppercase text-slate-500">AMOW system telemetry</p>
-                    <p class="mt-3 max-w-3xl font-['Teko'] text-5xl leading-none text-slate-50 lg:text-6xl">Operational snapshot</p>
-                    <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Users</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-slate-50" data-stat-hero-users>{{ number_format($heroUsers) }}</p></div>
-                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Characters</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-slate-50" data-stat-hero-characters>{{ number_format($heroCharacters) }}</p></div>
-                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Online</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-sky-200" data-stat-hero-online>{{ number_format($heroOnline) }}</p></div>
-                        <div class="stats-kpi p-4"><p class="text-xs uppercase text-slate-500">Movement</p><p class="mt-2 font-['Teko'] text-4xl leading-none text-emerald-200" data-stat-hero-movement>{{ number_format($heroMovement) }}</p></div>
-                    </div>
-                </div>
-                <div class="grid content-between rounded-lg border border-slate-800 bg-slate-950/50 p-5">
-                    <div>
-                        <p class="text-xs font-semibold uppercase text-slate-500">Circulating player credits</p>
-                        <p class="mt-3 font-['Teko'] text-6xl leading-none text-slate-50" data-stat-hero-credits>{{ number_format($heroCredits) }}</p>
-                    </div>
-                    <div class="mt-8 grid grid-cols-3 gap-2 text-center">
-                        <div class="rounded-lg bg-slate-900/70 p-3"><p class="text-[10px] uppercase text-slate-500">Economy</p><i class="fa-solid fa-coins mt-2 text-2xl text-amber-200"></i></div>
-                        <div class="rounded-lg bg-slate-900/70 p-3"><p class="text-[10px] uppercase text-slate-500">Map</p><i class="fa-solid fa-map mt-2 text-2xl text-emerald-200"></i></div>
-                        <div class="rounded-lg bg-slate-900/70 p-3"><p class="text-[10px] uppercase text-slate-500">Players</p><i class="fa-solid fa-users mt-2 text-2xl text-sky-200"></i></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
         <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-stat-summary>
             @foreach ($summary as $item)
                 <article class="stats-kpi p-4">
@@ -453,8 +358,27 @@
                     <i class="fa-solid fa-chart-line text-xl text-sky-300"></i>
                 </div>
                 <div class="mt-3">
-                    <div class="stats-chart-wrap">
-                        <canvas data-stat-pulse-chart aria-label="Seven day activity pulse chart"></canvas>
+                    <div class="stats-activity-chart">
+                        <div class="grid grid-cols-7 gap-3" data-stat-pulse-chart>
+                            @foreach ($activity as $day)
+                                <div class="min-w-0">
+                                    <div class="stats-day-bars">
+                                        @foreach ($activitySeries as $series)
+                                            @php
+                                                $value = (int) ($day[$series['key']] ?? 0);
+                                                $height = $value > 0 ? max(8, ($value / $activityValueMax) * 100) : 0;
+                                            @endphp
+                                            <div
+                                                class="stats-activity-bar"
+                                                title="{{ $series['label'] }}: {{ number_format($value) }}"
+                                                style="height: {{ $height }}%; background: {{ $series['color'] }};"
+                                            ></div>
+                                        @endforeach
+                                    </div>
+                                    <p class="mt-2 text-center text-[11px] font-semibold uppercase text-slate-500">{{ $day['label'] }}</p>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                     <div class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4" data-stat-pulse-legend>
                         @foreach ($activitySeries as $series)
@@ -480,27 +404,34 @@
                     </div>
                     <i class="fa-solid fa-map-location-dot text-xl text-emerald-200"></i>
                 </div>
-                <div class="mt-3 grid items-center gap-4 sm:grid-cols-[6.5rem_minmax(0,1fr)]">
-                    <div data-stat-territory-ring class="stats-ring grid place-items-center border border-slate-800" style="--territory-claimed: {{ $territoryClaimedPercent }}%;">
-                        <div class="stats-ring-core grid place-items-center text-center">
-                            <div>
-                                <p class="font-['Teko'] text-3xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
-                                <p class="mt-0.5 px-2 text-[9px] font-semibold uppercase leading-tight text-slate-500">claimed</p>
-                            </div>
+                <div class="mt-3 rounded-lg border border-slate-800 bg-slate-950/40 p-4">
+                    <div class="flex items-end justify-between gap-4">
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase text-slate-500">Claimed Progress</p>
+                            <p class="mt-1 font-['Teko'] text-4xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
                         </div>
+                        <p class="pb-1 text-xs font-semibold uppercase text-slate-400">
+                            <span data-territory-claimed>{{ number_format((int) ($territory['claimed'] ?? 0)) }}</span>
+                            /
+                            <span data-territory-total>{{ number_format((int) ($territory['total'] ?? 0)) }}</span>
+                            tiles
+                        </p>
                     </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div class="stats-type-chip p-3">
+                    <div class="stats-territory-meter mt-3">
+                        <div data-stat-territory-meter class="h-full rounded-full bg-sky-400" style="width: {{ min(100, max(0, $territoryClaimedPercent)) }}%;"></div>
+                    </div>
+                    <div class="mt-3 grid grid-cols-3 gap-2">
+                        <div class="stats-type-chip p-2.5">
                             <p class="text-[10px] font-semibold uppercase text-slate-500">Claimed</p>
-                            <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50" data-territory-claimed>{{ number_format((int) ($territory['claimed'] ?? 0)) }}</p>
+                            <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50">{{ number_format((int) ($territory['claimed'] ?? 0)) }}</p>
                         </div>
-                        <div class="stats-type-chip p-3">
+                        <div class="stats-type-chip p-2.5">
                             <p class="text-[10px] font-semibold uppercase text-slate-500">Open</p>
                             <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50" data-territory-open>{{ number_format(max(0, (int) ($territory['total'] ?? 0) - (int) ($territory['claimed'] ?? 0))) }}</p>
                         </div>
-                        <div class="stats-type-chip p-3">
-                            <p class="text-[10px] font-semibold uppercase text-slate-500">Total</p>
-                            <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50" data-territory-total>{{ number_format((int) ($territory['total'] ?? 0)) }}</p>
+                        <div class="stats-type-chip p-2.5">
+                            <p class="text-[10px] font-semibold uppercase text-slate-500">Types</p>
+                            <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50">{{ number_format($territoryTypes->count()) }}</p>
                         </div>
                     </div>
                 </div>
