@@ -45,21 +45,28 @@
             background: #020617;
         }
 
-        .stats-chart-frame {
-            display: grid;
-            grid-template-columns: 2.35rem minmax(0, 1fr);
-            gap: 0.6rem;
+        .stats-chart-wrap {
+            position: relative;
+            height: 15rem;
+            border: 1px solid rgba(51, 65, 85, 0.85);
+            border-radius: 0.7rem;
+            background:
+                linear-gradient(rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+                rgba(2, 6, 23, 0.38);
+            background-size: 28px 28px;
+            padding: 0.75rem;
         }
 
-        .stats-chart-axis {
-            display: grid;
-            height: 8rem;
-            align-content: space-between;
-            text-align: right;
-            font-size: 0.68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #64748b;
+        .stats-chart-wrap canvas {
+            height: 100% !important;
+            width: 100% !important;
+        }
+
+        .stats-type-chip {
+            border: 1px solid rgba(51, 65, 85, 0.8);
+            border-radius: 0.65rem;
+            background: rgba(2, 6, 23, 0.36);
         }
     </style>
 @endpush
@@ -74,6 +81,7 @@
 
             const stateUrl = root.dataset.statisticsStateUrl;
             let isFetching = false;
+            let pulseChart = null;
 
             const formatNumber = (value) => new Intl.NumberFormat().format(Number(value || 0));
             const escapeHtml = (value) => String(value ?? '')
@@ -118,8 +126,9 @@
             };
 
             const renderActivity = (activity) => {
-                const target = root.querySelector('[data-stat-activity]');
-                const max = maxOf(activity, ['transactions', 'messages', 'users', 'characters']);
+                const canvas = root.querySelector('[data-stat-pulse-chart]');
+                const legend = root.querySelector('[data-stat-pulse-legend]');
+                const Chart = window.amowCharts?.Chart;
                 const series = [
                     ['transactions', '#38bdf8', 'Transactions'],
                     ['messages', '#a78bfa', 'Messages'],
@@ -127,42 +136,80 @@
                     ['characters', '#4ade80', 'Characters'],
                 ];
 
-                const line = (key, color) => {
-                    const points = activity.map((item, index) => {
-                        const x = activity.length === 1 ? 0 : (index / (activity.length - 1)) * 100;
-                        const y = 92 - ((Number(item[key] || 0) / max) * 76);
-                        return `${x.toFixed(2)},${y.toFixed(2)}`;
-                    }).join(' ');
+                if (legend) {
+                    legend.innerHTML = series.map(([key, color, label]) => {
+                        const total = activity.reduce((sum, item) => sum + Number(item[key] || 0), 0);
 
-                    return `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"></polyline>`;
+                        return `
+                            <div class="stats-type-chip px-3 py-2">
+                                <div class="flex items-center gap-2 text-[11px] font-semibold uppercase text-slate-400">
+                                    <span class="h-2 w-2 rounded-full" style="background:${color}"></span>${label}
+                                </div>
+                                <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50">${formatNumber(total)}</p>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                if (!canvas || !Chart) return;
+
+                const chartData = {
+                    labels: activity.map((item) => item.label),
+                    datasets: series.map(([key, color, label]) => ({
+                        label,
+                        data: activity.map((item) => Number(item[key] || 0)),
+                        borderColor: color,
+                        backgroundColor: `${color}22`,
+                        borderWidth: key === 'transactions' ? 3 : 2,
+                        pointRadius: 2.5,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: color,
+                        pointBorderWidth: 0,
+                        tension: 0.35,
+                        fill: key === 'transactions',
+                    })),
                 };
 
-                target.innerHTML = `
-                    <div class="stats-chart-frame">
-                        <div class="stats-chart-axis">
-                            <span>${formatNumber(max)}</span>
-                            <span>${formatNumber(Math.round(max / 2))}</span>
-                            <span>0</span>
-                        </div>
-                        <div>
-                            <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-2.5">
-                                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-32 w-full overflow-visible">
-                                    ${series.map(([key, color]) => line(key, color)).join('')}
-                                </svg>
-                            </div>
-                            <div class="mt-2 grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase text-slate-500">
-                                ${activity.map((item) => `<span>${escapeHtml(item.label)}</span>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-3 flex flex-wrap justify-end gap-2">
-                        ${series.map(([, color, label]) => `
-                            <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-2.5 py-1.5 text-[11px] font-semibold uppercase text-slate-400">
-                                <span class="h-2 w-2 rounded-full" style="background:${color}"></span>${label}
-                            </span>
-                        `).join('')}
-                    </div>
-                `;
+                if (!pulseChart) {
+                    pulseChart = new Chart(canvas, {
+                        type: 'line',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { intersect: false, mode: 'index' },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: '#020617',
+                                    borderColor: '#334155',
+                                    borderWidth: 1,
+                                    titleColor: '#f8fafc',
+                                    bodyColor: '#cbd5e1',
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    grid: { color: 'rgba(148, 163, 184, 0.08)', drawTicks: false },
+                                    ticks: { color: '#94a3b8', font: { size: 11, weight: 700 } },
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(148, 163, 184, 0.1)', drawTicks: false },
+                                    ticks: {
+                                        color: '#94a3b8',
+                                        precision: 0,
+                                        font: { size: 11, weight: 700 },
+                                        callback: (value) => formatNumber(value),
+                                    },
+                                },
+                            },
+                        },
+                    });
+                } else {
+                    pulseChart.data = chartData;
+                    pulseChart.update('none');
+                }
             };
 
             const renderEconomy = (economy) => {
@@ -243,7 +290,9 @@
 
                 ring.style.setProperty('--territory-claimed', `${percent}%`);
                 ring.querySelector('[data-territory-percent]').textContent = `${percent}%`;
-                ring.querySelector('[data-territory-subtitle]').textContent = `${formatNumber(territory.claimed)} of ${formatNumber(territory.total)} claimed`;
+                root.querySelector('[data-territory-claimed]').textContent = formatNumber(territory.claimed);
+                root.querySelector('[data-territory-total]').textContent = formatNumber(territory.total);
+                root.querySelector('[data-territory-open]').textContent = formatNumber(Math.max(0, Number(territory.total || 0) - Number(territory.claimed || 0)));
 
                 types.innerHTML = (territory.types || []).length
                     ? (territory.types || []).map((item) => `
@@ -309,12 +358,6 @@
     $heroOnline = (int) ($summary->firstWhere('label', 'Online Now')['value'] ?? 0);
     $heroCredits = (int) ($summary->firstWhere('label', 'Player Credits')['value'] ?? 0);
     $heroMovement = (int) (($economy['earned'] ?? 0) + ($economy['spent'] ?? 0));
-    $activityMax = max(1, $activity->flatMap(fn ($item) => [
-        (int) ($item['transactions'] ?? 0),
-        (int) ($item['messages'] ?? 0),
-        (int) ($item['users'] ?? 0),
-        (int) ($item['characters'] ?? 0),
-    ])->max() ?? 1);
     $activitySeries = [
         ['key' => 'transactions', 'label' => 'Transactions', 'color' => '#38bdf8'],
         ['key' => 'messages', 'label' => 'Messages', 'color' => '#a78bfa'],
@@ -409,41 +452,21 @@
                     </div>
                     <i class="fa-solid fa-chart-line text-xl text-sky-300"></i>
                 </div>
-                <div class="mt-3" data-stat-activity>
-                    <div class="stats-chart-frame">
-                        <div class="stats-chart-axis">
-                            <span>{{ number_format($activityMax) }}</span>
-                            <span>{{ number_format((int) round($activityMax / 2)) }}</span>
-                            <span>0</span>
-                        </div>
-                        <div>
-                            <div class="stats-grid-bg rounded-lg border border-slate-800 bg-slate-950/40 p-2.5">
-                                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="h-32 w-full overflow-visible">
-                                    @foreach ($activitySeries as $series)
-                                        @php
-                                            $points = $activity->values()->map(function ($item, $index) use ($activity, $activityMax, $series) {
-                                                $x = $activity->count() <= 1 ? 0 : ($index / ($activity->count() - 1)) * 100;
-                                                $y = 92 - (((int) ($item[$series['key']] ?? 0) / $activityMax) * 76);
-
-                                                return number_format($x, 2, '.', '').','.number_format($y, 2, '.', '');
-                                            })->implode(' ');
-                                        @endphp
-                                        <polyline points="{{ $points }}" fill="none" stroke="{{ $series['color'] }}" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"></polyline>
-                                    @endforeach
-                                </svg>
-                            </div>
-                            <div class="mt-2 grid grid-cols-7 gap-2 text-center text-[11px] font-semibold uppercase text-slate-500">
-                                @foreach ($activity as $item)
-                                    <span>{{ $item['label'] }}</span>
-                                @endforeach
-                            </div>
-                        </div>
+                <div class="mt-3">
+                    <div class="stats-chart-wrap">
+                        <canvas data-stat-pulse-chart aria-label="Seven day activity pulse chart"></canvas>
                     </div>
-                    <div class="mt-3 flex flex-wrap justify-end gap-2">
+                    <div class="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4" data-stat-pulse-legend>
                         @foreach ($activitySeries as $series)
-                            <span class="inline-flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/45 px-2.5 py-1.5 text-[11px] font-semibold uppercase text-slate-400">
-                                <span class="h-2 w-2 rounded-full" style="background: {{ $series['color'] }}"></span>{{ $series['label'] }}
-                            </span>
+                            @php
+                                $seriesTotal = $activity->sum(fn ($item) => (int) ($item[$series['key']] ?? 0));
+                            @endphp
+                            <div class="stats-type-chip px-3 py-2">
+                                <div class="flex items-center gap-2 text-[11px] font-semibold uppercase text-slate-400">
+                                    <span class="h-2 w-2 rounded-full" style="background: {{ $series['color'] }}"></span>{{ $series['label'] }}
+                                </div>
+                                <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50">{{ number_format($seriesTotal) }}</p>
+                            </div>
                         @endforeach
                     </div>
                 </div>
@@ -462,11 +485,26 @@
                         <div class="stats-ring-core grid place-items-center text-center">
                             <div>
                                 <p class="font-['Teko'] text-3xl leading-none text-slate-50" data-territory-percent>{{ $territoryClaimedPercent }}%</p>
-                                <p class="mt-0.5 px-2 text-[9px] font-semibold uppercase leading-tight text-slate-500" data-territory-subtitle>{{ number_format((int) ($territory['claimed'] ?? 0)) }} of {{ number_format((int) ($territory['total'] ?? 0)) }}</p>
+                                <p class="mt-0.5 px-2 text-[9px] font-semibold uppercase leading-tight text-slate-500">claimed</p>
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-2" data-stat-territory-types>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="stats-type-chip p-3">
+                            <p class="text-[10px] font-semibold uppercase text-slate-500">Claimed</p>
+                            <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50" data-territory-claimed>{{ number_format((int) ($territory['claimed'] ?? 0)) }}</p>
+                        </div>
+                        <div class="stats-type-chip p-3">
+                            <p class="text-[10px] font-semibold uppercase text-slate-500">Open</p>
+                            <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50" data-territory-open>{{ number_format(max(0, (int) ($territory['total'] ?? 0) - (int) ($territory['claimed'] ?? 0))) }}</p>
+                        </div>
+                        <div class="stats-type-chip p-3">
+                            <p class="text-[10px] font-semibold uppercase text-slate-500">Total</p>
+                            <p class="mt-1 font-['Teko'] text-2xl leading-none text-slate-50" data-territory-total>{{ number_format((int) ($territory['total'] ?? 0)) }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 grid gap-2" data-stat-territory-types>
                         @forelse ($territoryTypes as $item)
                             <div>
                                 <div class="flex justify-between gap-3 text-xs text-slate-400"><span>{{ $item['label'] }}</span><span>{{ number_format((int) $item['value']) }}</span></div>
@@ -475,7 +513,6 @@
                         @empty
                             <p class="rounded-lg border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-500">No territory tiles generated yet.</p>
                         @endforelse
-                    </div>
                 </div>
             </section>
         </div>

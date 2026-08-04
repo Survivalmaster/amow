@@ -46,7 +46,7 @@ test('admins can view the live statistics page', function () {
         ->assertSee('AMOW system telemetry')
         ->assertSee('750')
         ->assertSee('125')
-        ->assertSee('<polyline', false)
+        ->assertSee('data-stat-pulse-chart', false)
         ->assertSee('data-admin-statistics', false);
 });
 
