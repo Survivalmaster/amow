@@ -34,7 +34,7 @@
                     <div class="absolute inset-x-0 top-0 h-1" style="background: {{ $factionColor }}"></div>
                     <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
                         <div class="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/30 shadow-xl shadow-black/30" style="color: {{ $factionColor }}">
-                            <i class="fa-solid fa-id-card-clip text-4xl"></i>
+                            <i class="fa-solid fa-briefcase text-4xl"></i>
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
@@ -46,6 +46,42 @@
                             </div>
                             <p class="mt-4 font-['Teko'] text-5xl uppercase leading-none tracking-[0.08em]">{{ $character->displayed_job_name }}</p>
                             <p class="mt-2 text-sm uppercase tracking-[0.22em] text-white/45">Started as {{ $character->starting_occupation }}</p>
+                            <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                                <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+                                    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">Faction</p>
+                                    <p class="mt-1 truncate text-sm font-semibold text-white">{{ $character->faction->name }}</p>
+                                </div>
+                                <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+                                    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">Current Job</p>
+                                    <p class="mt-1 truncate text-sm font-semibold text-white" data-character-field="displayed_job_name">{{ $character->displayed_job_name }}</p>
+                                </div>
+                                <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+                                    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">Role</p>
+                                    <p class="mt-1 truncate text-sm font-semibold text-white">{{ ucfirst($character->role_type) }}</p>
+                                </div>
+                                <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+                                    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/38">Created</p>
+                                    <p class="mt-1 truncate text-sm font-semibold text-white">{{ $character->created_at?->format('d M Y') }}</p>
+                                </div>
+                            </div>
+                            @if ($character->ownedPlayerBusinesses->isNotEmpty())
+                                <div class="mt-5 grid gap-3 md:grid-cols-2">
+                                    @foreach ($character->ownedPlayerBusinesses as $business)
+                                        <a href="{{ route('businesses.show', $business) }}" class="group rounded-2xl border border-[#c2a84f]/25 bg-[#c2a84f]/10 p-4 transition hover:border-[#c2a84f]/45 hover:bg-[#c2a84f]/15">
+                                            <div class="flex items-start gap-3">
+                                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#c2a84f]/25 bg-black/25 text-[#f4d77a]">
+                                                    <i class="{{ $business->icon_class }}"></i>
+                                                </span>
+                                                <div class="min-w-0">
+                                                    <p class="truncate text-sm font-semibold text-white group-hover:text-[#f4d77a]">{{ $business->name }}</p>
+                                                    <p class="mt-1 text-xs uppercase tracking-[0.18em] text-[#f4d77a]/70">{{ $business->type_label }}</p>
+                                                    <p class="mt-2 text-xs text-white/50">Bank {{ number_format($business->bank_credits) }} credits</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
                             <p class="mt-5 max-w-3xl text-sm leading-7 text-white/72">{{ $character->biography }}</p>
                         </div>
                     </div>
@@ -204,28 +240,6 @@
                         <p class="font-['Teko'] text-3xl uppercase tracking-[0.1em] text-white">Clean File</p>
                         <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-white/55">Criminal records will appear here once enforcement systems are active.</p>
                     </div>
-                </div>
-
-                <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
-                    <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Civil Profile</p>
-                    <dl class="mt-5 space-y-3 text-sm">
-                        <div class="flex justify-between gap-4 border-b border-white/10 pb-3">
-                            <dt class="text-white/45">Faction</dt>
-                            <dd class="text-right text-white">{{ $character->faction->name }}</dd>
-                        </div>
-                        <div class="flex justify-between gap-4 border-b border-white/10 pb-3">
-                            <dt class="text-white/45">Current job</dt>
-                            <dd class="text-right text-white" data-character-field="displayed_job_name">{{ $character->displayed_job_name }}</dd>
-                        </div>
-                        <div class="flex justify-between gap-4 border-b border-white/10 pb-3">
-                            <dt class="text-white/45">Role</dt>
-                            <dd class="text-right text-white">{{ ucfirst($character->role_type) }}</dd>
-                        </div>
-                        <div class="flex justify-between gap-4">
-                            <dt class="text-white/45">Created</dt>
-                            <dd class="text-right text-white">{{ $character->created_at?->format('d M Y') }}</dd>
-                        </div>
-                    </dl>
                 </div>
             </aside>
         </section>

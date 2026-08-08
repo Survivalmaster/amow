@@ -101,6 +101,7 @@ class CharacterController extends Controller
             'inventory',
             'transactions' => fn ($query) => $query->latest()->limit(12),
             'holdings.company',
+            'ownedPlayerBusinesses',
         ])->firstOrFail();
 
         $this->authorize('view', $character);
