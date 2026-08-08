@@ -87,6 +87,13 @@ class GameJobAdminController extends Controller
             'tier_pay_bonus_percent' => ['nullable', 'integer', 'min:0', 'max:500'],
             'tier_xp_bonus_percent' => ['nullable', 'integer', 'min:0', 'max:500'],
             'working_display_message' => ['nullable', 'string', 'max:255'],
+            'drop_rules' => ['nullable', 'array'],
+            'drop_rules.*.item_id' => ['nullable', 'exists:items,id'],
+            'drop_rules.*.min_tier' => ['nullable', 'integer', 'min:1', 'max:20'],
+            'drop_rules.*.max_tier' => ['nullable', 'integer', 'min:1', 'max:20'],
+            'drop_rules.*.min_quantity' => ['nullable', 'integer', 'min:1'],
+            'drop_rules.*.max_quantity' => ['nullable', 'integer', 'min:1'],
+            'drop_rules.*.drop_chance_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'drop_rules_text' => ['nullable', 'string', 'max:6000'],
             'is_starter' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
@@ -97,7 +104,7 @@ class GameJobAdminController extends Controller
             'is_new' => $request->boolean('is_new'),
         ];
 
-        unset($validated['drop_rules_text']);
+        unset($validated['drop_rules'], $validated['drop_rules_text']);
 
         $validated['max_tier'] = (int) ($validated['max_tier'] ?? $gameJob?->max_tier ?? 20);
         $validated['tier_xp_required'] = (int) ($validated['tier_xp_required'] ?? $gameJob?->tier_xp_required ?? 100);
@@ -109,6 +116,12 @@ class GameJobAdminController extends Controller
 
     private function syncDropRules(Request $request, GameJob $gameJob): void
     {
+        if ($request->has('drop_rules')) {
+            $this->syncVisualDropRules($request, $gameJob);
+
+            return;
+        }
+
         $lines = collect(preg_split('/\r\n|\r|\n/', (string) $request->input('drop_rules_text', '')))
             ->map(fn (string $line) => trim($line))
             ->filter();
@@ -145,5 +158,27 @@ class GameJobAdminController extends Controller
                 'drop_chance_percent' => max(0, min(100, (float) $chance)),
             ]);
         }
+    }
+
+    private function syncVisualDropRules(Request $request, GameJob $gameJob): void
+    {
+        $gameJob->drops()->delete();
+
+        collect($request->input('drop_rules', []))
+            ->filter(fn (array $rule) => filled($rule['item_id'] ?? null))
+            ->each(function (array $rule) use ($gameJob) {
+                $minTier = max(1, min(20, (int) ($rule['min_tier'] ?? 1)));
+                $maxTier = max($minTier, min(20, (int) ($rule['max_tier'] ?? 20)));
+                $minQuantity = max(1, (int) ($rule['min_quantity'] ?? 1));
+
+                $gameJob->drops()->create([
+                    'item_id' => (int) $rule['item_id'],
+                    'min_tier' => $minTier,
+                    'max_tier' => $maxTier,
+                    'min_quantity' => $minQuantity,
+                    'max_quantity' => max($minQuantity, (int) ($rule['max_quantity'] ?? $minQuantity)),
+                    'drop_chance_percent' => max(0, min(100, (float) ($rule['drop_chance_percent'] ?? 100))),
+                ]);
+            });
     }
 }
