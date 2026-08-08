@@ -146,13 +146,15 @@ function ensureAdministrator(interaction) {
 }
 
 function runStep(step) {
-  const binary = BINARIES[step.bin] || step.bin;
+  const command = commandFor(step);
+  const binary = command.binary;
+  const args = command.args;
   const label = `${step.bin} ${step.args.join(' ')}`;
 
   return new Promise((resolve) => {
     const startedAt = Date.now();
 
-    execFile(binary, step.args, {
+    execFile(binary, args, {
       cwd: PROJECT_PATH,
       env: processEnvironment(step),
       timeout: DEFAULT_TIMEOUT_MS,
@@ -173,6 +175,22 @@ function runStep(step) {
       });
     });
   });
+}
+
+function commandFor(step) {
+  const binary = BINARIES[step.bin] || step.bin;
+
+  if (step.bin === 'composer' && BINARIES.php && binary.includes(path.sep)) {
+    return {
+      binary: BINARIES.php,
+      args: [binary, ...step.args]
+    };
+  }
+
+  return {
+    binary,
+    args: step.args
+  };
 }
 
 function processEnvironment(step) {

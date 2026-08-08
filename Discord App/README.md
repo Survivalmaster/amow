@@ -150,6 +150,7 @@ AMOW_TOOLS_TIMEOUT_MS=120000
 ```
 
 If `AMOW_GIT_REPO_PATH` is set, the GitHub actions use that Plesk-managed bare repository and deploy the configured branch into `AMOW_DEPLOY_PATH`. If it is not set, the bot assumes `AMOW_DEPLOY_PATH` is a normal Git checkout.
+On Plesk, set `AMOW_PHP_BINARY` to the full PHP CLI path, such as `/opt/plesk/php/8.4/bin/php`. If Composer still reports `/usr/bin/env: 'php': No such file or directory`, set `AMOW_COMPOSER_BINARY` to the full Composer executable path too; the bot will run it through the configured PHP binary.
 
 `github deploy` runs:
 

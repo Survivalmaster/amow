@@ -138,8 +138,8 @@ class ServerToolsAdminController extends Controller
     {
         $startedAt = microtime(true);
         $binaries = config('server_tools.binaries', []);
-        $binary = $binaries[$step['bin']] ?? $step['bin'];
-        $process = new Process([$binary, ...$step['args']], config('server_tools.path'));
+        [$binary, $args] = $this->commandFor($step, $binaries);
+        $process = new Process([$binary, ...$args], config('server_tools.path'));
         $process->setEnv($this->processEnvironment($step));
         $process->setTimeout(max(1, ((int) config('server_tools.timeout', 120000)) / 1000));
         $timedOut = false;
@@ -161,6 +161,26 @@ class ServerToolsAdminController extends Controller
             'duration_seconds' => round(microtime(true) - $startedAt, 2),
             'output' => $output !== '' ? $output : '(no output)',
         ];
+    }
+
+    private function commandFor(array $step, array $binaries): array
+    {
+        $binary = $binaries[$step['bin']] ?? $step['bin'];
+
+        if ($step['bin'] === 'composer') {
+            $phpBinary = $binaries['php'] ?? null;
+
+            if (
+                is_string($phpBinary)
+                && trim($phpBinary) !== ''
+                && is_string($binary)
+                && str_contains($binary, DIRECTORY_SEPARATOR)
+            ) {
+                return [trim($phpBinary), [trim($binary), ...$step['args']]];
+            }
+        }
+
+        return [$binary, $step['args']];
     }
 
     private function processEnvironment(array $step): array
