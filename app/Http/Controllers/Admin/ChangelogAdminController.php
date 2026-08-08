@@ -17,6 +17,9 @@ class ChangelogAdminController extends Controller
     {
         return view('admin.changelogs', [
             'changelogs' => Changelog::query()->with('webhook')->latest('released_at')->latest()->get(),
+            'nextVersion' => Changelog::nextVersion(),
+            'defaultDiscordChannelId' => Changelog::latestDiscordChannelId(),
+            'defaultReleasedAt' => now()->format('Y-m-d\TH:i'),
         ]);
     }
 
@@ -113,7 +116,7 @@ class ChangelogAdminController extends Controller
             'removed_features' => $this->linesFromText($validated['removed_features_text'] ?? ''),
             'body' => $validated['body'] ?: null,
             'status' => $changelog?->status ?? 'draft',
-            'released_at' => $changelog?->released_at,
+            'released_at' => $validated['released_at'] ?? $changelog?->released_at,
         ];
     }
 

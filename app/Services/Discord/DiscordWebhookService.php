@@ -109,7 +109,7 @@ class DiscordWebhookService
 
         if (filled($changelog->body)) {
             $fields[] = [
-                'name' => 'Notes',
+                'name' => 'Summary',
                 'value' => Str::limit($changelog->body, 1000),
                 'inline' => false,
             ];
@@ -124,9 +124,6 @@ class DiscordWebhookService
             ])->implode("\n")),
             'color' => hexdec(ltrim($color, '#')),
             'fields' => $fields,
-            'thumbnail' => [
-                'url' => asset('images/amowwpnnlogo.png'),
-            ],
             'footer' => [
                 'text' => $footer.' | '.now()->format('d/m/Y H:i'),
             ],

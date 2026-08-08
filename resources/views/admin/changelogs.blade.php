@@ -43,7 +43,7 @@
 
         <x-admin.modal open="showCreate" title="Create Changelog" subtitle="Save the draft, then publish from the changelog list when it is ready." max-width="72rem">
             <form method="POST" action="{{ route('admin.changelogs.store') }}">
-                @include('admin.partials.changelog-form', ['changelog' => null, 'method' => null, 'close' => 'showCreate = false'])
+                @include('admin.partials.changelog-form', ['changelog' => null, 'method' => null, 'close' => 'showCreate = false', 'nextVersion' => $nextVersion, 'defaultDiscordChannelId' => $defaultDiscordChannelId, 'defaultReleasedAt' => $defaultReleasedAt])
             </form>
         </x-admin.modal>
 
@@ -107,7 +107,7 @@
                             </tr>
                             <x-admin.modal open="openId === {{ $changelog->id }}" close="openId = null" title="Edit {{ $changelog->version }}" subtitle="{{ $changelog->title }}" max-width="72rem">
                                 <form method="POST" action="{{ route('admin.changelogs.update', $changelog) }}">
-                                    @include('admin.partials.changelog-form', ['changelog' => $changelog, 'method' => 'PATCH', 'close' => 'openId = null'])
+                                    @include('admin.partials.changelog-form', ['changelog' => $changelog, 'method' => 'PATCH', 'close' => 'openId = null', 'nextVersion' => $nextVersion, 'defaultDiscordChannelId' => $defaultDiscordChannelId, 'defaultReleasedAt' => $defaultReleasedAt])
                                 </form>
                             </x-admin.modal>
                         @empty

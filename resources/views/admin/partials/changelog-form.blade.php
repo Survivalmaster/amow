@@ -9,7 +9,7 @@
 <div class="grid gap-5 xl:grid-cols-2">
     <label class="grid gap-2 text-sm text-white/70">
         <span class="uppercase tracking-[0.18em] text-white/45">Version</span>
-        <input class="{{ $fieldClass }}" name="version" value="{{ old('version', $changelog?->version) }}" placeholder="v1.4.0" required>
+        <input class="{{ $fieldClass }}" name="version" value="{{ old('version', $changelog?->version ?? $nextVersion ?? '0.0.1') }}" placeholder="0.0.1" required>
     </label>
     <label class="grid gap-2 text-sm text-white/70">
         <span class="uppercase tracking-[0.18em] text-white/45">State</span>
@@ -23,12 +23,12 @@
     </label>
     <label class="grid gap-2 text-sm text-white/70">
         <span class="uppercase tracking-[0.18em] text-white/45">Release Date</span>
-        <input class="{{ $fieldClass }}" name="released_at" type="datetime-local" value="{{ old('released_at', $changelog?->released_at?->format('Y-m-d\TH:i')) }}">
+        <input class="{{ $fieldClass }}" name="released_at" type="datetime-local" value="{{ old('released_at', $changelog?->released_at?->format('Y-m-d\TH:i') ?? $defaultReleasedAt ?? now()->format('Y-m-d\TH:i')) }}">
     </label>
     <label class="grid gap-2 text-sm text-white/70">
         <span class="uppercase tracking-[0.18em] text-white/45">Discord Changelog Channel ID</span>
         <span class="text-xs text-white/45">Paste the Discord channel ID where released changelogs should post.</span>
-        <input class="{{ $fieldClass }}" name="discord_channel_id" inputmode="numeric" value="{{ old('discord_channel_id', $changelog?->discord_channel_id) }}" placeholder="123456789012345678">
+        <input class="{{ $fieldClass }}" name="discord_channel_id" inputmode="numeric" value="{{ old('discord_channel_id', $changelog?->discord_channel_id ?? $defaultDiscordChannelId ?? '') }}" placeholder="123456789012345678">
     </label>
     <label class="grid gap-2 text-sm text-white/70 lg:col-span-2">
         <span class="uppercase tracking-[0.18em] text-white/45">Summary</span>
@@ -52,7 +52,7 @@
         </label>
     </div>
     <label class="grid gap-2 text-sm text-white/70 lg:col-span-2">
-        <span class="uppercase tracking-[0.18em] text-white/45">Notes</span>
+        <span class="uppercase tracking-[0.18em] text-white/45">Summary</span>
         <textarea class="{{ $fieldClass }} min-h-40" name="body">{{ old('body', $changelog?->body) }}</textarea>
     </label>
 </div>

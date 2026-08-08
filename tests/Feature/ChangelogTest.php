@@ -94,12 +94,14 @@ test('admin releasing a changelog posts one discord embed', function () {
             'edited_features_text' => "Cleaner changelog form",
             'removed_features_text' => "Single feature textarea",
             'body' => 'More supporting notes.',
+            'released_at' => '2026-08-08T18:30',
         ])
         ->assertRedirect();
 
     $changelog = Changelog::query()->where('version', 'v2.0.0')->firstOrFail();
 
     expect($changelog->status)->toBe('draft');
+    expect($changelog->released_at?->format('Y-m-d H:i'))->toBe('2026-08-08 18:30');
     expect($changelog->discord_message_sent_at)->toBeNull();
 
     $this
@@ -133,6 +135,7 @@ test('admin releasing a changelog posts one discord embed', function () {
     expect($embed['fields'][1]['value'])->toContain('Cleaner changelog form');
     expect($embed['fields'][2]['name'])->toBe('🗑️ Removed');
     expect($embed['fields'][2]['value'])->toContain('Single feature textarea');
+    expect($embed)->not->toHaveKey('thumbnail');
 
     $this
         ->withHeader('X-Discord-Sync-Secret', 'test-sync-secret')
@@ -154,4 +157,30 @@ test('admin releasing a changelog posts one discord embed', function () {
             'body' => 'More supporting notes.',
         ])
         ->assertRedirect();
+});
+
+test('next changelog version increments the last numeric segment', function (string $latest, string $expected) {
+    expect(Changelog::nextVersion($latest))->toBe($expected);
+})->with([
+    ['0.0.1', '0.0.2'],
+    ['0.1', '0.2'],
+    ['1', '2'],
+    ['v2', '3'],
+    ['', '0.0.1'],
+]);
+
+test('new changelogs default to the latest used discord channel id', function () {
+    Changelog::query()->create([
+        'version' => '1',
+        'title' => 'First',
+        'discord_channel_id' => '111111111111111111',
+    ]);
+
+    Changelog::query()->create([
+        'version' => '2',
+        'title' => 'Second',
+        'discord_channel_id' => '222222222222222222',
+    ]);
+
+    expect(Changelog::latestDiscordChannelId())->toBe('222222222222222222');
 });

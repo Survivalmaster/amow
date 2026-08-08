@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Changelog extends Model
 {
@@ -58,5 +59,33 @@ class Changelog extends Model
             'Edited' => $this->edited_features ?: [],
             'Removed' => $this->removed_features ?: [],
         ];
+    }
+
+    public static function nextVersion(?string $latestVersion = null): string
+    {
+        $latestVersion ??= static::query()
+            ->latest('released_at')
+            ->latest()
+            ->value('version');
+
+        $version = Str::of((string) $latestVersion)->lower()->trim()->ltrim('v')->toString();
+
+        if ($version === '' || ! preg_match('/^\d+(?:\.\d+)*$/', $version)) {
+            return '0.0.1';
+        }
+
+        $parts = explode('.', $version);
+        $lastIndex = count($parts) - 1;
+        $parts[$lastIndex] = (string) (((int) $parts[$lastIndex]) + 1);
+
+        return implode('.', $parts);
+    }
+
+    public static function latestDiscordChannelId(): ?string
+    {
+        return static::query()
+            ->whereNotNull('discord_channel_id')
+            ->latest('id')
+            ->value('discord_channel_id');
     }
 }
