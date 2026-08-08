@@ -141,6 +141,7 @@ Optional bot `.env` values:
 AMOW_DEPLOY_PATH=/var/www/vhosts/example.com/httpdocs
 AMOW_GIT_REPO_PATH=/var/www/vhosts/example.com/git/site.git
 AMOW_GIT_BRANCH=main
+AMOW_GIT_SSH_COMMAND=ssh -o StrictHostKeyChecking=accept-new
 AMOW_PHP_BINARY=php
 AMOW_GIT_BINARY=git
 AMOW_COMPOSER_BINARY=composer

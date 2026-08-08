@@ -12,6 +12,7 @@ const GIT_REPO_PATH = process.env.AMOW_GIT_REPO_PATH
   ? path.resolve(process.env.AMOW_GIT_REPO_PATH)
   : '';
 const GIT_BRANCH = process.env.AMOW_GIT_BRANCH || 'main';
+const GIT_SSH_COMMAND = process.env.AMOW_GIT_SSH_COMMAND || '';
 
 const BINARIES = {
   php: process.env.AMOW_PHP_BINARY || 'php',
@@ -153,6 +154,7 @@ function runStep(step) {
 
     execFile(binary, step.args, {
       cwd: PROJECT_PATH,
+      env: processEnvironment(step),
       timeout: DEFAULT_TIMEOUT_MS,
       windowsHide: true,
       maxBuffer: 1024 * 1024
@@ -171,6 +173,13 @@ function runStep(step) {
       });
     });
   });
+}
+
+function processEnvironment(step) {
+  return {
+    ...process.env,
+    ...(step.bin === 'git' && GIT_SSH_COMMAND ? { GIT_SSH_COMMAND } : {})
+  };
 }
 
 async function replyWithResult(interaction, title, results) {

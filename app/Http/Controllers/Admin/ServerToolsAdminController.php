@@ -51,6 +51,7 @@ class ServerToolsAdminController extends Controller
             'projectPath' => config('server_tools.path'),
             'gitRepoPath' => config('server_tools.git_repo_path'),
             'gitBranch' => config('server_tools.git_branch'),
+            'gitSshCommand' => config('server_tools.git_ssh_command'),
             'binaries' => config('server_tools.binaries', []),
         ]);
     }
@@ -139,6 +140,7 @@ class ServerToolsAdminController extends Controller
         $binaries = config('server_tools.binaries', []);
         $binary = $binaries[$step['bin']] ?? $step['bin'];
         $process = new Process([$binary, ...$step['args']], config('server_tools.path'));
+        $process->setEnv($this->processEnvironment($step));
         $process->setTimeout(max(1, ((int) config('server_tools.timeout', 120000)) / 1000));
         $timedOut = false;
 
@@ -159,5 +161,17 @@ class ServerToolsAdminController extends Controller
             'duration_seconds' => round(microtime(true) - $startedAt, 2),
             'output' => $output !== '' ? $output : '(no output)',
         ];
+    }
+
+    private function processEnvironment(array $step): array
+    {
+        $environment = [];
+        $gitSshCommand = config('server_tools.git_ssh_command');
+
+        if ($step['bin'] === 'git' && is_string($gitSshCommand) && trim($gitSshCommand) !== '') {
+            $environment['GIT_SSH_COMMAND'] = trim($gitSshCommand);
+        }
+
+        return $environment;
     }
 }

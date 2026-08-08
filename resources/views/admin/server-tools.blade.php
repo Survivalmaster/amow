@@ -37,6 +37,7 @@
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Runtime</p>
                     <p class="mt-1 text-sm text-white/55">Commands run from <span class="font-mono text-[#d7edc7]">{{ $projectPath }}</span>.</p>
                     <p class="mt-1 text-sm text-white/55">Git repo <span class="font-mono text-[#d7edc7]">{{ $gitRepoPath ?: 'using deploy path working tree' }}</span> on <span class="font-mono text-[#d7edc7]">{{ $gitBranch }}</span>.</p>
+                    <p class="mt-1 text-sm text-white/55">Git SSH <span class="font-mono text-[#d7edc7]">{{ $gitSshCommand ?: 'server default' }}</span>.</p>
                 </div>
             </div>
             <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
