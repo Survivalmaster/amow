@@ -99,3 +99,39 @@ test('admin can create job drops with visual rule fields', function () {
             'max_quantity' => 3,
         ]);
 });
+
+test('admin can create a new starter job without tiers', function () {
+    $this->seed(PermissionSeeder::class);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $this
+        ->actingAs($admin)
+        ->post(route('admin.jobs.store'), [
+            'name' => 'Begger',
+            'slug' => 'begger',
+            'description' => 'Starter job with no tier progression.',
+            'min_pay' => 15,
+            'max_pay' => 50,
+            'required_level' => 0,
+            'work_cooldown_minutes' => 2,
+            'stamina_decrease' => 10,
+            'experience_reward' => 5,
+            'max_tier' => 0,
+            'tier_xp_required' => 0,
+            'tier_pay_bonus_percent' => 0,
+            'tier_xp_bonus_percent' => 0,
+            'is_starter' => 1,
+            'is_active' => 1,
+            'is_new' => 1,
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $job = GameJob::query()->where('slug', 'begger')->firstOrFail();
+
+    expect($job->required_level)->toBe(0);
+    expect($job->max_tier)->toBe(0);
+    expect($job->tier_xp_required)->toBe(0);
+});

@@ -27,24 +27,25 @@ class WorkTieredJob
             throw new RuntimeException('You are too exhausted to work. Sleep to restore stamina before taking another shift.');
         }
 
+        $hasTiers = (int) ($job->max_tier ?? 20) > 0;
         $progress = CharacterJobProgress::query()->firstOrCreate([
             'character_id' => $character->id,
             'game_job_id' => $job->id,
         ], [
-            'tier' => 1,
+            'tier' => $hasTiers ? 1 : 0,
             'tier_experience' => 0,
         ]);
 
-        $tier = max(1, min((int) $progress->tier, (int) ($job->max_tier ?? 20)));
-        $payMultiplier = 1 + (($tier - 1) * ((int) ($job->tier_pay_bonus_percent ?? 0) / 100));
-        $xpMultiplier = 1 + (($tier - 1) * ((int) ($job->tier_xp_bonus_percent ?? 0) / 100));
+        $tier = $hasTiers ? max(1, min((int) $progress->tier, (int) $job->max_tier)) : 0;
+        $payMultiplier = $hasTiers ? 1 + (($tier - 1) * ((int) ($job->tier_pay_bonus_percent ?? 0) / 100)) : 1;
+        $xpMultiplier = $hasTiers ? 1 + (($tier - 1) * ((int) ($job->tier_xp_bonus_percent ?? 0) / 100)) : 1;
         $baseEarnings = random_int((int) $job->min_pay, (int) $job->max_pay);
         $earnings = (int) round($baseEarnings * $payMultiplier);
         $experienceEarned = (int) round(max(0, (int) ($job->experience_reward ?? 5)) * $xpMultiplier);
         $dropsAwarded = [];
         $tiersGained = 0;
 
-        DB::transaction(function () use ($character, $job, $progress, $tier, $earnings, $experienceEarned, &$dropsAwarded, &$tiersGained) {
+        DB::transaction(function () use ($character, $job, $progress, $tier, $hasTiers, $earnings, $experienceEarned, &$dropsAwarded, &$tiersGained) {
             $previousCredits = (int) $character->plastic_credits;
             $previousTier = (int) $progress->tier;
             $previousTierExperience = (int) $progress->tier_experience;
@@ -57,12 +58,12 @@ class WorkTieredJob
             ])->save();
             $character->gainExperience($experienceEarned);
 
-            $tierExperience = $previousTierExperience + $experienceEarned;
-            $newTier = $previousTier;
+            $tierExperience = $hasTiers ? $previousTierExperience + $experienceEarned : 0;
+            $newTier = $hasTiers ? $previousTier : 0;
             $required = max(1, (int) ($job->tier_xp_required ?? 100));
-            $maxTier = max(1, (int) ($job->max_tier ?? 20));
+            $maxTier = max(0, (int) ($job->max_tier ?? 20));
 
-            while ($newTier < $maxTier && $tierExperience >= $required) {
+            while ($hasTiers && $newTier < $maxTier && $tierExperience >= $required) {
                 $tierExperience -= $required;
                 $newTier++;
                 $tiersGained++;
@@ -70,7 +71,7 @@ class WorkTieredJob
 
             $progress->forceFill([
                 'tier' => $newTier,
-                'tier_experience' => $newTier >= $maxTier ? min($tierExperience, $required) : $tierExperience,
+                'tier_experience' => $hasTiers && $newTier >= $maxTier ? min($tierExperience, $required) : $tierExperience,
             ])->save();
 
             $dropsAwarded = $this->awardDrops($character->fresh('inventory'), $job, $tier);
@@ -79,7 +80,9 @@ class WorkTieredJob
                 $character,
                 'tiered_work',
                 $earnings,
-                "Completed a {$job->name} shift at tier {$tier} and earned {$earnings} Plastic Credits.",
+                $hasTiers
+                    ? "Completed a {$job->name} shift at tier {$tier} and earned {$earnings} Plastic Credits."
+                    : "Completed a {$job->name} shift and earned {$earnings} Plastic Credits.",
                 [
                     'job' => $job->name,
                     'tier_before' => $previousTier,

@@ -39,7 +39,7 @@
                         key: `${Date.now()}-${this.rows.length}-${Math.random()}`,
                         item_id: '',
                         min_tier: 1,
-                        max_tier: 20,
+                        max_tier: 0,
                         min_quantity: 1,
                         max_quantity: 1,
                         drop_chance_percent: 100,
@@ -162,19 +162,19 @@
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Max Tier</span>
-                    <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="1" max="20" value="20" required>
+                    <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="0" max="20" value="0" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Tier XP</span>
-                    <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="1" value="100" required>
+                    <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="0" value="0" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Tier Pay %</span>
-                    <input class="{{ $fieldClass }} w-full" name="tier_pay_bonus_percent" type="number" min="0" max="500" value="5" required>
+                    <input class="{{ $fieldClass }} w-full" name="tier_pay_bonus_percent" type="number" min="0" max="500" value="0" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Tier XP %</span>
-                    <input class="{{ $fieldClass }} w-full" name="tier_xp_bonus_percent" type="number" min="0" max="500" value="5" required>
+                    <input class="{{ $fieldClass }} w-full" name="tier_xp_bonus_percent" type="number" min="0" max="500" value="0" required>
                 </label>
                 <label class="{{ $labelClass }} md:col-span-2">
                     <span>Activity</span>
@@ -351,11 +351,11 @@
                             </label>
                             <label class="{{ $labelClass }}">
                                 <span>Max Tier</span>
-                                <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="1" max="20" value="{{ $job->max_tier }}" required>
+                                <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="0" max="20" value="{{ $job->max_tier }}" required>
                             </label>
                             <label class="{{ $labelClass }}">
                                 <span>Tier XP</span>
-                                <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="1" value="{{ $job->tier_xp_required }}" required>
+                                <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="0" value="{{ $job->tier_xp_required }}" required>
                             </label>
                             <label class="{{ $labelClass }}">
                                 <span>Tier Pay %</span>

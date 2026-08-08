@@ -379,6 +379,37 @@ test('jobs new work advances job tier and awards configured drops', function () 
     expect((int) $character->fresh('inventory')->inventory->firstWhere('id', $item->id)->pivot->quantity)->toBe(2);
 });
 
+test('jobs new work supports starter jobs without tiers', function () {
+    $user = User::factory()->create();
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+    $character = createCharacterForUser($user);
+    $character->currentJob()->update([
+        'min_pay' => 15,
+        'max_pay' => 15,
+        'experience_reward' => 5,
+        'max_tier' => 0,
+        'tier_xp_required' => 0,
+        'tier_pay_bonus_percent' => 0,
+        'tier_xp_bonus_percent' => 0,
+        'work_cooldown_minutes' => 1,
+        'is_new' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.work'))
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('status');
+
+    $progress = CharacterJobProgress::query()
+        ->where('character_id', $character->id)
+        ->where('game_job_id', $character->current_job_id)
+        ->firstOrFail();
+
+    expect($progress->tier)->toBe(0);
+    expect($progress->tier_experience)->toBe(0);
+    expect($character->fresh()->plastic_credits)->toBe(115);
+});
+
 test('jobs new keeps tier progress when characters change jobs and return', function () {
     $user = User::factory()->create();
     $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());

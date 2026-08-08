@@ -35,11 +35,13 @@ class JobNewController extends Controller
         $currentProgress = null;
 
         if ($character->current_job_id || $jobs->isNotEmpty()) {
+            $progressJob = $character->currentJob ?? $jobs->first();
+
             $currentProgress = CharacterJobProgress::query()->firstOrCreate([
                 'character_id' => $character->id,
-                'game_job_id' => $character->current_job_id ?? $jobs->first()->id,
+                'game_job_id' => $progressJob->id,
             ], [
-                'tier' => 1,
+                'tier' => (int) $progressJob->max_tier > 0 ? 1 : 0,
                 'tier_experience' => 0,
             ]);
         }
@@ -68,7 +70,7 @@ class JobNewController extends Controller
             'character_id' => $character->id,
             'game_job_id' => $gameJob->id,
         ], [
-            'tier' => 1,
+            'tier' => (int) $gameJob->max_tier > 0 ? 1 : 0,
             'tier_experience' => 0,
         ]);
 

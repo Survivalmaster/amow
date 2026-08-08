@@ -49,8 +49,13 @@
                     </td>
                     <td class="whitespace-nowrap px-4 py-4 font-semibold text-[#d7edc7]">{{ number_format($job->experience_reward) }}</td>
                     <td class="whitespace-nowrap px-4 py-4">
-                        <p class="font-semibold text-white">{{ $job->max_tier }} tiers</p>
-                        <p class="text-xs text-white/38">{{ number_format($job->tier_xp_required) }} XP each</p>
+                        @if ((int) $job->max_tier > 0)
+                            <p class="font-semibold text-white">{{ $job->max_tier }} tiers</p>
+                            <p class="text-xs text-white/38">{{ number_format($job->tier_xp_required) }} XP each</p>
+                        @else
+                            <p class="font-semibold text-white/55">No tiers</p>
+                            <p class="text-xs text-white/38">Starter-style job</p>
+                        @endif
                     </td>
                     <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->drops->count()) }}</td>
                     <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->work_cooldown_minutes) }} min</td>

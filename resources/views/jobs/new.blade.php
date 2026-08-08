@@ -7,9 +7,10 @@
     </x-slot>
 
     @php($currentJob = $character->currentJob)
-    @php($maxTier = max(1, (int) ($currentJob?->max_tier ?? 20)))
+    @php($hasTiers = (int) ($currentJob?->max_tier ?? 0) > 0)
+    @php($maxTier = $hasTiers ? (int) $currentJob->max_tier : 0)
     @php($tierRequired = max(1, (int) ($currentJob?->tier_xp_required ?? 100)))
-    @php($tierPercent = min(100, (int) round((($currentProgress?->tier_experience ?? 0) / $tierRequired) * 100)))
+    @php($tierPercent = $hasTiers ? min(100, (int) round((($currentProgress?->tier_experience ?? 0) / $tierRequired) * 100)) : 0)
     @php($workCooldownEndsAt = $character->workCooldownEndsAt())
     @php($workRemainingSeconds = $workCooldownEndsAt && $workCooldownEndsAt->isFuture() ? now()->diffInSeconds($workCooldownEndsAt) : 0)
     @php($canWork = $workRemainingSeconds === 0 && (int) ($character->stamina_points ?? 100) > 0)
@@ -35,15 +36,15 @@
                 <div class="mt-6 grid gap-3 sm:grid-cols-4">
                     <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                         <p class="text-xs uppercase tracking-[0.18em] text-white/45">Tier</p>
-                        <p class="mt-1 font-['Teko'] text-4xl text-[#f4ecd0]">{{ $currentProgress?->tier ?? 1 }}/{{ $maxTier }}</p>
+                        <p class="mt-1 font-['Teko'] text-4xl text-[#f4ecd0]">{{ $hasTiers ? (($currentProgress?->tier ?? 1).'/'.$maxTier) : 'Off' }}</p>
                     </div>
                     <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                         <p class="text-xs uppercase tracking-[0.18em] text-white/45">Tier XP</p>
-                        <p class="mt-1 font-['Teko'] text-4xl text-[#d7edc7]">{{ $currentProgress?->tier_experience ?? 0 }}/{{ $tierRequired }}</p>
+                        <p class="mt-1 font-['Teko'] text-4xl text-[#d7edc7]">{{ $hasTiers ? (($currentProgress?->tier_experience ?? 0).'/'.$tierRequired) : '0' }}</p>
                     </div>
                     <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                         <p class="text-xs uppercase tracking-[0.18em] text-white/45">Pay Bonus</p>
-                        <p class="mt-1 font-['Teko'] text-4xl text-white">+{{ max(0, (($currentProgress?->tier ?? 1) - 1) * (int) ($currentJob?->tier_pay_bonus_percent ?? 0)) }}%</p>
+                        <p class="mt-1 font-['Teko'] text-4xl text-white">+{{ $hasTiers ? max(0, (($currentProgress?->tier ?? 1) - 1) * (int) ($currentJob?->tier_pay_bonus_percent ?? 0)) : 0 }}%</p>
                     </div>
                     <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                         <p class="text-xs uppercase tracking-[0.18em] text-white/45">Cooldown</p>
@@ -77,13 +78,14 @@
         <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             @foreach ($jobs as $job)
                 @php($progress = $job->progress->first())
+                @php($jobHasTiers = (int) $job->max_tier > 0)
                 @php($isCurrent = $character->current_job_id === $job->id)
                 @php($isLocked = $character->level < $job->required_level)
                 <article class="rounded-[1.5rem] border {{ $isCurrent ? 'border-[#7ead59]/40 bg-[#7ead59]/10' : 'border-white/10 bg-white/5' }} p-5 shadow-2xl shadow-black/30">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="font-['Teko'] text-4xl uppercase tracking-[0.08em]">{{ $job->name }}</p>
-                            <p class="mt-1 text-xs uppercase tracking-[0.2em] text-white/45">Tier {{ $progress?->tier ?? 1 }}/{{ $job->max_tier }}</p>
+                            <p class="mt-1 text-xs uppercase tracking-[0.2em] text-white/45">{{ $jobHasTiers ? 'Tier '.($progress?->tier ?? 1).'/'.$job->max_tier : 'No tiers' }}</p>
                         </div>
                         <span class="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs text-white/60">Lv {{ $job->required_level }}</span>
                     </div>
