@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\DiscordLinkCompletionController;
 use App\Http\Controllers\Api\DiscordBankController;
 use App\Http\Controllers\Api\DiscordBulkDefaultRankPlanController;
+use App\Http\Controllers\Api\DiscordChangelogController;
 use App\Http\Controllers\Api\DiscordJobChangeController;
 use App\Http\Controllers\Api\DiscordJobsController;
 use App\Http\Controllers\Api\DiscordProfileController;
@@ -53,3 +54,9 @@ Route::post('/discord/roles/sync', DiscordRoleSyncController::class)
 
 Route::post('/discord/ranks/default-plan', DiscordBulkDefaultRankPlanController::class)
     ->name('api.discord.ranks.default-plan');
+
+Route::get('/discord/changelogs/pending', [DiscordChangelogController::class, 'pending'])
+    ->name('api.discord.changelogs.pending');
+
+Route::post('/discord/changelogs/{changelog}/sent', [DiscordChangelogController::class, 'markSent'])
+    ->name('api.discord.changelogs.sent');

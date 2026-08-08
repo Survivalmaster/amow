@@ -12,6 +12,7 @@
     'items' => 'fa-boxes-stacked',
     'jobs' => 'fa-briefcase',
     'skirmishes' => 'fa-crosshairs',
+    'changelogs' => 'fa-scroll',
     'units' => 'fa-shield-halved',
     'permissions' => 'fa-key',
     'statistics' => 'fa-chart-pie',

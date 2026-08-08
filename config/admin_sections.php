@@ -12,6 +12,7 @@ return [
     'items' => ['label' => 'Items', 'route' => 'admin.items.index'],
     'jobs' => ['label' => 'Jobs', 'route' => 'admin.jobs.index'],
     'skirmishes' => ['label' => 'Skirmishes', 'route' => 'admin.skirmishes.index'],
+    'changelogs' => ['label' => 'Changelogs', 'route' => 'admin.changelogs.index'],
     'units' => ['label' => 'Units', 'route' => 'admin.units.index'],
     'permissions' => ['label' => 'Permissions', 'route' => 'admin.permissions.index'],
     'statistics' => ['label' => 'Statistics', 'route' => 'admin.statistics.index'],

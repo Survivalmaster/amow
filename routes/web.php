@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\CharacterAdminController;
 use App\Http\Controllers\Admin\CharacterLogAdminController;
+use App\Http\Controllers\Admin\ChangelogAdminController;
 use App\Http\Controllers\Admin\CityAdminController;
 use App\Http\Controllers\Admin\FactionAdminController;
 use App\Http\Controllers\Admin\GameJobAdminController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\BankController;
 use App\Http\Controllers\BannedAccountController;
 use App\Http\Controllers\CharacterController;
 use App\Http\Controllers\CharacterStateController;
+use App\Http\Controllers\ChangelogController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\DiscordLinkController;
 use App\Http\Controllers\FactionController;
@@ -107,6 +109,7 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::get('/nation/requisitions', [NationRequisitionController::class, 'index'])->name('nation.requisitions.index');
         Route::post('/nation/requisitions', [NationRequisitionController::class, 'store'])->name('nation.requisitions.store');
         Route::get('/leaderboards', [LeaderboardController::class, 'index'])->name('leaderboards.index');
+        Route::get('/changelogs', [ChangelogController::class, 'index'])->name('changelogs.index');
         Route::get('/territory-map', TerritoryMapController::class)->name('territory-map.index');
         Route::get('/stocks', [MarketController::class, 'index'])->name('market.index');
         Route::get('/stocks/state', [MarketController::class, 'state'])->name('market.state');
@@ -175,6 +178,11 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::post('/skirmishes', [SkirmishAdminController::class, 'store'])->middleware('admin.section:skirmishes')->name('skirmishes.store');
         Route::patch('/skirmishes/{skirmish}', [SkirmishAdminController::class, 'update'])->middleware('admin.section:skirmishes')->name('skirmishes.update');
         Route::delete('/skirmishes/{skirmish}', [SkirmishAdminController::class, 'destroy'])->middleware('admin.section:skirmishes')->name('skirmishes.destroy');
+        Route::get('/changelogs', [ChangelogAdminController::class, 'index'])->middleware('admin.section:changelogs')->name('changelogs.index');
+        Route::post('/changelogs', [ChangelogAdminController::class, 'store'])->middleware('admin.section:changelogs')->name('changelogs.store');
+        Route::post('/changelogs/{changelog}/publish', [ChangelogAdminController::class, 'publish'])->middleware('admin.section:changelogs')->name('changelogs.publish');
+        Route::patch('/changelogs/{changelog}', [ChangelogAdminController::class, 'update'])->middleware('admin.section:changelogs')->name('changelogs.update');
+        Route::delete('/changelogs/{changelog}', [ChangelogAdminController::class, 'destroy'])->middleware('admin.section:changelogs')->name('changelogs.destroy');
         Route::get('/units', [UnitAdminController::class, 'index'])->middleware('admin.section:units')->name('units.index');
         Route::post('/units', [UnitAdminController::class, 'store'])->middleware('admin.section:units')->name('units.store');
         Route::patch('/units/{unit}', [UnitAdminController::class, 'update'])->middleware('admin.section:units')->name('units.update');

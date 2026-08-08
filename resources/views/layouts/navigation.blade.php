@@ -13,6 +13,7 @@
 @php($canLeadNation = $navCharacter?->canLeadNation())
 @php($canAccessTerritoryMap = $navUser->hasPermission('developer'))
 @php($canAccessStockMarket = $navUser->hasPermission('developer'))
+@php($hasReleasedChangelogs = \App\Models\Changelog::query()->released()->exists())
 @php(
     $formattedCredits = match (true) {
         $creditAmount >= 1000000 => rtrim(rtrim(number_format($creditAmount / 1000000, 1), '0'), '.') . 'M',
@@ -36,7 +37,7 @@
         $navCharacter?->hasLand() ? ['label' => 'Land', 'route' => 'home.index', 'match' => ['home.*'], 'icon' => 'fa-solid fa-house'] : null,
         $navCharacter ? ['label' => 'Nation HQ', 'route' => 'nation.index', 'match' => ['nation.index'], 'icon' => 'fa-solid fa-landmark-flag'] : null,
         ['label' => 'Settings', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
-        $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.dashboard', 'admin.users.*', 'admin.characters.*', 'admin.refunds.*', 'admin.nation-logs.*', 'admin.factions.*', 'admin.cities.*', 'admin.locations.*', 'admin.items.*', 'admin.licences.*', 'admin.permissions.*', 'admin.statistics.*', 'admin.jobs.*', 'admin.map-markers.*', 'admin.discord.*', 'admin.discord-management.*', 'admin.nation-requisitions.*', 'admin.stock-market.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
+        $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.dashboard', 'admin.users.*', 'admin.characters.*', 'admin.refunds.*', 'admin.nation-logs.*', 'admin.factions.*', 'admin.cities.*', 'admin.locations.*', 'admin.items.*', 'admin.licences.*', 'admin.permissions.*', 'admin.statistics.*', 'admin.jobs.*', 'admin.changelogs.*', 'admin.map-markers.*', 'admin.discord.*', 'admin.discord-management.*', 'admin.nation-requisitions.*', 'admin.stock-market.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
         $navUser->canAccessAdminSection('game_master') ? ['label' => 'Game Master', 'route' => 'admin.game-master.index', 'match' => ['admin.game-master.*'], 'icon' => 'fa-solid fa-dice-d20'] : null,
         $navUser->canAccessAdminSection('moderator') ? ['label' => 'Moderator', 'route' => 'admin.moderator.index', 'match' => ['admin.moderator.*'], 'icon' => 'fa-solid fa-gavel'] : null,
     ]))
@@ -210,6 +211,14 @@
                                 <span class="flex-1">Skirmishes</span>
                                 <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
                             </div>
+                            <a href="{{ route('changelogs.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('changelogs.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('changelogs.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="fa-solid fa-scroll w-5 text-center text-[#7ead59]"></i>
+                                <span class="flex-1">Changelogs</span>
+                                @unless ($hasReleasedChangelogs)
+                                    <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                                @endunless
+                            </a>
                         @endif
                     @endforeach
                 </div>
@@ -471,6 +480,14 @@
                         <span class="flex-1">Skirmishes</span>
                         <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
                     </div>
+                    <a href="{{ route('changelogs.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('changelogs.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('changelogs.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-scroll w-5 text-center text-[#7ead59]"></i>
+                        <span class="flex-1">Changelogs</span>
+                        @unless ($hasReleasedChangelogs)
+                            <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                        @endunless
+                    </a>
                 @endif
             @endforeach
 

@@ -2,6 +2,7 @@ require('./loadEnv');
 
 const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const { handleRankToolsCommand } = require('./bulkRank');
+const { startChangelogPublisher } = require('./changelogPublisher');
 const { handleLinkCommand } = require('./linking');
 const {
   handleBankCommand,
@@ -65,6 +66,7 @@ client.once(Events.ClientReady, (readyClient) => {
   syncDiscordRoles(readyClient).catch((error) => {
     console.error('Failed to sync Discord roles to the website:', error);
   });
+  startChangelogPublisher(readyClient);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

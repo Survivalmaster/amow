@@ -101,6 +101,7 @@ test('main admin crud pages render with compact management controls', function (
         route('admin.locations.index') => 'Create Location',
         route('admin.items.index') => 'Create Item',
         route('admin.skirmishes.index') => 'Create Skirmish',
+        route('admin.changelogs.index') => 'Create Changelog',
         route('admin.units.index') => 'Create Unit',
         route('admin.permissions.index') => 'Create Permission',
         route('admin.game-master.index') => 'Create Event',
