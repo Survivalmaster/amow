@@ -67,6 +67,7 @@
                             <option value="active">Active</option>
                             <option value="hidden">Hidden</option>
                             <option value="starter">Starter</option>
+                            <option value="new">New</option>
                         </select>
                     </label>
                     <label class="{{ $labelClass }}">
@@ -155,6 +156,10 @@
                     <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" checked>
                     Active
                 </label>
+                <label class="{{ $toggleClass }}">
+                    <input type="checkbox" name="is_new" value="1" class="accent-[#7ead59]">
+                    New
+                </label>
                 <label class="{{ $labelClass }} md:col-span-2 xl:col-span-6">
                     <span>Description</span>
                     <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description" placeholder="A short description players will see."></textarea>
@@ -197,7 +202,7 @@
                         @forelse ($jobs as $job)
                             @php($averagePay = (int) round(($job->min_pay + $job->max_pay) / 2))
                             @php($levelBucket = $job->required_level <= 1 ? 'starter' : ($job->required_level <= 5 ? 'mid' : 'late'))
-                            @php($status = $job->is_starter ? 'starter' : ($job->is_active ? 'active' : 'hidden'))
+                            @php($status = $job->is_new ? 'new' : ($job->is_starter ? 'starter' : ($job->is_active ? 'active' : 'hidden')))
                             <tr
                                 data-job-row
                                 data-status="{{ $status }}"
@@ -210,6 +215,9 @@
                                         <p class="font-['Teko'] text-2xl uppercase leading-none tracking-[0.06em] text-white">{{ $job->name }}</p>
                                         @if ($job->is_starter)
                                             <span class="rounded-full border border-[#f4d77a]/30 bg-[#f4d77a]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f4d77a]">Starter</span>
+                                        @endif
+                                        @if ($job->is_new)
+                                            <span class="rounded-full border border-[#7aa7ff]/30 bg-[#7aa7ff]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b8ccff]">New</span>
                                         @endif
                                         <span class="rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] {{ $job->is_active ? 'border-[#7ead59]/30 bg-[#7ead59]/10 text-[#d7edc7]' : 'border-white/10 bg-black/20 text-white/45' }}">
                                             {{ $job->is_active ? 'Active' : 'Hidden' }}
@@ -346,7 +354,7 @@
                                 <span>Activity</span>
                                 <input class="{{ $fieldClass }} w-full" name="working_display_message" value="{{ $job->working_display_message }}" placeholder="Working display message">
                             </label>
-                            <div class="grid gap-3 md:col-span-2 md:grid-cols-2">
+                            <div class="grid gap-3 md:col-span-2 md:grid-cols-3">
                                 <label class="{{ $toggleClass }}">
                                     <input type="checkbox" name="is_starter" value="1" class="accent-[#7ead59]" @checked($job->is_starter)>
                                     Starter
@@ -354,6 +362,10 @@
                                 <label class="{{ $toggleClass }}">
                                     <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" @checked($job->is_active)>
                                     Active
+                                </label>
+                                <label class="{{ $toggleClass }}">
+                                    <input type="checkbox" name="is_new" value="1" class="accent-[#7ead59]" @checked($job->is_new)>
+                                    New
                                 </label>
                             </div>
                             <label class="{{ $labelClass }} md:col-span-2">

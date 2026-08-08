@@ -90,9 +90,11 @@ class GameJobAdminController extends Controller
             'drop_rules_text' => ['nullable', 'string', 'max:6000'],
             'is_starter' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
+            'is_new' => ['nullable', 'boolean'],
         ]) + [
             'is_starter' => $request->boolean('is_starter'),
             'is_active' => $request->boolean('is_active'),
+            'is_new' => $request->boolean('is_new'),
         ];
 
         unset($validated['drop_rules_text']);

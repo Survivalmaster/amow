@@ -24,6 +24,7 @@ class GameJob extends Model
         'working_display_message',
         'is_starter',
         'is_active',
+        'is_new',
     ];
 
     protected function casts(): array
@@ -31,6 +32,7 @@ class GameJob extends Model
         return [
             'is_starter' => 'boolean',
             'is_active' => 'boolean',
+            'is_new' => 'boolean',
             'max_tier' => 'integer',
             'tier_xp_required' => 'integer',
             'tier_pay_bonus_percent' => 'integer',

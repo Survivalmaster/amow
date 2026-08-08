@@ -21,7 +21,12 @@ class JobNewController extends Controller
             ->with(['currentJob.drops.item', 'jobProgress.job', 'inventory', 'licences', 'landBuildings.item'])
             ->firstOrFail();
 
+        if (! $character->currentJob?->is_new) {
+            $character->setRelation('currentJob', null);
+        }
+
         $jobs = GameJob::query()
+            ->where('is_new', true)
             ->with(['drops.item', 'progress' => fn ($query) => $query->where('character_id', $character->id)])
             ->orderBy('required_level')
             ->orderBy('name')
@@ -49,6 +54,7 @@ class JobNewController extends Controller
     public function store(Request $request, GameJob $gameJob, ChangeCharacterJob $changeCharacterJob): RedirectResponse
     {
         abort_unless($request->user()?->load('permissions')->hasPermission('developer'), 403);
+        abort_unless($gameJob->is_new, 404);
 
         $character = $request->user()->character()->with('currentJob')->firstOrFail();
 
@@ -74,6 +80,10 @@ class JobNewController extends Controller
         abort_unless($request->user()?->load('permissions')->hasPermission('developer'), 403);
 
         $character = $request->user()->character()->with(['currentJob', 'inventory'])->firstOrFail();
+
+        if (! $character->currentJob?->is_new) {
+            return back()->withErrors(['work' => 'Take a Jobs New assignment before working a tiered shift.']);
+        }
 
         try {
             $result = $workTieredJob->execute($character);

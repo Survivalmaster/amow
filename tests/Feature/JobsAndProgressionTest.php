@@ -288,6 +288,28 @@ test('job changes obey the 24 hour cooldown', function () {
 test('jobs new is visible only to developers', function () {
     $user = User::factory()->create();
     createCharacterForUser($user);
+    $previewJob = GameJob::query()->create([
+        'name' => 'Log Chopper',
+        'slug' => 'log-chopper',
+        'description' => 'Cuts timber for land projects.',
+        'min_pay' => 10,
+        'max_pay' => 15,
+        'required_level' => 0,
+        'work_cooldown_minutes' => 5,
+        'is_active' => true,
+        'is_new' => true,
+    ]);
+    $oldJob = GameJob::query()->create([
+        'name' => 'Old Miner',
+        'slug' => 'old-miner',
+        'description' => 'Old jobs page only.',
+        'min_pay' => 10,
+        'max_pay' => 15,
+        'required_level' => 0,
+        'work_cooldown_minutes' => 5,
+        'is_active' => true,
+        'is_new' => false,
+    ]);
 
     $this->actingAs($user)
         ->get(route('lobby'))
@@ -305,7 +327,9 @@ test('jobs new is visible only to developers', function () {
     $this->actingAs($user)
         ->get(route('jobs-new.index'))
         ->assertOk()
-        ->assertSee('Jobs New');
+        ->assertSee('Jobs New')
+        ->assertSee($previewJob->name)
+        ->assertDontSee($oldJob->name);
 });
 
 test('jobs new work advances job tier and awards configured drops', function () {
@@ -320,6 +344,7 @@ test('jobs new work advances job tier and awards configured drops', function () 
         'tier_pay_bonus_percent' => 10,
         'tier_xp_bonus_percent' => 10,
         'work_cooldown_minutes' => 1,
+        'is_new' => true,
     ]);
     $item = Item::query()->create([
         'name' => 'Log',
