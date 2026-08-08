@@ -33,8 +33,10 @@
                 <div class="relative p-6 sm:p-8">
                     <div class="absolute inset-x-0 top-0 h-1" style="background: {{ $factionColor }}"></div>
                     <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
-                        <div class="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-black/30 shadow-xl shadow-black/30" style="color: {{ $factionColor }}">
-                            <i class="fa-solid fa-briefcase text-4xl"></i>
+                        <div class="flex h-20 w-20 shrink-0 self-start overflow-hidden rounded-2xl border border-white/10 bg-black/30 shadow-xl shadow-black/30 sm:h-24 sm:w-24" style="color: {{ $factionColor }}">
+                            <div class="flex h-full w-full items-center justify-center">
+                                <i class="fa-solid fa-briefcase text-3xl sm:text-4xl"></i>
+                            </div>
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
@@ -175,6 +177,22 @@
                     </div>
                 </div>
 
+                <div class="rounded-[2rem] border border-[#c65b3f]/25 bg-[#c65b3f]/[0.07] p-6 shadow-2xl shadow-black/30">
+                    <div class="flex items-start gap-3">
+                        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#c65b3f]/30 bg-black/25 text-[#f0b29f]">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                        </span>
+                        <div>
+                            <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Criminal History</p>
+                            <p class="mt-1 text-xs uppercase tracking-[0.2em] text-[#f0b29f]/80">No known record</p>
+                        </div>
+                    </div>
+                    <div class="mt-5 rounded-2xl border border-white/10 bg-black/25 px-4 py-8 text-center">
+                        <p class="font-['Teko'] text-3xl uppercase tracking-[0.1em] text-white">Clean File</p>
+                        <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-white/55">Criminal records will appear here once enforcement systems are active.</p>
+                    </div>
+                </div>
+
                 <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Recent Activity</p>
                     <div class="mt-5 space-y-3">
@@ -223,22 +241,6 @@
                         @empty
                             <div class="rounded-2xl border border-white/10 bg-black/20 px-4 py-6 text-sm text-white/45">No licences acquired.</div>
                         @endforelse
-                    </div>
-                </div>
-
-                <div class="rounded-[2rem] border border-[#c65b3f]/25 bg-[#c65b3f]/[0.07] p-6 shadow-2xl shadow-black/30">
-                    <div class="flex items-start gap-3">
-                        <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#c65b3f]/30 bg-black/25 text-[#f0b29f]">
-                            <i class="fa-solid fa-scale-balanced"></i>
-                        </span>
-                        <div>
-                            <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Criminal History</p>
-                            <p class="mt-1 text-xs uppercase tracking-[0.2em] text-[#f0b29f]/80">No known record</p>
-                        </div>
-                    </div>
-                    <div class="mt-5 rounded-2xl border border-white/10 bg-black/25 px-4 py-8 text-center">
-                        <p class="font-['Teko'] text-3xl uppercase tracking-[0.1em] text-white">Clean File</p>
-                        <p class="mx-auto mt-2 max-w-xs text-sm leading-6 text-white/55">Criminal records will appear here once enforcement systems are active.</p>
                     </div>
                 </div>
             </aside>
