@@ -8,7 +8,7 @@
 
     <div class="mx-auto max-w-5xl space-y-5">
         @forelse ($changelogs as $changelog)
-            <article class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
+            <article id="changelog-{{ $changelog->id }}" class="scroll-mt-8 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
                 <div class="border-b border-white/10 bg-black/20 px-6 py-5">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>

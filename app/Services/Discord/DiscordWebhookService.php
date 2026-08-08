@@ -72,15 +72,34 @@ class DiscordWebhookService
 
     public function changelogEmbed(Changelog $changelog, string $color = '#7EAD59', string $footer = 'AMOW Changelog'): array
     {
+        $groups = $changelog->groupedFeatures();
+        $releasedAt = $changelog->released_at ?? now();
+        $changelogUrl = route('changelogs.index').'#changelog-'.$changelog->id;
+        $summaryLines = [
+            '✨ Added: '.count($groups['Added']),
+            '🛠️ Edited: '.count($groups['Edited']),
+            '🗑️ Removed: '.count($groups['Removed']),
+            '',
+            'Date: '.$releasedAt->format('d/m/Y'),
+            'Version: '.$changelog->version,
+            'Full changelog: '.$changelogUrl,
+        ];
         $fields = [];
 
-        foreach ($changelog->groupedFeatures() as $group => $features) {
+        foreach ($groups as $group => $features) {
             if ($features === []) {
                 continue;
             }
 
+            $emoji = match ($group) {
+                'Added' => '✨',
+                'Edited' => '🛠️',
+                'Removed' => '🗑️',
+                default => '•',
+            };
+
             $fields[] = [
-                'name' => $group,
+                'name' => "{$emoji} {$group}",
                 'value' => Str::limit(collect($features)
                     ->map(fn (string $feature): string => '- '.Str::limit($feature, 180))
                     ->implode("\n"), 1000),
@@ -97,12 +116,19 @@ class DiscordWebhookService
         }
 
         return [
-            'title' => "AMOW Update {$changelog->version}",
-            'description' => trim("**{$changelog->title}**\n\n".($changelog->summary ?? '')),
+            'title' => $changelog->title.' - '.$releasedAt->format('d/m/Y').' - Version '.$changelog->version,
+            'description' => trim(collect([
+                filled($changelog->summary) ? $changelog->summary : 'A new AMOW update has been released.',
+                '',
+                implode("\n", $summaryLines),
+            ])->implode("\n")),
             'color' => hexdec(ltrim($color, '#')),
             'fields' => $fields,
+            'thumbnail' => [
+                'url' => asset('images/amowwpnnlogo.png'),
+            ],
             'footer' => [
-                'text' => $footer,
+                'text' => $footer.' | '.now()->format('d/m/Y H:i'),
             ],
             'timestamp' => ($changelog->released_at ?? now())->toIso8601String(),
         ];

@@ -121,14 +121,17 @@ test('admin releasing a changelog posts one discord embed', function () {
     $embed = $pending['embed'];
 
     expect($pending['channel_id'])->toBe('123456789012345678');
-    expect($embed['title'])->toBe('AMOW Update v2.0.0');
-    expect($embed['description'])->toContain('Big Update');
-    expect($embed['fields'][0]['name'])->toBe('Added');
+    expect($embed['title'])->toBe('Big Update - '.$changelog->released_at->format('d/m/Y').' - Version v2.0.0');
+    expect($embed['description'])->toContain('Added: 2');
+    expect($embed['description'])->toContain('Edited: 1');
+    expect($embed['description'])->toContain('Removed: 1');
+    expect($embed['description'])->toContain(route('changelogs.index').'#changelog-'.$changelog->id);
+    expect($embed['fields'][0]['name'])->toBe('✨ Added');
     expect($embed['fields'][0]['value'])->toContain('Admin changelog manager');
     expect($embed['fields'][0]['value'])->toContain('Discord release embeds');
-    expect($embed['fields'][1]['name'])->toBe('Edited');
+    expect($embed['fields'][1]['name'])->toBe('🛠️ Edited');
     expect($embed['fields'][1]['value'])->toContain('Cleaner changelog form');
-    expect($embed['fields'][2]['name'])->toBe('Removed');
+    expect($embed['fields'][2]['name'])->toBe('🗑️ Removed');
     expect($embed['fields'][2]['value'])->toContain('Single feature textarea');
 
     $this
