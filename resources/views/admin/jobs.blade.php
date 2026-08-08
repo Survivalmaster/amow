@@ -29,11 +29,21 @@
     @php($toggleClass = 'flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm text-white/70')
     @php($oldJobs = $jobs->where('is_new', false)->values())
     @php($newJobs = $jobs->where('is_new', true)->values())
+    @php($dropItemOptions = $dropItems->map(fn ($item) => [
+        'id' => (string) $item->id,
+        'name' => $item->name,
+        'slug' => $item->slug,
+        'icon_class' => $item->icon_class ?: 'fa-solid fa-box',
+    ])->values())
 
     <script>
-        window.dropRuleBuilder = function (initialRows = []) {
+        window.dropRuleBuilder = function (initialRows = [], items = []) {
             return {
+                items,
                 rows: initialRows.map((row, index) => ({ key: `${Date.now()}-${index}`, ...row })),
+                itemFor(row) {
+                    return this.items.find((item) => item.id === `${row.item_id}`) || null;
+                },
                 addRule() {
                     this.rows.push({
                         key: `${Date.now()}-${this.rows.length}-${Math.random()}`,
@@ -206,7 +216,7 @@
                     <span>Description</span>
                     <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description" placeholder="A short description players will see.">{{ old('description') }}</textarea>
                 </label>
-                <div x-data="dropRuleBuilder()" class="space-y-3 md:col-span-2 xl:col-span-6">
+                <div x-data='dropRuleBuilder([], @json($dropItemOptions))' class="space-y-3 md:col-span-2 xl:col-span-6">
                     <div class="flex flex-wrap items-center justify-between gap-3">
                         <div>
                             <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Item Drops</p>
@@ -220,41 +230,8 @@
                     <template x-if="rows.length === 0">
                         <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-5 text-sm text-white/50">No item drops configured.</div>
                     </template>
-                    <template x-for="(row, index) in rows" :key="row.key">
-                        <div class="grid gap-3 rounded-xl border border-white/10 bg-black/20 p-3 lg:grid-cols-[minmax(12rem,1.4fr)_repeat(5,minmax(5rem,0.7fr))_auto]">
-                            <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                <span>Item</span>
-                                <select class="{{ $fieldClass }} w-full" x-model="row.item_id" :name="`drop_rules[${index}][item_id]`">
-                                    <option value="">Select item</option>
-                                    @foreach ($dropItems as $dropItem)
-                                        <option value="{{ $dropItem->id }}">{{ $dropItem->name }} ({{ $dropItem->slug }})</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                <span>Tier From</span>
-                                <input class="{{ $fieldClass }} w-full" type="number" min="0" max="20" x-model="row.min_tier" :name="`drop_rules[${index}][min_tier]`">
-                            </label>
-                            <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                <span>Tier To</span>
-                                <input class="{{ $fieldClass }} w-full" type="number" min="0" max="20" x-model="row.max_tier" :name="`drop_rules[${index}][max_tier]`">
-                            </label>
-                            <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                <span>Min Qty</span>
-                                <input class="{{ $fieldClass }} w-full" type="number" min="1" x-model="row.min_quantity" :name="`drop_rules[${index}][min_quantity]`">
-                            </label>
-                            <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                <span>Max Qty</span>
-                                <input class="{{ $fieldClass }} w-full" type="number" min="1" x-model="row.max_quantity" :name="`drop_rules[${index}][max_quantity]`">
-                            </label>
-                            <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                <span>Chance %</span>
-                                <input class="{{ $fieldClass }} w-full" type="number" min="0" max="100" step="0.01" x-model="row.drop_chance_percent" :name="`drop_rules[${index}][drop_chance_percent]`">
-                            </label>
-                            <button type="button" @click="removeRule(index)" class="self-end inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#c65b3f]/35 bg-[#c65b3f]/10 text-[#f0b29f]" title="Remove drop">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
+                    <template x-if="rows.length > 0">
+                        @include('admin.partials.job-drop-rule-table')
                     </template>
                 </div>
                 <div class="flex justify-end gap-2 border-t border-white/10 pt-3 md:col-span-2 xl:col-span-6">
@@ -405,7 +382,7 @@
                                 'max_quantity' => $drop->max_quantity,
                                 'drop_chance_percent' => rtrim(rtrim(number_format((float) $drop->drop_chance_percent, 2), '0'), '.'),
                             ])->values())
-                            <div x-data='dropRuleBuilder(@json($dropRuleRows))' class="space-y-3 md:col-span-2">
+                            <div x-data='dropRuleBuilder(@json($dropRuleRows), @json($dropItemOptions))' class="space-y-3 md:col-span-2">
                                 <div class="flex flex-wrap items-center justify-between gap-3">
                                     <div>
                                         <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Item Drops</p>
@@ -419,41 +396,8 @@
                                 <template x-if="rows.length === 0">
                                     <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-5 text-sm text-white/50">No item drops configured.</div>
                                 </template>
-                                <template x-for="(row, index) in rows" :key="row.key">
-                                    <div class="grid gap-3 rounded-xl border border-white/10 bg-black/20 p-3 lg:grid-cols-[minmax(12rem,1.4fr)_repeat(5,minmax(5rem,0.7fr))_auto]">
-                                        <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                            <span>Item</span>
-                                            <select class="{{ $fieldClass }} w-full" x-model="row.item_id" :name="`drop_rules[${index}][item_id]`">
-                                                <option value="">Select item</option>
-                                                @foreach ($dropItems as $dropItem)
-                                                    <option value="{{ $dropItem->id }}">{{ $dropItem->name }} ({{ $dropItem->slug }})</option>
-                                                @endforeach
-                                            </select>
-                                        </label>
-                                        <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                            <span>Tier From</span>
-                                            <input class="{{ $fieldClass }} w-full" type="number" min="0" max="20" x-model="row.min_tier" :name="`drop_rules[${index}][min_tier]`">
-                                        </label>
-                                        <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                            <span>Tier To</span>
-                                            <input class="{{ $fieldClass }} w-full" type="number" min="0" max="20" x-model="row.max_tier" :name="`drop_rules[${index}][max_tier]`">
-                                        </label>
-                                        <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                            <span>Min Qty</span>
-                                            <input class="{{ $fieldClass }} w-full" type="number" min="1" x-model="row.min_quantity" :name="`drop_rules[${index}][min_quantity]`">
-                                        </label>
-                                        <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                            <span>Max Qty</span>
-                                            <input class="{{ $fieldClass }} w-full" type="number" min="1" x-model="row.max_quantity" :name="`drop_rules[${index}][max_quantity]`">
-                                        </label>
-                                        <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                                            <span>Chance %</span>
-                                            <input class="{{ $fieldClass }} w-full" type="number" min="0" max="100" step="0.01" x-model="row.drop_chance_percent" :name="`drop_rules[${index}][drop_chance_percent]`">
-                                        </label>
-                                        <button type="button" @click="removeRule(index)" class="self-end inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#c65b3f]/35 bg-[#c65b3f]/10 text-[#f0b29f]" title="Remove drop">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </div>
+                                <template x-if="rows.length > 0">
+                                    @include('admin.partials.job-drop-rule-table')
                                 </template>
                             </div>
                             <div class="flex justify-end gap-2 border-t border-white/10 pt-3 md:col-span-2">
