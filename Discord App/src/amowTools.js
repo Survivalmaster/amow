@@ -8,6 +8,10 @@ const MAX_OUTPUT_LENGTH = 3500;
 const PROJECT_PATH = process.env.AMOW_DEPLOY_PATH
   ? path.resolve(process.env.AMOW_DEPLOY_PATH)
   : path.resolve(__dirname, '..', '..');
+const GIT_REPO_PATH = process.env.AMOW_GIT_REPO_PATH
+  ? path.resolve(process.env.AMOW_GIT_REPO_PATH)
+  : '';
+const GIT_BRANCH = process.env.AMOW_GIT_BRANCH || 'main';
 
 const BINARIES = {
   php: process.env.AMOW_PHP_BINARY || 'php',
@@ -29,18 +33,6 @@ const ARTISAN_COMMANDS = {
 };
 
 const GITHUB_ACTIONS = {
-  status: [
-    { bin: 'git', args: ['status', '--short'] }
-  ],
-  pull: [
-    { bin: 'git', args: ['pull', '--ff-only'] }
-  ],
-  deploy: [
-    { bin: 'git', args: ['pull', '--ff-only'] },
-    { bin: 'composer', args: ['install', '--no-dev', '--optimize-autoloader', '--no-interaction'] },
-    { bin: 'php', args: ['artisan', 'migrate', '--force'] },
-    { bin: 'php', args: ['artisan', 'optimize'] }
-  ],
   'npm-build': [
     { bin: 'npm', args: ['install'] },
     { bin: 'npm', args: ['run', 'build'] }
@@ -81,7 +73,7 @@ async function handleArtisan(interaction, subcommand) {
 }
 
 async function handleGithub(interaction, subcommand) {
-  const steps = GITHUB_ACTIONS[subcommand];
+  const steps = githubSteps(subcommand);
 
   if (!steps) {
     await interaction.editReply('That GitHub action is not configured.');
@@ -100,6 +92,48 @@ async function handleGithub(interaction, subcommand) {
   }
 
   await replyWithResult(interaction, `GitHub: ${subcommand}`, results);
+}
+
+function githubSteps(action) {
+  if (!GIT_REPO_PATH) {
+    return {
+      status: [
+        { bin: 'git', args: ['status', '--short'] }
+      ],
+      pull: [
+        { bin: 'git', args: ['pull', '--ff-only'] }
+      ],
+      deploy: [
+        { bin: 'git', args: ['pull', '--ff-only'] },
+        { bin: 'composer', args: ['install', '--no-dev', '--optimize-autoloader', '--no-interaction'] },
+        { bin: 'php', args: ['artisan', 'migrate', '--force'] },
+        { bin: 'php', args: ['artisan', 'optimize'] }
+      ],
+      ...GITHUB_ACTIONS
+    }[action];
+  }
+
+  const gitDir = `--git-dir=${GIT_REPO_PATH}`;
+  const workTree = `--work-tree=${PROJECT_PATH}`;
+  const fetchBranch = `${GIT_BRANCH}:refs/heads/${GIT_BRANCH}`;
+
+  return {
+    status: [
+      { bin: 'git', args: [gitDir, 'remote', '-v'] },
+      { bin: 'git', args: [gitDir, 'log', '--oneline', '--decorate', '-5', GIT_BRANCH] }
+    ],
+    pull: [
+      { bin: 'git', args: [gitDir, 'fetch', 'origin', fetchBranch] }
+    ],
+    deploy: [
+      { bin: 'git', args: [gitDir, 'fetch', 'origin', fetchBranch] },
+      { bin: 'git', args: [gitDir, workTree, 'checkout', '-f', GIT_BRANCH, '--', '.'] },
+      { bin: 'composer', args: ['install', '--no-dev', '--optimize-autoloader', '--no-interaction'] },
+      { bin: 'php', args: ['artisan', 'migrate', '--force'] },
+      { bin: 'php', args: ['artisan', 'optimize'] }
+    ],
+    ...GITHUB_ACTIONS
+  }[action];
 }
 
 function ensureAdministrator(interaction) {
@@ -150,7 +184,7 @@ async function replyWithResult(interaction, title, results) {
     .setTitle(title)
     .setDescription(description || '(no output)')
     .setColor(failed ? 0xc65b3f : 0x7ead59)
-    .setFooter({ text: `Path: ${PROJECT_PATH}` })
+    .setFooter({ text: `Path: ${PROJECT_PATH}${GIT_REPO_PATH ? ` | Git: ${GIT_REPO_PATH}` : ''}` })
     .setTimestamp(new Date());
 
   await interaction.editReply({ embeds: [embed] });

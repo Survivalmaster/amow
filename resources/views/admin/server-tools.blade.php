@@ -36,7 +36,16 @@
                 <div>
                     <p class="font-['Teko'] text-3xl uppercase tracking-[0.12em]">Runtime</p>
                     <p class="mt-1 text-sm text-white/55">Commands run from <span class="font-mono text-[#d7edc7]">{{ $projectPath }}</span>.</p>
+                    <p class="mt-1 text-sm text-white/55">Git repo <span class="font-mono text-[#d7edc7]">{{ $gitRepoPath ?: 'using deploy path working tree' }}</span> on <span class="font-mono text-[#d7edc7]">{{ $gitBranch }}</span>.</p>
                 </div>
+            </div>
+            <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                @foreach ($binaries as $name => $binary)
+                    <div class="rounded-xl border border-white/10 bg-black/25 p-3">
+                        <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">{{ $name }}</p>
+                        <p class="mt-1 break-all font-mono text-xs text-white/75">{{ $binary }}</p>
+                    </div>
+                @endforeach
             </div>
             <label class="mt-5 block space-y-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">
                 <span>Search</span>

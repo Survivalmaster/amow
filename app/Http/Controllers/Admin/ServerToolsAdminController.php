@@ -49,6 +49,9 @@ class ServerToolsAdminController extends Controller
             'artisanCommands' => array_keys(self::ARTISAN_COMMANDS),
             'githubActions' => array_keys(self::GITHUB_ACTIONS),
             'projectPath' => config('server_tools.path'),
+            'gitRepoPath' => config('server_tools.git_repo_path'),
+            'gitBranch' => config('server_tools.git_branch'),
+            'binaries' => config('server_tools.binaries', []),
         ]);
     }
 
@@ -92,10 +95,42 @@ class ServerToolsAdminController extends Controller
         }
 
         if ($section === 'github' && isset(self::GITHUB_ACTIONS[$action])) {
-            return self::GITHUB_ACTIONS[$action];
+            return $this->githubSteps($action);
         }
 
         return [];
+    }
+
+    private function githubSteps(string $action): array
+    {
+        $repoPath = config('server_tools.git_repo_path');
+        $branch = config('server_tools.git_branch', 'main');
+
+        if (! is_string($repoPath) || trim($repoPath) === '') {
+            return self::GITHUB_ACTIONS[$action];
+        }
+
+        $gitDir = '--git-dir='.trim($repoPath);
+        $workTree = '--work-tree='.config('server_tools.path');
+        $fetchBranch = $branch.':refs/heads/'.$branch;
+
+        return match ($action) {
+            'status' => [
+                ['bin' => 'git', 'args' => [$gitDir, 'remote', '-v']],
+                ['bin' => 'git', 'args' => [$gitDir, 'log', '--oneline', '--decorate', '-5', $branch]],
+            ],
+            'pull' => [
+                ['bin' => 'git', 'args' => [$gitDir, 'fetch', 'origin', $fetchBranch]],
+            ],
+            'deploy' => [
+                ['bin' => 'git', 'args' => [$gitDir, 'fetch', 'origin', $fetchBranch]],
+                ['bin' => 'git', 'args' => [$gitDir, $workTree, 'checkout', '-f', $branch, '--', '.']],
+                ['bin' => 'composer', 'args' => ['install', '--no-dev', '--optimize-autoloader', '--no-interaction']],
+                ['bin' => 'php', 'args' => ['artisan', 'migrate', '--force']],
+                ['bin' => 'php', 'args' => ['artisan', 'optimize']],
+            ],
+            default => self::GITHUB_ACTIONS[$action],
+        };
     }
 
     private function runStep(array $step): array

@@ -139,6 +139,8 @@ Optional bot `.env` values:
 
 ```env
 AMOW_DEPLOY_PATH=/var/www/vhosts/example.com/httpdocs
+AMOW_GIT_REPO_PATH=/var/www/vhosts/example.com/git/site.git
+AMOW_GIT_BRANCH=main
 AMOW_PHP_BINARY=php
 AMOW_GIT_BINARY=git
 AMOW_COMPOSER_BINARY=composer
@@ -146,10 +148,13 @@ AMOW_NPM_BINARY=npm
 AMOW_TOOLS_TIMEOUT_MS=120000
 ```
 
+If `AMOW_GIT_REPO_PATH` is set, the GitHub actions use that Plesk-managed bare repository and deploy the configured branch into `AMOW_DEPLOY_PATH`. If it is not set, the bot assumes `AMOW_DEPLOY_PATH` is a normal Git checkout.
+
 `github deploy` runs:
 
 ```text
-git pull --ff-only
+git fetch origin main:refs/heads/main
+git --work-tree=<deploy-path> checkout -f main -- .
 composer install --no-dev --optimize-autoloader --no-interaction
 php artisan migrate --force
 php artisan optimize
