@@ -135,3 +135,57 @@ test('admin can create a new starter job without tiers', function () {
     expect($job->max_tier)->toBe(0);
     expect($job->tier_xp_required)->toBe(0);
 });
+
+test('admin can create starter job drops for tier zero', function () {
+    $this->seed(PermissionSeeder::class);
+
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+    $item = Item::query()->create([
+        'name' => 'Worthless Trash',
+        'slug' => 'worthless-trash',
+        'description' => 'Starter job reward.',
+        'type' => 'material',
+        'icon_class' => 'fa-solid fa-trash',
+        'is_buyable' => false,
+        'price' => 1,
+    ]);
+
+    $this
+        ->actingAs($admin)
+        ->post(route('admin.jobs.store'), [
+            'name' => 'Begger',
+            'slug' => 'begger',
+            'description' => 'Starter job with no tier progression.',
+            'min_pay' => 15,
+            'max_pay' => 50,
+            'required_level' => 0,
+            'work_cooldown_minutes' => 2,
+            'stamina_decrease' => 10,
+            'experience_reward' => 5,
+            'max_tier' => 0,
+            'tier_xp_required' => 0,
+            'tier_pay_bonus_percent' => 0,
+            'tier_xp_bonus_percent' => 0,
+            'is_starter' => 1,
+            'is_active' => 1,
+            'is_new' => 1,
+            'drop_rules' => [
+                [
+                    'item_id' => $item->id,
+                    'min_tier' => 0,
+                    'max_tier' => 0,
+                    'min_quantity' => 1,
+                    'max_quantity' => 3,
+                    'drop_chance_percent' => 75,
+                ],
+            ],
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $drop = GameJob::query()->where('slug', 'begger')->firstOrFail()->drops()->firstOrFail();
+
+    expect($drop->min_tier)->toBe(0);
+    expect($drop->max_tier)->toBe(0);
+});

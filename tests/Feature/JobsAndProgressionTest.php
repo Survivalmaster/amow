@@ -394,6 +394,23 @@ test('jobs new work supports starter jobs without tiers', function () {
         'work_cooldown_minutes' => 1,
         'is_new' => true,
     ]);
+    $item = Item::query()->create([
+        'name' => 'Worthless Trash',
+        'slug' => 'worthless-trash',
+        'description' => 'Starter job reward.',
+        'type' => 'material',
+        'icon_class' => 'fa-solid fa-trash',
+        'is_buyable' => false,
+        'price' => 1,
+    ]);
+    $character->currentJob->drops()->create([
+        'item_id' => $item->id,
+        'min_tier' => 0,
+        'max_tier' => 0,
+        'min_quantity' => 1,
+        'max_quantity' => 1,
+        'drop_chance_percent' => 100,
+    ]);
 
     $this->actingAs($user)
         ->post(route('jobs-new.work'))
@@ -408,6 +425,7 @@ test('jobs new work supports starter jobs without tiers', function () {
     expect($progress->tier)->toBe(0);
     expect($progress->tier_experience)->toBe(0);
     expect($character->fresh()->plastic_credits)->toBe(115);
+    expect((int) $character->fresh('inventory')->inventory->firstWhere('id', $item->id)->pivot->quantity)->toBe(1);
 });
 
 test('jobs new keeps tier progress when characters change jobs and return', function () {

@@ -233,11 +233,11 @@
                             </label>
                             <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
                                 <span>Tier From</span>
-                                <input class="{{ $fieldClass }} w-full" type="number" min="1" max="20" x-model="row.min_tier" :name="`drop_rules[${index}][min_tier]`">
+                                <input class="{{ $fieldClass }} w-full" type="number" min="0" max="20" x-model="row.min_tier" :name="`drop_rules[${index}][min_tier]`">
                             </label>
                             <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
                                 <span>Tier To</span>
-                                <input class="{{ $fieldClass }} w-full" type="number" min="1" max="20" x-model="row.max_tier" :name="`drop_rules[${index}][max_tier]`">
+                                <input class="{{ $fieldClass }} w-full" type="number" min="0" max="20" x-model="row.max_tier" :name="`drop_rules[${index}][max_tier]`">
                             </label>
                             <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
                                 <span>Min Qty</span>
@@ -432,11 +432,11 @@
                                         </label>
                                         <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
                                             <span>Tier From</span>
-                                            <input class="{{ $fieldClass }} w-full" type="number" min="1" max="20" x-model="row.min_tier" :name="`drop_rules[${index}][min_tier]`">
+                                            <input class="{{ $fieldClass }} w-full" type="number" min="0" max="20" x-model="row.min_tier" :name="`drop_rules[${index}][min_tier]`">
                                         </label>
                                         <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
                                             <span>Tier To</span>
-                                            <input class="{{ $fieldClass }} w-full" type="number" min="1" max="20" x-model="row.max_tier" :name="`drop_rules[${index}][max_tier]`">
+                                            <input class="{{ $fieldClass }} w-full" type="number" min="0" max="20" x-model="row.max_tier" :name="`drop_rules[${index}][max_tier]`">
                                         </label>
                                         <label class="space-y-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
                                             <span>Min Qty</span>

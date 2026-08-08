@@ -89,8 +89,8 @@ class GameJobAdminController extends Controller
             'working_display_message' => ['nullable', 'string', 'max:255'],
             'drop_rules' => ['nullable', 'array'],
             'drop_rules.*.item_id' => ['nullable', 'exists:items,id'],
-            'drop_rules.*.min_tier' => ['nullable', 'integer', 'min:1', 'max:20'],
-            'drop_rules.*.max_tier' => ['nullable', 'integer', 'min:1', 'max:20'],
+            'drop_rules.*.min_tier' => ['nullable', 'integer', 'min:0', 'max:20'],
+            'drop_rules.*.max_tier' => ['nullable', 'integer', 'min:0', 'max:20'],
             'drop_rules.*.min_quantity' => ['nullable', 'integer', 'min:1'],
             'drop_rules.*.max_quantity' => ['nullable', 'integer', 'min:1'],
             'drop_rules.*.drop_chance_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
@@ -139,7 +139,7 @@ class GameJobAdminController extends Controller
 
             [$itemSlug, $minTier, $maxTier, $minQuantity, $maxQuantity, $chance] = $parts;
             $item = Item::query()->where('slug', $itemSlug)->first();
-            $normalizedMinTier = max(1, min(20, (int) $minTier));
+            $normalizedMinTier = max(0, min(20, (int) $minTier));
             $normalizedMaxTier = max($normalizedMinTier, min(20, (int) $maxTier));
             $normalizedMinQuantity = max(1, (int) $minQuantity);
 
@@ -167,7 +167,7 @@ class GameJobAdminController extends Controller
         collect($request->input('drop_rules', []))
             ->filter(fn (array $rule) => filled($rule['item_id'] ?? null))
             ->each(function (array $rule) use ($gameJob) {
-                $minTier = max(1, min(20, (int) ($rule['min_tier'] ?? 1)));
+                $minTier = max(0, min(20, (int) ($rule['min_tier'] ?? 1)));
                 $maxTier = max($minTier, min(20, (int) ($rule['max_tier'] ?? 20)));
                 $minQuantity = max(1, (int) ($rule['min_quantity'] ?? 1));
 
