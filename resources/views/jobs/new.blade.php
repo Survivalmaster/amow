@@ -13,6 +13,8 @@
     @php($tierPercent = $hasTiers ? min(100, (int) round((($currentProgress?->tier_experience ?? 0) / $tierRequired) * 100)) : 0)
     @php($workCooldownEndsAt = $character->workCooldownEndsAt())
     @php($workRemainingSeconds = $workCooldownEndsAt && $workCooldownEndsAt->isFuture() ? now()->diffInSeconds($workCooldownEndsAt) : 0)
+    @php($workCooldownMinutes = $currentJob?->work_cooldown_minutes ?? 5)
+    @php($workProgressPercent = $workRemainingSeconds > 0 ? max(0, min(100, (int) round((1 - ($workRemainingSeconds / max(1, $workCooldownMinutes * 60))) * 100))) : 100)
     @php($canWork = $workRemainingSeconds === 0 && (int) ($character->stamina_points ?? 100) > 0)
 
     <div class="space-y-6">
@@ -26,7 +28,12 @@
                     </div>
                     <form method="POST" action="{{ route('jobs-new.work') }}">
                         @csrf
-                        <button class="inline-flex items-center gap-2 rounded-full px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] transition {{ $canWork ? 'bg-[#7ead59] text-[#07100c] hover:bg-[#d7edc7]' : 'cursor-not-allowed border border-white/10 bg-white/5 text-white/38' }}" @disabled(! $canWork)>
+                        <button
+                            class="inline-flex items-center gap-2 rounded-full px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] transition {{ $canWork ? 'bg-[#7ead59] text-[#07100c] hover:bg-[#d7edc7]' : 'cursor-not-allowed border border-white/10 bg-white/5 text-white/38' }}"
+                            data-work-button
+                            data-stamina-empty="{{ (int) ($character->stamina_points ?? 100) > 0 ? 'false' : 'true' }}"
+                            @disabled(! $canWork)
+                        >
                             <i class="fa-solid fa-hammer"></i>
                             Work Shift
                         </button>
@@ -48,12 +55,12 @@
                     </div>
                     <div class="rounded-xl border border-white/10 bg-black/20 p-4">
                         <p class="text-xs uppercase tracking-[0.18em] text-white/45">Cooldown</p>
-                        <p class="mt-1 font-['Teko'] text-4xl text-white">{{ $canWork ? 'Ready' : gmdate($workRemainingSeconds >= 3600 ? 'H:i:s' : 'i:s', $workRemainingSeconds) }}</p>
+                        <p class="mt-1 font-['Teko'] text-4xl text-white" data-work-countdown-label>{{ $canWork ? 'Ready' : gmdate($workRemainingSeconds >= 3600 ? 'H:i:s' : 'i:s', $workRemainingSeconds) }}</p>
                     </div>
                 </div>
 
                 <div class="mt-5 h-2.5 overflow-hidden rounded-full bg-black/30">
-                    <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#c2a84f_100%)]" style="width: {{ $tierPercent }}%;"></div>
+                    <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#c2a84f_100%)]" data-work-countdown-progress style="width: {{ $workProgressPercent }}%;"></div>
                 </div>
             </div>
 
@@ -115,4 +122,80 @@
             @endforeach
         </section>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const countdownLabel = document.querySelector('[data-work-countdown-label]');
+                const progressBar = document.querySelector('[data-work-countdown-progress]');
+                const workButton = document.querySelector('[data-work-button]');
+
+                if (!countdownLabel || !progressBar || !workButton) {
+                    return;
+                }
+
+                let remainingSeconds = {{ $workRemainingSeconds }};
+                let cooldownMinutes = {{ $workCooldownMinutes }};
+
+                const formatSeconds = (seconds) => {
+                    const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+                    const hours = Math.floor(safeSeconds / 3600);
+                    const minutes = Math.floor((safeSeconds % 3600) / 60);
+                    const secs = safeSeconds % 60;
+
+                    if (hours > 0) {
+                        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                    }
+
+                    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                };
+
+                const render = () => {
+                    const staminaEmpty = workButton.dataset.staminaEmpty === 'true';
+                    const canWork = remainingSeconds <= 0 && !staminaEmpty;
+                    const totalSeconds = Math.max(1, cooldownMinutes * 60);
+                    const progress = canWork ? 100 : Math.max(0, Math.min(100, Math.round((1 - (remainingSeconds / totalSeconds)) * 100)));
+
+                    countdownLabel.textContent = canWork ? 'Ready' : (remainingSeconds > 0 ? formatSeconds(remainingSeconds) : 'Exhausted');
+                    progressBar.style.width = `${progress}%`;
+                    workButton.disabled = !canWork;
+                    workButton.classList.toggle('bg-[#7ead59]', canWork);
+                    workButton.classList.toggle('text-[#07100c]', canWork);
+                    workButton.classList.toggle('hover:bg-[#d7edc7]', canWork);
+                    workButton.classList.toggle('cursor-not-allowed', !canWork);
+                    workButton.classList.toggle('border', !canWork);
+                    workButton.classList.toggle('border-white/10', !canWork);
+                    workButton.classList.toggle('bg-white/5', !canWork);
+                    workButton.classList.toggle('text-white/38', !canWork);
+                };
+
+                render();
+
+                window.setInterval(() => {
+                    if (remainingSeconds > 0) {
+                        remainingSeconds -= 1;
+                        render();
+                    }
+                }, 1000);
+
+                window.addEventListener('character-state:updated', (event) => {
+                    const state = event.detail ?? {};
+
+                    if (typeof state.work_remaining_seconds === 'number') {
+                        remainingSeconds = state.work_remaining_seconds;
+                    }
+
+                    if (typeof state.work_cooldown_minutes === 'number') {
+                        cooldownMinutes = state.work_cooldown_minutes;
+                    }
+
+                    if (typeof state.work_blocked_by_stamina === 'boolean') {
+                        workButton.dataset.staminaEmpty = state.work_blocked_by_stamina ? 'true' : 'false';
+                    }
+
+                    render();
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>

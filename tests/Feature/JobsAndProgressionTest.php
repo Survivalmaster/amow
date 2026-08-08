@@ -379,6 +379,68 @@ test('jobs new work advances job tier and awards configured drops', function () 
     expect((int) $character->fresh('inventory')->inventory->firstWhere('id', $item->id)->pivot->quantity)->toBe(2);
 });
 
+test('jobs new work uses event multipliers and sends discord work logs', function () {
+    config()->set('services.discord.bot_token', 'test-token');
+    Http::fake([
+        'https://discord.com/api/v10/channels/1483329516796379136/messages' => Http::response(['id' => '123'], 200),
+    ]);
+
+    $user = User::factory()->create();
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+    $character = createCharacterForUser($user);
+    $character->currentJob()->update([
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'experience_reward' => 8,
+        'tier_pay_bonus_percent' => 0,
+        'tier_xp_bonus_percent' => 0,
+        'work_cooldown_minutes' => 1,
+        'working_display_message' => 'Is testing new jobs.',
+        'is_new' => true,
+    ]);
+    GameEvent::query()->create([
+        'created_by_user_id' => $user->id,
+        'title' => 'Factory Surge',
+        'body' => 'Temporary production bonuses.',
+        'is_enabled' => true,
+        'xp_multiplier_enabled' => true,
+        'xp_multiplier' => 1.5,
+        'credit_multiplier_enabled' => true,
+        'credit_multiplier' => 1.5,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.work'))
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $character->refresh();
+
+    expect($character->plastic_credits)->toBe(115);
+    expect($character->experience_points)->toBe(12);
+
+    $transaction = $character->transactions()->where('type', 'work')->latest()->firstOrFail();
+
+    expect($transaction->amount)->toBe(15);
+    expect($transaction->metadata['credit_multiplier'])->toBe(1.5);
+    expect($transaction->metadata['xp_multiplier'])->toBe(1.5);
+    expect($transaction->metadata['tier_before'])->toBe(1);
+    expect($transaction->metadata['tier_after'])->toBe(1);
+    expect($transaction->metadata['credit_multiplier_events'][0]['name'])->toBe('Factory Surge');
+    expect($transaction->metadata['xp_multiplier_events'][0]['name'])->toBe('Factory Surge');
+
+    Http::assertSent(function ($request) {
+        $embed = $request->data()['embeds'][0] ?? [];
+        $description = $embed['description'] ?? '';
+
+        return $request->url() === 'https://discord.com/api/v10/channels/1483329516796379136/messages'
+            && ($embed['title'] ?? '') === 'Tester is testing new jobs.'
+            && str_contains($description, '**Event bonus:**')
+            && str_contains($description, 'XP 1.5x from Factory Surge')
+            && str_contains($description, 'Credits 1.5x from Factory Surge');
+    });
+});
+
 test('jobs new work supports starter jobs without tiers', function () {
     $user = User::factory()->create();
     $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());

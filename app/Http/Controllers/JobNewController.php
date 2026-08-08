@@ -106,6 +106,10 @@ class JobNewController extends Controller
             $message .= ' Tier increased.';
         }
 
+        if (($result['levels_gained'] ?? 0) > 0) {
+            $message .= " Level up! You reached level {$result['character']->level}.";
+        }
+
         return back()->with('status', $message);
     }
 }
