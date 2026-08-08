@@ -192,11 +192,8 @@ class ServerToolsAdminController extends Controller
 
         if (is_string($phpBinary) && str_contains($phpBinary, DIRECTORY_SEPARATOR)) {
             $phpDirectory = dirname($phpBinary);
-
-            if (is_dir($phpDirectory)) {
-                $currentPath = getenv('PATH') ?: getenv('Path') ?: '';
-                $environment['PATH'] = $phpDirectory.($currentPath !== '' ? PATH_SEPARATOR.$currentPath : '');
-            }
+            $currentPath = getenv('PATH') ?: getenv('Path') ?: '';
+            $environment['PATH'] = $phpDirectory.($currentPath !== '' ? PATH_SEPARATOR.$currentPath : '');
         }
 
         if ($step['bin'] === 'git' && is_string($gitSshCommand) && trim($gitSshCommand) !== '') {
