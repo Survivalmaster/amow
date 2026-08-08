@@ -50,10 +50,6 @@ class ChangelogAdminController extends Controller
         Changelog $changelog,
         AdminActionLogger $adminActionLogger
     ): RedirectResponse {
-        if ($changelog->isReleased()) {
-            return back()->with('status', 'Changelog is already published.');
-        }
-
         if (blank($changelog->discord_channel_id)) {
             throw ValidationException::withMessages([
                 'discord_channel_id' => 'Add a Discord channel ID before publishing this changelog.',
@@ -70,11 +66,12 @@ class ChangelogAdminController extends Controller
         $changelog->forceFill([
             'status' => 'released',
             'released_at' => $changelog->released_at ?? now(),
+            'discord_message_sent_at' => null,
         ])->save();
 
         $adminActionLogger->updated($request->user(), 'Changelog', $before, $changelog);
 
-        return back()->with('status', 'Changelog published. The Discord bot will post it shortly.');
+        return back()->with('status', 'Changelog queued for Discord delivery.');
     }
 
     public function destroy(Request $request, Changelog $changelog, AdminActionLogger $adminActionLogger): RedirectResponse

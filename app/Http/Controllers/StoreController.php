@@ -25,7 +25,7 @@ class StoreController extends Controller
     private function marketplaceView(Request $request, string $section): View
     {
         $character = $request->user()->character()->with(['rank', 'licences', 'inventory'])->firstOrFail();
-        $items = Item::query()->with('requiredLicence')->orderBy('type')->orderBy('price')->get();
+        $items = Item::query()->where('is_buyable', true)->with('requiredLicence')->orderBy('type')->orderBy('price')->get();
 
         return view('store.index', [
             'character' => $character,

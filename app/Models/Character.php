@@ -65,6 +65,11 @@ class Character extends Model
         return $this->belongsTo(GameJob::class, 'current_job_id');
     }
 
+    public function jobProgress(): HasMany
+    {
+        return $this->hasMany(CharacterJobProgress::class);
+    }
+
     public function rank(): BelongsTo
     {
         return $this->belongsTo(Rank::class);
@@ -191,6 +196,10 @@ class Character extends Model
 
     public function canPurchaseItem(Item $item): bool
     {
+        if (! $item->is_buyable) {
+            return false;
+        }
+
         if ($item->required_role_type && $item->required_role_type !== $this->role_type) {
             return false;
         }

@@ -72,3 +72,33 @@ test('store blocks buying a new item when inventory is full', function () {
         ->assertSessionHasErrors('purchase')
         ->assertRedirect(route('store.index'));
 });
+
+test('non buyable items are hidden from the store and cannot be purchased directly', function () {
+    $user = User::factory()->create();
+    $character = createInventoryCharacter($user);
+    $item = Item::query()->create([
+        'name' => 'Fresh Log',
+        'slug' => 'fresh-log',
+        'description' => 'A job-only material.',
+        'type' => 'material',
+        'icon_class' => 'fa-solid fa-tree',
+        'is_buyable' => false,
+        'price' => 10,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('store.index'))
+        ->assertOk()
+        ->assertDontSee('Fresh Log');
+
+    $this->actingAs($user)
+        ->from(route('store.index'))
+        ->post(route('store.purchase'), [
+            'purchase_type' => 'item',
+            'id' => $item->id,
+        ])
+        ->assertSessionHasErrors('purchase')
+        ->assertRedirect(route('store.index'));
+
+    expect($character->fresh()->inventory()->whereKey($item->id)->exists())->toBeFalse();
+});

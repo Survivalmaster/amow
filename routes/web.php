@@ -38,6 +38,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\JobNewController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MarketController;
@@ -103,6 +104,9 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::post('/home/sleep', [HomeController::class, 'sleep'])->name('home.sleep');
         Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index');
         Route::post('/jobs/{gameJob}', [JobController::class, 'store'])->name('jobs.store');
+        Route::get('/jobs-new', [JobNewController::class, 'index'])->name('jobs-new.index');
+        Route::post('/jobs-new/work', [JobNewController::class, 'work'])->name('jobs-new.work');
+        Route::post('/jobs-new/{gameJob}', [JobNewController::class, 'store'])->name('jobs-new.store');
         Route::get('/nation', [NationController::class, 'index'])->name('nation.index');
         Route::post('/nation/donate', [NationController::class, 'donate'])->name('nation.donate');
         Route::patch('/nation/members/{character}/rank', [NationController::class, 'updateRank'])->name('nation.members.update-rank');

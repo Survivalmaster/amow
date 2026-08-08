@@ -74,6 +74,11 @@
                         <input type="checkbox" name="is_building" value="1">
                         Building item
                     </label>
+                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                        <input type="hidden" name="is_buyable" value="0">
+                        <input type="checkbox" name="is_buyable" value="1" checked>
+                        Buyable in store
+                    </label>
                     <label class="{{ $labelClass }}">
                         <span class="{{ $labelTitleClass }}">Build Time Minutes</span>
                         <input class="{{ $fieldClass }}" type="number" name="build_time_minutes" min="0" value="0">
@@ -191,6 +196,7 @@
                         <tr>
                             <th class="px-5 py-4 text-left">Name</th>
                             <th class="px-5 py-4 text-left">Type</th>
+                            <th class="px-5 py-4 text-left">Buyable</th>
                             <th class="px-5 py-4 text-left">Building</th>
                             <th class="px-5 py-4 text-left">Footprint</th>
                             <th class="px-5 py-4 text-left">Build Time</th>
@@ -205,6 +211,7 @@
                             <tr data-admin-row data-search="{{ str($item->name.' '.$item->slug.' '.$item->type.' '.$item->description.' level '.$item->required_level.' '.$item->required_role_type.' '.$item->requiredLicence?->name.' '.$item->producingBuilding?->name)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $item->name }}</td>
                                 <td class="px-5 py-4">{{ $item->type_label }}</td>
+                                <td class="px-5 py-4">{{ $item->is_buyable ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ $item->is_building ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ $item->footprint_width }}x{{ $item->footprint_height }}</td>
                                 <td class="px-5 py-4">{{ $item->build_time_minutes }} min</td>
@@ -249,6 +256,11 @@
                                         <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
                                             <input type="checkbox" name="is_building" value="1" @checked($item->is_building)>
                                             Building item
+                                        </label>
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                                            <input type="hidden" name="is_buyable" value="0">
+                                            <input type="checkbox" name="is_buyable" value="1" @checked($item->is_buyable)>
+                                            Buyable in store
                                         </label>
                                         <label class="{{ $labelClass }}">
                                             <span class="{{ $labelTitleClass }}">Build Time Minutes</span>

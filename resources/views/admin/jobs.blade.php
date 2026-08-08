@@ -127,6 +127,22 @@
                     <span>XP</span>
                     <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="5" required>
                 </label>
+                <label class="{{ $labelClass }}">
+                    <span>Max Tier</span>
+                    <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="1" max="20" value="20" required>
+                </label>
+                <label class="{{ $labelClass }}">
+                    <span>Tier XP</span>
+                    <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="1" value="100" required>
+                </label>
+                <label class="{{ $labelClass }}">
+                    <span>Tier Pay %</span>
+                    <input class="{{ $fieldClass }} w-full" name="tier_pay_bonus_percent" type="number" min="0" max="500" value="5" required>
+                </label>
+                <label class="{{ $labelClass }}">
+                    <span>Tier XP %</span>
+                    <input class="{{ $fieldClass }} w-full" name="tier_xp_bonus_percent" type="number" min="0" max="500" value="5" required>
+                </label>
                 <label class="{{ $labelClass }} md:col-span-2">
                     <span>Activity</span>
                     <input class="{{ $fieldClass }} w-full" name="working_display_message" placeholder="Advising the crown.">
@@ -142,6 +158,11 @@
                 <label class="{{ $labelClass }} md:col-span-2 xl:col-span-6">
                     <span>Description</span>
                     <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description" placeholder="A short description players will see."></textarea>
+                </label>
+                <label class="{{ $labelClass }} md:col-span-2 xl:col-span-6">
+                    <span>Drop Rules</span>
+                    <textarea class="{{ $fieldClass }} min-h-24 w-full font-mono" name="drop_rules_text" placeholder="log | 1 | 8 | 1 | 3 | 100&#10;log | 9 | 20 | 4 | 6 | 100"></textarea>
+                    <span class="text-xs normal-case tracking-normal text-white/45">Format: item slug | min tier | max tier | min qty | max qty | chance %. Mark job-only items as not buyable in Admin Items.</span>
                 </label>
                 <div class="flex justify-end gap-2 border-t border-white/10 pt-3 md:col-span-2 xl:col-span-6">
                     <button type="button" @click="showCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
@@ -164,6 +185,8 @@
                             <th class="px-4 py-3 text-left">Level</th>
                             <th class="px-4 py-3 text-left">Pay</th>
                             <th class="px-4 py-3 text-left">XP</th>
+                            <th class="px-4 py-3 text-left">Tiering</th>
+                            <th class="px-4 py-3 text-left">Drops</th>
                             <th class="px-4 py-3 text-left">Cooldown</th>
                             <th class="px-4 py-3 text-left">Stamina</th>
                             <th class="px-4 py-3 text-left">Assigned</th>
@@ -201,6 +224,11 @@
                                     <p class="text-xs text-white/38">Avg {{ number_format($averagePay) }}</p>
                                 </td>
                                 <td class="whitespace-nowrap px-4 py-4 font-semibold text-[#d7edc7]">{{ number_format($job->experience_reward) }}</td>
+                                <td class="whitespace-nowrap px-4 py-4">
+                                    <p class="font-semibold text-white">{{ $job->max_tier }} tiers</p>
+                                    <p class="text-xs text-white/38">{{ number_format($job->tier_xp_required) }} XP each</p>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->drops->count()) }}</td>
                                 <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->work_cooldown_minutes) }} min</td>
                                 <td class="whitespace-nowrap px-4 py-4 font-semibold {{ $job->stamina_decrease > 50 ? 'text-[#f0b29f]' : 'text-white' }}">-{{ number_format($job->stamina_decrease) }}</td>
                                 <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->characters_count) }}</td>
@@ -230,7 +258,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-5 py-10 text-center text-sm text-white/55">No jobs created yet.</td>
+                                <td colspan="10" class="px-5 py-10 text-center text-sm text-white/55">No jobs created yet.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -298,6 +326,22 @@
                                 <span>XP</span>
                                 <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="{{ $job->experience_reward }}" required>
                             </label>
+                            <label class="{{ $labelClass }}">
+                                <span>Max Tier</span>
+                                <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="1" max="20" value="{{ $job->max_tier }}" required>
+                            </label>
+                            <label class="{{ $labelClass }}">
+                                <span>Tier XP</span>
+                                <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="1" value="{{ $job->tier_xp_required }}" required>
+                            </label>
+                            <label class="{{ $labelClass }}">
+                                <span>Tier Pay %</span>
+                                <input class="{{ $fieldClass }} w-full" name="tier_pay_bonus_percent" type="number" min="0" max="500" value="{{ $job->tier_pay_bonus_percent }}" required>
+                            </label>
+                            <label class="{{ $labelClass }}">
+                                <span>Tier XP %</span>
+                                <input class="{{ $fieldClass }} w-full" name="tier_xp_bonus_percent" type="number" min="0" max="500" value="{{ $job->tier_xp_bonus_percent }}" required>
+                            </label>
                             <label class="{{ $labelClass }} md:col-span-2">
                                 <span>Activity</span>
                                 <input class="{{ $fieldClass }} w-full" name="working_display_message" value="{{ $job->working_display_message }}" placeholder="Working display message">
@@ -315,6 +359,11 @@
                             <label class="{{ $labelClass }} md:col-span-2">
                                 <span>Description</span>
                                 <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description">{{ $job->description }}</textarea>
+                            </label>
+                            <label class="{{ $labelClass }} md:col-span-2">
+                                <span>Drop Rules</span>
+                                <textarea class="{{ $fieldClass }} min-h-24 w-full font-mono" name="drop_rules_text" placeholder="log | 1 | 8 | 1 | 3 | 100&#10;log | 9 | 20 | 4 | 6 | 100">{{ $job->drops->map(fn ($drop) => ($drop->item?->slug).' | '.$drop->min_tier.' | '.$drop->max_tier.' | '.$drop->min_quantity.' | '.$drop->max_quantity.' | '.rtrim(rtrim(number_format((float) $drop->drop_chance_percent, 2), '0'), '.'))->implode("\n") }}</textarea>
+                                <span class="text-xs normal-case tracking-normal text-white/45">Format: item slug | min tier | max tier | min qty | max qty | chance %.</span>
                             </label>
                             <div class="flex justify-end gap-2 border-t border-white/10 pt-3 md:col-span-2">
                                 <button type="button" @click="openId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">

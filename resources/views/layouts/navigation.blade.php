@@ -13,6 +13,7 @@
 @php($canLeadNation = $navCharacter?->canLeadNation())
 @php($canAccessTerritoryMap = $navUser->hasPermission('developer'))
 @php($canAccessStockMarket = $navUser->hasPermission('developer'))
+@php($canAccessJobsNew = $navUser->hasPermission('developer'))
 @php($hasReleasedChangelogs = \App\Models\Changelog::query()->released()->exists())
 @php(
     $formattedCredits = match (true) {
@@ -161,6 +162,20 @@
                             </a>
                         @endif
                         @if ($item['label'] === 'Jobs')
+                            @if ($canAccessJobsNew)
+                                <a href="{{ route('jobs-new.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('jobs-new.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                    <span class="h-6 w-1 rounded-full {{ request()->routeIs('jobs-new.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                    <i class="fa-solid fa-helmet-safety w-5 text-center text-[#7ead59]"></i>
+                                    <span>Jobs New</span>
+                                </a>
+                            @else
+                                <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                                    <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                                    <i class="fa-solid fa-lock w-5 text-center text-white/25"></i>
+                                    <span class="flex-1">Jobs New</span>
+                                    <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                                </div>
+                            @endif
                             <button
                                 type="button"
                                 @click="marketplaceOpen = !marketplaceOpen"
@@ -430,6 +445,20 @@
                     </a>
                 @endif
                 @if ($item['label'] === 'Jobs')
+                    @if ($canAccessJobsNew)
+                        <a href="{{ route('jobs-new.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('jobs-new.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <span class="h-6 w-1 rounded-full {{ request()->routeIs('jobs-new.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                            <i class="fa-solid fa-helmet-safety w-5 text-center text-[#7ead59]"></i>
+                            <span>Jobs New</span>
+                        </a>
+                    @else
+                        <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                            <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                            <i class="fa-solid fa-lock w-5 text-center text-white/25"></i>
+                            <span class="flex-1">Jobs New</span>
+                            <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                        </div>
+                    @endif
                     <button
                         type="button"
                         @click="marketplaceOpen = !marketplaceOpen"

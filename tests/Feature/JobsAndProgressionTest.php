@@ -1,15 +1,19 @@
 <?php
 
 use App\Models\Character;
+use App\Models\CharacterJobProgress;
 use App\Models\Faction;
 use App\Models\GameEvent;
 use App\Models\GameJob;
+use App\Models\Item;
 use App\Models\Location;
+use App\Models\Permission;
 use App\Models\Rank;
 use App\Models\User;
 use Database\Seeders\FactionSeeder;
 use Database\Seeders\GameJobSeeder;
 use Database\Seeders\LicenceSeeder;
+use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RankSeeder;
 use Database\Seeders\WorldSeeder;
 use Illuminate\Support\Facades\Http;
@@ -20,6 +24,7 @@ beforeEach(function () {
         RankSeeder::class,
         LicenceSeeder::class,
         GameJobSeeder::class,
+        PermissionSeeder::class,
         WorldSeeder::class,
     ]);
 });
@@ -278,4 +283,73 @@ test('job changes obey the 24 hour cooldown', function () {
         ->post(route('jobs.store', $thirdJob))
         ->assertSessionHasErrors('job')
         ->assertRedirect(route('jobs.index'));
+});
+
+test('jobs new is visible only to developers', function () {
+    $user = User::factory()->create();
+    createCharacterForUser($user);
+
+    $this->actingAs($user)
+        ->get(route('lobby'))
+        ->assertOk()
+        ->assertSee('Jobs New')
+        ->assertSee('Coming Soon')
+        ->assertDontSee(route('jobs-new.index'), false);
+
+    $this->actingAs($user)
+        ->get(route('jobs-new.index'))
+        ->assertForbidden();
+
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+
+    $this->actingAs($user)
+        ->get(route('jobs-new.index'))
+        ->assertOk()
+        ->assertSee('Jobs New');
+});
+
+test('jobs new work advances job tier and awards configured drops', function () {
+    $user = User::factory()->create();
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+    $character = createCharacterForUser($user);
+    $character->currentJob()->update([
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'experience_reward' => 100,
+        'tier_xp_required' => 100,
+        'tier_pay_bonus_percent' => 10,
+        'tier_xp_bonus_percent' => 10,
+        'work_cooldown_minutes' => 1,
+    ]);
+    $item = Item::query()->create([
+        'name' => 'Log',
+        'slug' => 'log',
+        'description' => 'Job reward material.',
+        'type' => 'material',
+        'icon_class' => 'fa-solid fa-tree',
+        'is_buyable' => false,
+        'price' => 1,
+    ]);
+    $character->currentJob->drops()->create([
+        'item_id' => $item->id,
+        'min_tier' => 1,
+        'max_tier' => 20,
+        'min_quantity' => 2,
+        'max_quantity' => 2,
+        'drop_chance_percent' => 100,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.work'))
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('status');
+
+    $progress = CharacterJobProgress::query()
+        ->where('character_id', $character->id)
+        ->where('game_job_id', $character->current_job_id)
+        ->firstOrFail();
+
+    expect($progress->tier)->toBe(2);
+    expect($character->fresh()->plastic_credits)->toBe(110);
+    expect((int) $character->fresh('inventory')->inventory->firstWhere('id', $item->id)->pivot->quantity)->toBe(2);
 });

@@ -90,12 +90,10 @@
                                 </td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
-                                        @if (! $changelog->isReleased())
-                                            <form method="POST" action="{{ route('admin.changelogs.publish', $changelog) }}">
-                                                @csrf
-                                                <x-admin.icon-button icon="fa-paper-plane" title="Publish" type="submit" />
-                                            </form>
-                                        @endif
+                                        <form method="POST" action="{{ route('admin.changelogs.publish', $changelog) }}">
+                                            @csrf
+                                            <x-admin.icon-button icon="fa-paper-plane" title="{{ $changelog->isReleased() ? 'Publish again' : 'Publish' }}" type="submit" />
+                                        </form>
                                         <x-admin.icon-button icon="fa-pen" title="Edit" x-on:click="openId = {{ $changelog->id }}" />
                                         <form method="POST" action="{{ route('admin.changelogs.destroy', $changelog) }}">
                                             @csrf

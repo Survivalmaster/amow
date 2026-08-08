@@ -32,6 +32,7 @@ class Item extends Model
         'icon_class',
         'is_home',
         'is_building',
+        'is_buyable',
         'footprint_width',
         'footprint_height',
         'build_time_minutes',
@@ -80,6 +81,7 @@ class Item extends Model
         return [
             'is_home' => 'boolean',
             'is_building' => 'boolean',
+            'is_buyable' => 'boolean',
             'footprint_width' => 'integer',
             'footprint_height' => 'integer',
             'build_time_minutes' => 'integer',

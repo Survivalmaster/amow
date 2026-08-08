@@ -34,6 +34,7 @@ class ItemAdminController extends Controller
             'icon_class' => ['nullable', 'string', 'max:255'],
             'is_home' => ['nullable', 'boolean'],
             'is_building' => ['nullable', 'boolean'],
+            'is_buyable' => ['nullable', 'boolean'],
             'footprint_width' => ['nullable', 'integer', 'min:1', 'max:10'],
             'footprint_height' => ['nullable', 'integer', 'min:1', 'max:10'],
             'build_time_minutes' => ['nullable', 'integer', 'min:0'],
@@ -47,6 +48,7 @@ class ItemAdminController extends Controller
         ]) + [
             'is_home' => $request->boolean('is_home'),
             'is_building' => $request->boolean('is_building'),
+            'is_buyable' => $request->has('is_buyable') ? $request->boolean('is_buyable') : true,
             'footprint_width' => (int) $request->input('footprint_width', 1),
             'footprint_height' => (int) $request->input('footprint_height', 1),
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
@@ -71,6 +73,7 @@ class ItemAdminController extends Controller
             'icon_class' => ['nullable', 'string', 'max:255'],
             'is_home' => ['nullable', 'boolean'],
             'is_building' => ['nullable', 'boolean'],
+            'is_buyable' => ['nullable', 'boolean'],
             'footprint_width' => ['nullable', 'integer', 'min:1', 'max:10'],
             'footprint_height' => ['nullable', 'integer', 'min:1', 'max:10'],
             'build_time_minutes' => ['nullable', 'integer', 'min:0'],
@@ -84,6 +87,7 @@ class ItemAdminController extends Controller
         ]) + [
             'is_home' => $request->boolean('is_home'),
             'is_building' => $request->boolean('is_building'),
+            'is_buyable' => $request->has('is_buyable') ? $request->boolean('is_buyable') : (bool) $item->is_buyable,
             'footprint_width' => (int) $request->input('footprint_width', 1),
             'footprint_height' => (int) $request->input('footprint_height', 1),
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
