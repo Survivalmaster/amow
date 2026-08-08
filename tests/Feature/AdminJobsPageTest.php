@@ -37,6 +37,7 @@ test('admin can view the redesigned jobs management page', function () {
         ->assertSee('Royal Advisor')
         ->assertSee('Create Job')
         ->assertSee('Avg 85')
+        ->assertSee('Edit drop')
         ->assertSee('data-job-row', false);
 });
 

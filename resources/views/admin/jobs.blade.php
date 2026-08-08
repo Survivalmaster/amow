@@ -40,7 +40,7 @@
         window.dropRuleBuilder = function (initialRows = [], items = []) {
             return {
                 items,
-                rows: initialRows.map((row, index) => ({ key: `${Date.now()}-${index}`, ...row })),
+                rows: initialRows.map((row, index) => ({ key: `${Date.now()}-${index}`, editing: false, ...row })),
                 itemFor(row) {
                     return this.items.find((item) => item.id === `${row.item_id}`) || null;
                 },
@@ -53,6 +53,7 @@
                         min_quantity: 1,
                         max_quantity: 1,
                         drop_chance_percent: 100,
+                        editing: true,
                     });
                 },
                 removeRule(index) {
