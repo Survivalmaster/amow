@@ -55,7 +55,7 @@
     <div
         x-data="{
             openId: null,
-            showCreate: false,
+            showCreate: {{ $errors->any() && old('_method') !== 'PATCH' ? 'true' : 'false' }},
             query: '',
             status: 'all',
             level: 'all',
@@ -128,73 +128,83 @@
         <x-admin.modal open="showCreate" title="Create Job" subtitle="Set work rewards, cooldowns, and progression gates." max-width="56rem">
             <form method="POST" action="{{ route('admin.jobs.store') }}" class="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-6">
                 @csrf
+                @if ($errors->any() && old('_method') !== 'PATCH')
+                    <div class="rounded-xl border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-4 py-3 text-sm text-[#f0b29f] md:col-span-2 xl:col-span-6">
+                        <p class="font-semibold text-white">Job was not created.</p>
+                        <ul class="mt-2 list-disc space-y-1 pl-5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <label class="{{ $labelClass }} xl:col-span-2">
                     <span>Job Name</span>
-                    <input class="{{ $fieldClass }} w-full" name="name" placeholder="Royal Advisor" required>
+                    <input class="{{ $fieldClass }} w-full" name="name" value="{{ old('name') }}" placeholder="Royal Advisor" required>
                 </label>
                 <label class="{{ $labelClass }} xl:col-span-2">
                     <span>Slug</span>
-                    <input class="{{ $fieldClass }} w-full" name="slug" placeholder="royal-advisor" required>
+                    <input class="{{ $fieldClass }} w-full" name="slug" value="{{ old('slug') }}" placeholder="royal-advisor" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Min Pay</span>
-                    <input class="{{ $fieldClass }} w-full" name="min_pay" type="number" min="0" placeholder="25" required>
+                    <input class="{{ $fieldClass }} w-full" name="min_pay" type="number" min="0" value="{{ old('min_pay') }}" placeholder="25" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Max Pay</span>
-                    <input class="{{ $fieldClass }} w-full" name="max_pay" type="number" min="0" placeholder="75" required>
+                    <input class="{{ $fieldClass }} w-full" name="max_pay" type="number" min="0" value="{{ old('max_pay') }}" placeholder="75" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Level</span>
-                    <input class="{{ $fieldClass }} w-full" name="required_level" type="number" min="0" placeholder="0" required>
+                    <input class="{{ $fieldClass }} w-full" name="required_level" type="number" min="0" value="{{ old('required_level', 0) }}" placeholder="0" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Cooldown</span>
-                    <input class="{{ $fieldClass }} w-full" name="work_cooldown_minutes" type="number" min="1" placeholder="5" required>
+                    <input class="{{ $fieldClass }} w-full" name="work_cooldown_minutes" type="number" min="1" value="{{ old('work_cooldown_minutes') }}" placeholder="5" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Stamina</span>
-                    <input class="{{ $fieldClass }} w-full" name="stamina_decrease" type="number" min="0" max="100" value="0" required>
+                    <input class="{{ $fieldClass }} w-full" name="stamina_decrease" type="number" min="0" max="100" value="{{ old('stamina_decrease', 0) }}" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>XP</span>
-                    <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="5" required>
+                    <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="{{ old('experience_reward', 5) }}" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Max Tier</span>
-                    <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="0" max="20" value="0" required>
+                    <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="0" max="20" value="{{ old('max_tier', 0) }}" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Tier XP</span>
-                    <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="0" value="0" required>
+                    <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="0" value="{{ old('tier_xp_required', 0) }}" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Tier Pay %</span>
-                    <input class="{{ $fieldClass }} w-full" name="tier_pay_bonus_percent" type="number" min="0" max="500" value="0" required>
+                    <input class="{{ $fieldClass }} w-full" name="tier_pay_bonus_percent" type="number" min="0" max="500" value="{{ old('tier_pay_bonus_percent', 0) }}" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Tier XP %</span>
-                    <input class="{{ $fieldClass }} w-full" name="tier_xp_bonus_percent" type="number" min="0" max="500" value="0" required>
+                    <input class="{{ $fieldClass }} w-full" name="tier_xp_bonus_percent" type="number" min="0" max="500" value="{{ old('tier_xp_bonus_percent', 0) }}" required>
                 </label>
                 <label class="{{ $labelClass }} md:col-span-2">
                     <span>Activity</span>
-                    <input class="{{ $fieldClass }} w-full" name="working_display_message" placeholder="Advising the crown.">
+                    <input class="{{ $fieldClass }} w-full" name="working_display_message" value="{{ old('working_display_message') }}" placeholder="Advising the crown.">
                 </label>
                 <label class="{{ $toggleClass }}">
-                    <input type="checkbox" name="is_starter" value="1" class="accent-[#7ead59]">
+                    <input type="checkbox" name="is_starter" value="1" class="accent-[#7ead59]" @checked(old('is_starter'))>
                     Starter
                 </label>
                 <label class="{{ $toggleClass }}">
-                    <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" checked>
+                    <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" @checked(old('is_active', true))>
                     Active
                 </label>
                 <label class="{{ $toggleClass }}">
-                    <input type="checkbox" name="is_new" value="1" class="accent-[#7ead59]">
+                    <input type="checkbox" name="is_new" value="1" class="accent-[#7ead59]" @checked(old('is_new'))>
                     New
                 </label>
                 <label class="{{ $labelClass }} md:col-span-2 xl:col-span-6">
                     <span>Description</span>
-                    <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description" placeholder="A short description players will see."></textarea>
+                    <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description" placeholder="A short description players will see.">{{ old('description') }}</textarea>
                 </label>
                 <div x-data="dropRuleBuilder()" class="space-y-3 md:col-span-2 xl:col-span-6">
                     <div class="flex flex-wrap items-center justify-between gap-3">
