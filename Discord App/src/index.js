@@ -13,6 +13,7 @@ const {
   isJobPickSelect,
   isStorePurchaseSelect
 } = require('./amowGame');
+const { handleExportCommand } = require('./amowExport');
 const {
   handleRoleButton,
   handleRolePanelCommand,
@@ -95,6 +96,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isChatInputCommand() && interaction.commandName === 'amow-store') {
       await handleStoreCommand(interaction);
+      return;
+    }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === 'amow-export') {
+      await handleExportCommand(interaction);
       return;
     }
 

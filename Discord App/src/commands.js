@@ -509,12 +509,42 @@ const amowStoreCommand = new SlashCommandBuilder()
   .setName('amow-store')
   .setDescription('Browse and buy from the AMOW store with your linked character.');
 
+const amowExportCommand = new SlashCommandBuilder()
+  .setName('amow-export')
+  .setDescription('Export a channel transcript as an HTML file.')
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+  .addChannelOption((option) =>
+    option
+      .setName('channel')
+      .setDescription('Channel to export. Defaults to the current channel.')
+      .addChannelTypes(
+        ChannelType.GuildText,
+        ChannelType.GuildAnnouncement,
+        ChannelType.PublicThread,
+        ChannelType.PrivateThread,
+        ChannelType.AnnouncementThread
+      )
+  )
+  .addIntegerOption((option) =>
+    option
+      .setName('limit')
+      .setDescription('Maximum messages to export. Defaults to 1000, max 2500.')
+      .setMinValue(1)
+      .setMaxValue(2500)
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName('public')
+      .setDescription('Post the transcript in-channel instead of only to you.')
+  );
+
 module.exports = [
   linkCommand.toJSON(),
   amowBankCommand.toJSON(),
   amowWorkCommand.toJSON(),
   amowJobsCommand.toJSON(),
   amowStoreCommand.toJSON(),
+  amowExportCommand.toJSON(),
   rolePanelCommand.toJSON(),
   loggingCommand.toJSON(),
   rankPanelCommand.toJSON(),

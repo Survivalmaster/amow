@@ -109,6 +109,18 @@ Users can generate a Discord link code from their AMOW profile, then run:
 
 The bot sends that code to the website and links the Discord user ID to the AMOW account. The bot needs `WEBSITE_BASE_URL` or `AMOW_API_URL`, plus `WEBSITE_DISCORD_LINK_SECRET` matching Laravel's `DISCORD_LINKING_SECRET`.
 
+## AMOW Channel Exports
+
+Administrators can export a Discord channel transcript as an HTML attachment:
+
+```text
+/amow-export
+/amow-export channel:#ticket-0160 limit:500
+/amow-export channel:#ticket-0160 public:true
+```
+
+The command is only available to members with the Discord Administrator permission. By default, the export is sent privately to the administrator who ran it. Set `public:true` to post the transcript attachment in the channel. The export includes message content, authors, timestamps, basic embed content, and attachments.
+
 ## Leadership Rank Panels
 
 Rank panels let a leadership role manage only the rank roles you add to that panel, and only for members with the configured team role.
