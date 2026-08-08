@@ -378,3 +378,55 @@ test('jobs new work advances job tier and awards configured drops', function () 
     expect($character->fresh()->plastic_credits)->toBe(110);
     expect((int) $character->fresh('inventory')->inventory->firstWhere('id', $item->id)->pivot->quantity)->toBe(2);
 });
+
+test('jobs new keeps tier progress when characters change jobs and return', function () {
+    $user = User::factory()->create();
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+    $character = createCharacterForUser($user);
+    $firstJob = $character->currentJob;
+    $firstJob->update([
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'experience_reward' => 100,
+        'tier_xp_required' => 100,
+        'work_cooldown_minutes' => 1,
+        'is_new' => true,
+    ]);
+    $secondJob = GameJob::query()->create([
+        'name' => 'Stone Gatherer',
+        'slug' => 'stone-gatherer',
+        'description' => 'Collects stone for builders.',
+        'min_pay' => 10,
+        'max_pay' => 15,
+        'required_level' => 0,
+        'work_cooldown_minutes' => 5,
+        'stamina_decrease' => 5,
+        'experience_reward' => 5,
+        'is_active' => true,
+        'is_new' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.work'))
+        ->assertSessionHasNoErrors();
+
+    expect(CharacterJobProgress::query()
+        ->where('character_id', $character->id)
+        ->where('game_job_id', $firstJob->id)
+        ->firstOrFail()->tier)->toBe(2);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.store', $secondJob))
+        ->assertSessionHasNoErrors();
+
+    $character->refresh()->update(['job_changed_at' => now()->subDay()]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.store', $firstJob))
+        ->assertSessionHasNoErrors();
+
+    expect(CharacterJobProgress::query()
+        ->where('character_id', $character->id)
+        ->where('game_job_id', $firstJob->id)
+        ->firstOrFail()->tier)->toBe(2);
+});

@@ -276,7 +276,9 @@ class Character extends Model
 
     public function inventorySlotsUsed(): int
     {
-        return $this->inventory->count();
+        return $this->inventory->sum(function (Item $item) {
+            return $this->inventorySlotsForItemQuantity($item, (int) ($item->pivot->quantity ?? 1));
+        });
     }
 
     public function inventorySlotsRemaining(): int
@@ -286,11 +288,27 @@ class Character extends Model
 
     public function canStoreAdditionalItem(Item $item): bool
     {
-        if ($this->inventory->contains('id', $item->id)) {
+        return $this->canStoreItemQuantity($item, 1);
+    }
+
+    public function canStoreItemQuantity(Item $item, int $quantity): bool
+    {
+        if ($quantity <= 0) {
             return true;
         }
 
-        return ($this->inventorySlotsUsed() + 1) <= ($this->inventorySlotCapacity() + max(0, (int) $item->inventory_slot_bonus));
+        $currentItem = $this->inventory->firstWhere('id', $item->id);
+        $currentQuantity = (int) optional($currentItem)->pivot?->quantity;
+        $currentSlots = $currentItem ? $this->inventorySlotsForItemQuantity($item, $currentQuantity) : 0;
+        $newSlots = $this->inventorySlotsForItemQuantity($item, $currentQuantity + $quantity);
+        $extraSlotsNeeded = max(0, $newSlots - $currentSlots);
+
+        return ($this->inventorySlotsUsed() + $extraSlotsNeeded) <= ($this->inventorySlotCapacity() + max(0, (int) $item->inventory_slot_bonus));
+    }
+
+    public function inventorySlotsForItemQuantity(Item $item, int $quantity): int
+    {
+        return (int) ceil(max(1, $quantity) / max(1, (int) ($item->max_stack_per_slot ?? 1)));
     }
 
     public function canLeadNation(): bool

@@ -38,6 +38,7 @@ class Item extends Model
         'build_time_minutes',
         'produced_by_building_item_id',
         'inventory_slot_bonus',
+        'max_stack_per_slot',
         'price',
         'required_rank_id',
         'required_level',
@@ -87,6 +88,7 @@ class Item extends Model
             'build_time_minutes' => 'integer',
             'produced_by_building_item_id' => 'integer',
             'inventory_slot_bonus' => 'integer',
+            'max_stack_per_slot' => 'integer',
             'required_level' => 'integer',
         ];
     }

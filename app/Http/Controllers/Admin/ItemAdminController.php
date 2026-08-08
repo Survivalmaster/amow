@@ -40,6 +40,7 @@ class ItemAdminController extends Controller
             'build_time_minutes' => ['nullable', 'integer', 'min:0'],
             'produced_by_building_item_id' => ['nullable', Rule::exists('items', 'id')->where('is_building', true)],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
+            'max_stack_per_slot' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'price' => ['required', 'integer', 'min:1'],
             'required_level' => ['nullable', 'integer', 'min:0'],
             'required_role_type' => ['nullable', 'in:civilian,military'],
@@ -53,6 +54,7 @@ class ItemAdminController extends Controller
             'footprint_height' => (int) $request->input('footprint_height', 1),
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
+            'max_stack_per_slot' => (int) $request->input('max_stack_per_slot', 1),
             'required_rank_id' => null,
         ];
 
@@ -79,6 +81,7 @@ class ItemAdminController extends Controller
             'build_time_minutes' => ['nullable', 'integer', 'min:0'],
             'produced_by_building_item_id' => ['nullable', Rule::exists('items', 'id')->where('is_building', true)],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
+            'max_stack_per_slot' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'price' => ['required', 'integer', 'min:1'],
             'required_level' => ['nullable', 'integer', 'min:0'],
             'required_role_type' => ['nullable', 'in:civilian,military'],
@@ -92,6 +95,7 @@ class ItemAdminController extends Controller
             'footprint_height' => (int) $request->input('footprint_height', 1),
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
+            'max_stack_per_slot' => (int) $request->input('max_stack_per_slot', $item->max_stack_per_slot ?? 1),
             'required_rank_id' => null,
         ];
 

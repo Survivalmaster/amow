@@ -109,6 +109,10 @@
                         <input class="{{ $fieldClass }}" type="number" name="inventory_slot_bonus" min="0" value="0">
                     </label>
                     <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Max Per Slot</span>
+                        <input class="{{ $fieldClass }}" type="number" name="max_stack_per_slot" min="1" value="1">
+                    </label>
+                    <label class="{{ $labelClass }}">
                         <span class="{{ $labelTitleClass }}">Price</span>
                         <input class="{{ $fieldClass }}" type="number" name="price" placeholder="Price" required>
                     </label>
@@ -201,6 +205,7 @@
                             <th class="px-5 py-4 text-left">Footprint</th>
                             <th class="px-5 py-4 text-left">Build Time</th>
                             <th class="px-5 py-4 text-left">Produced By</th>
+                            <th class="px-5 py-4 text-left">Stack</th>
                             <th class="px-5 py-4 text-left">Required Level</th>
                             <th class="px-5 py-4 text-left">Price</th>
                             <th class="px-5 py-4 text-right">Actions</th>
@@ -216,6 +221,7 @@
                                 <td class="px-5 py-4">{{ $item->footprint_width }}x{{ $item->footprint_height }}</td>
                                 <td class="px-5 py-4">{{ $item->build_time_minutes }} min</td>
                                 <td class="px-5 py-4">{{ $item->producingBuilding?->name ?? 'None' }}</td>
+                                <td class="px-5 py-4">{{ number_format($item->max_stack_per_slot ?? 1) }}/slot</td>
                                 <td class="px-5 py-4">{{ $item->required_level !== null ? 'Level '.$item->required_level : 'None' }}</td>
                                 <td class="px-5 py-4">{{ number_format($item->price) }}</td>
                                 <td class="px-5 py-4 text-right">
@@ -292,6 +298,10 @@
                                         <label class="{{ $labelClass }}">
                                             <span class="{{ $labelTitleClass }}">Inventory Slot Bonus</span>
                                             <input class="{{ $fieldClass }}" type="number" name="inventory_slot_bonus" value="{{ $item->inventory_slot_bonus }}" min="0">
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Max Per Slot</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="max_stack_per_slot" value="{{ $item->max_stack_per_slot ?? 1 }}" min="1">
                                         </label>
                                         <label class="{{ $labelClass }}">
                                             <span class="{{ $labelTitleClass }}">Price</span>

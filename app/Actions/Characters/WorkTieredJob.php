@@ -111,6 +111,12 @@ class WorkTieredJob
             ->filter(fn (GameJobDrop $drop) => random_int(1, 10000) <= (int) round(((float) $drop->drop_chance_percent) * 100))
             ->map(function (GameJobDrop $drop) use ($character) {
                 $quantity = random_int((int) $drop->min_quantity, (int) $drop->max_quantity);
+                $item = $drop->item;
+
+                if (! $item || ! $character->canStoreItemQuantity($item, $quantity)) {
+                    return null;
+                }
+
                 $currentQuantity = (int) optional($character->inventory->firstWhere('id', $drop->item_id))->pivot?->quantity;
 
                 $character->inventory()->syncWithoutDetaching([
@@ -123,6 +129,7 @@ class WorkTieredJob
                     'quantity' => $quantity,
                 ];
             })
+            ->filter()
             ->values()
             ->all();
     }

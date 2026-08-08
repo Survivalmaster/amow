@@ -102,3 +102,55 @@ test('non buyable items are hidden from the store and cannot be purchased direct
 
     expect($character->fresh()->inventory()->whereKey($item->id)->exists())->toBeFalse();
 });
+
+test('item quantities consume slots based on max stack per slot', function () {
+    $user = User::factory()->create();
+    $character = createInventoryCharacter($user);
+    $item = Item::query()->create([
+        'name' => 'Stacked Log',
+        'slug' => 'stacked-log',
+        'description' => 'A stackable building material.',
+        'type' => 'material',
+        'icon_class' => 'fa-solid fa-tree',
+        'max_stack_per_slot' => 10,
+        'price' => 10,
+    ]);
+
+    $character->inventory()->attach($item->id, ['quantity' => 25]);
+
+    expect($character->fresh('inventory')->inventorySlotsUsed())->toBe(3);
+
+    $this->actingAs($user)
+        ->get(route('inventory.index'))
+        ->assertOk()
+        ->assertSee('x10')
+        ->assertSee('x5')
+        ->assertSee('Max 10');
+});
+
+test('store blocks purchases that would create an extra stack beyond capacity', function () {
+    $user = User::factory()->create();
+    $character = createInventoryCharacter($user);
+    $logs = Item::query()->create([
+        'name' => 'Heavy Logs',
+        'slug' => 'heavy-logs',
+        'description' => 'A stackable material.',
+        'type' => 'material',
+        'icon_class' => 'fa-solid fa-tree',
+        'max_stack_per_slot' => 10,
+        'price' => 10,
+    ]);
+
+    $character->inventory()->attach($logs->id, ['quantity' => 120]);
+
+    $this->actingAs($user)
+        ->from(route('store.index'))
+        ->post(route('store.purchase'), [
+            'purchase_type' => 'item',
+            'id' => $logs->id,
+        ])
+        ->assertSessionHasErrors('purchase')
+        ->assertRedirect(route('store.index'));
+
+    expect((int) $character->fresh('inventory')->inventory->firstWhere('id', $logs->id)->pivot->quantity)->toBe(120);
+});
