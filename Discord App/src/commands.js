@@ -538,6 +538,86 @@ const amowExportCommand = new SlashCommandBuilder()
       .setDescription('Post the transcript in-channel instead of only to you.')
   );
 
+const amowToolsCommand = new SlashCommandBuilder()
+  .setName('amow-tools')
+  .setDescription('Run guarded AMOW server maintenance tools.')
+  .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+  .addSubcommandGroup((group) =>
+    group
+      .setName('artisan')
+      .setDescription('Run allowlisted Laravel Artisan commands.')
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('migrate')
+          .setDescription('Run php artisan migrate --force.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('optimize')
+          .setDescription('Run php artisan optimize.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('optimize-clear')
+          .setDescription('Run php artisan optimize:clear.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('cache-clear')
+          .setDescription('Run php artisan cache:clear.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('config-cache')
+          .setDescription('Run php artisan config:cache.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('route-cache')
+          .setDescription('Run php artisan route:cache.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('view-cache')
+          .setDescription('Run php artisan view:cache.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('queue-restart')
+          .setDescription('Run php artisan queue:restart.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('storage-link')
+          .setDescription('Run php artisan storage:link.')
+      )
+  )
+  .addSubcommandGroup((group) =>
+    group
+      .setName('github')
+      .setDescription('Pull or deploy code updates from GitHub.')
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('status')
+          .setDescription('Run git status --short.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('pull')
+          .setDescription('Run git pull --ff-only.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('deploy')
+          .setDescription('Pull, install composer dependencies, migrate, and optimize.')
+      )
+      .addSubcommand((subcommand) =>
+        subcommand
+          .setName('npm-build')
+          .setDescription('Run npm install and npm run build.')
+      )
+  );
+
 module.exports = [
   linkCommand.toJSON(),
   amowBankCommand.toJSON(),
@@ -545,6 +625,7 @@ module.exports = [
   amowJobsCommand.toJSON(),
   amowStoreCommand.toJSON(),
   amowExportCommand.toJSON(),
+  amowToolsCommand.toJSON(),
   rolePanelCommand.toJSON(),
   loggingCommand.toJSON(),
   rankPanelCommand.toJSON(),

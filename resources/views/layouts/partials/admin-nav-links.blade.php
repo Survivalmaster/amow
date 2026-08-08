@@ -49,6 +49,7 @@
         'tools' => [
             'label' => 'Tools',
             'items' => [
+                ['section' => 'server_tools'],
                 ['section' => 'game_master'],
                 ['section' => 'moderator'],
             ],

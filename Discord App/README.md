@@ -121,6 +121,42 @@ Administrators can export a Discord channel transcript as an HTML attachment:
 
 The command is only available to members with the Discord Administrator permission. By default, the export is sent privately to the administrator who ran it. Set `public:true` to post the transcript attachment in the channel. The export includes message content, authors, timestamps, basic embed content, and attachments.
 
+## AMOW Admin Tools
+
+Administrators can run guarded maintenance actions from Discord:
+
+```text
+/amow-tools artisan migrate
+/amow-tools artisan optimize-clear
+/amow-tools github status
+/amow-tools github pull
+/amow-tools github deploy
+```
+
+The command only registers for members with the Discord Administrator permission, and the bot checks that permission again before running anything.
+
+Optional bot `.env` values:
+
+```env
+AMOW_DEPLOY_PATH=/var/www/vhosts/example.com/httpdocs
+AMOW_PHP_BINARY=php
+AMOW_GIT_BINARY=git
+AMOW_COMPOSER_BINARY=composer
+AMOW_NPM_BINARY=npm
+AMOW_TOOLS_TIMEOUT_MS=120000
+```
+
+`github deploy` runs:
+
+```text
+git pull --ff-only
+composer install --no-dev --optimize-autoloader --no-interaction
+php artisan migrate --force
+php artisan optimize
+```
+
+`github npm-build` is separate and runs `npm install` then `npm run build`, in case frontend assets need rebuilding on the server.
+
 ## Leadership Rank Panels
 
 Rank panels let a leadership role manage only the rank roles you add to that panel, and only for members with the configured team role.

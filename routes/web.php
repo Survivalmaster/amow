@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\NationLogAdminController;
 use App\Http\Controllers\Admin\PermissionAdminController;
 use App\Http\Controllers\Admin\GameMasterAdminController;
 use App\Http\Controllers\Admin\RefundAdminController;
+use App\Http\Controllers\Admin\ServerToolsAdminController;
 use App\Http\Controllers\Admin\StockMarketAdminController;
 use App\Http\Controllers\Admin\StatisticsAdminController;
 use App\Http\Controllers\Admin\SkirmishAdminController;
@@ -220,6 +221,8 @@ Route::middleware(['auth', 'not_banned'])->group(function () {
         Route::patch('/stock-market/companies/{company}', [StockMarketAdminController::class, 'updateCompany'])->middleware('admin.section:stock_market')->name('stock-market.companies.update');
         Route::post('/stock-market/companies/{company}/crash', [StockMarketAdminController::class, 'crashCompany'])->middleware('admin.section:stock_market')->name('stock-market.companies.crash');
         Route::delete('/stock-market/companies/{company}', [StockMarketAdminController::class, 'destroyCompany'])->middleware('admin.section:stock_market')->name('stock-market.companies.destroy');
+        Route::get('/server-tools', [ServerToolsAdminController::class, 'index'])->middleware('admin.section:server_tools')->name('server-tools.index');
+        Route::post('/server-tools/run', [ServerToolsAdminController::class, 'run'])->middleware('admin.section:server_tools')->name('server-tools.run');
         Route::get('/game-master', [GameMasterAdminController::class, 'index'])->middleware('admin.section:game_master')->name('game-master.index');
         Route::post('/game-master/events', [GameMasterAdminController::class, 'store'])->middleware('admin.section:game_master')->name('game-master.events.store');
         Route::patch('/game-master/events/{gameEvent}', [GameMasterAdminController::class, 'update'])->middleware('admin.section:game_master')->name('game-master.events.update');

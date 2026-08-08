@@ -21,6 +21,7 @@ return [
     'discord_management' => ['label' => 'Discord Management', 'route' => 'admin.discord-management.index'],
     'nation_requisitions' => ['label' => 'Nation Requisitions', 'route' => 'admin.nation-requisitions.index'],
     'stock_market' => ['label' => 'Stock Market', 'route' => 'admin.stock-market.index'],
+    'server_tools' => ['label' => 'Server Tools', 'route' => 'admin.server-tools.index'],
     'game_master' => ['label' => 'Game Master', 'route' => 'admin.game-master.index'],
     'moderator' => ['label' => 'Moderator', 'route' => 'admin.moderator.index'],
 ];
