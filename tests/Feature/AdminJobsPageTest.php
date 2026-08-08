@@ -32,6 +32,8 @@ test('admin can view the redesigned jobs management page', function () {
         ->get(route('admin.jobs.index'))
         ->assertOk()
         ->assertSee('Admin: Jobs')
+        ->assertSee('Old Jobs')
+        ->assertSee('New Jobs')
         ->assertSee('Royal Advisor')
         ->assertSee('Create Job')
         ->assertSee('Avg 85')
