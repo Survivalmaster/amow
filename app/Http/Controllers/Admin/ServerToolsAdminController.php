@@ -166,7 +166,18 @@ class ServerToolsAdminController extends Controller
     private function processEnvironment(array $step): array
     {
         $environment = [];
+        $binaries = config('server_tools.binaries', []);
+        $phpBinary = $binaries['php'] ?? null;
         $gitSshCommand = config('server_tools.git_ssh_command');
+
+        if (is_string($phpBinary) && str_contains($phpBinary, DIRECTORY_SEPARATOR)) {
+            $phpDirectory = dirname($phpBinary);
+
+            if (is_dir($phpDirectory)) {
+                $currentPath = getenv('PATH') ?: getenv('Path') ?: '';
+                $environment['PATH'] = $phpDirectory.($currentPath !== '' ? PATH_SEPARATOR.$currentPath : '');
+            }
+        }
 
         if ($step['bin'] === 'git' && is_string($gitSshCommand) && trim($gitSshCommand) !== '') {
             $environment['GIT_SSH_COMMAND'] = trim($gitSshCommand);

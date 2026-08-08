@@ -176,8 +176,15 @@ function runStep(step) {
 }
 
 function processEnvironment(step) {
+  const phpDirectory = BINARIES.php.includes(path.sep) ? path.dirname(BINARIES.php) : '';
+  const currentPath = process.env.PATH || process.env.Path || '';
+  const withPhpPath = phpDirectory
+    ? `${phpDirectory}${path.delimiter}${currentPath}`
+    : currentPath;
+
   return {
     ...process.env,
+    ...(withPhpPath ? { PATH: withPhpPath, Path: withPhpPath } : {}),
     ...(step.bin === 'git' && GIT_SSH_COMMAND ? { GIT_SSH_COMMAND } : {})
   };
 }
