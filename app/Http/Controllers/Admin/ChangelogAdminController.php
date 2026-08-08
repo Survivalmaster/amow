@@ -94,7 +94,6 @@ class ChangelogAdminController extends Controller
             'added_features_text' => ['nullable', 'string', 'max:6000'],
             'edited_features_text' => ['nullable', 'string', 'max:6000'],
             'removed_features_text' => ['nullable', 'string', 'max:6000'],
-            'body' => ['nullable', 'string', 'max:12000'],
             'released_at' => ['nullable', 'date'],
         ]);
 
@@ -111,7 +110,6 @@ class ChangelogAdminController extends Controller
             'added_features' => $this->linesFromText($validated['added_features_text'] ?? ''),
             'edited_features' => $this->linesFromText($validated['edited_features_text'] ?? ''),
             'removed_features' => $this->linesFromText($validated['removed_features_text'] ?? ''),
-            'body' => $validated['body'] ?: null,
             'status' => $changelog?->status ?? 'draft',
             'released_at' => $validated['released_at'] ?? $changelog?->released_at,
         ];

@@ -51,10 +51,6 @@
             <textarea class="{{ $fieldClass }} min-h-40 font-mono text-sm" name="removed_features_text" placeholder="Removed old placeholder text">{{ old('removed_features_text', implode("\n", $changelog?->removed_features ?? [])) }}</textarea>
         </label>
     </div>
-    <label class="grid gap-2 text-sm text-white/70 lg:col-span-2">
-        <span class="uppercase tracking-[0.18em] text-white/45">Summary</span>
-        <textarea class="{{ $fieldClass }} min-h-40" name="body">{{ old('body', $changelog?->body) }}</textarea>
-    </label>
 </div>
 
 <div class="flex justify-end gap-3">

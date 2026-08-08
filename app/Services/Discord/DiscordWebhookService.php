@@ -107,16 +107,8 @@ class DiscordWebhookService
             ];
         }
 
-        if (filled($changelog->body)) {
-            $fields[] = [
-                'name' => 'Summary',
-                'value' => Str::limit($changelog->body, 1000),
-                'inline' => false,
-            ];
-        }
-
         return [
-            'title' => $changelog->title.' - '.$releasedAt->format('d/m/Y').' - Version '.$changelog->version,
+            'title' => $changelog->title.' - Version '.$changelog->version,
             'description' => trim(collect([
                 filled($changelog->summary) ? $changelog->summary : 'A new AMOW update has been released.',
                 '',

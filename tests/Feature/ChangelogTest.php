@@ -123,7 +123,7 @@ test('admin releasing a changelog posts one discord embed', function () {
     $embed = $pending['embed'];
 
     expect($pending['channel_id'])->toBe('123456789012345678');
-    expect($embed['title'])->toBe('Big Update - '.$changelog->released_at->format('d/m/Y').' - Version v2.0.0');
+    expect($embed['title'])->toBe('Big Update - Version v2.0.0');
     expect($embed['description'])->toContain('Added: 2');
     expect($embed['description'])->toContain('Edited: 1');
     expect($embed['description'])->toContain('Removed: 1');
@@ -135,6 +135,7 @@ test('admin releasing a changelog posts one discord embed', function () {
     expect($embed['fields'][1]['value'])->toContain('Cleaner changelog form');
     expect($embed['fields'][2]['name'])->toBe('🗑️ Removed');
     expect($embed['fields'][2]['value'])->toContain('Single feature textarea');
+    expect(collect($embed['fields'])->pluck('name'))->not->toContain('Summary');
     expect($embed)->not->toHaveKey('thumbnail');
 
     $this

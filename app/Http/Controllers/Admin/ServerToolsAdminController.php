@@ -48,11 +48,6 @@ class ServerToolsAdminController extends Controller
         return view('admin.server-tools', [
             'artisanCommands' => array_keys(self::ARTISAN_COMMANDS),
             'githubActions' => array_keys(self::GITHUB_ACTIONS),
-            'projectPath' => config('server_tools.path'),
-            'gitRepoPath' => config('server_tools.git_repo_path'),
-            'gitBranch' => config('server_tools.git_branch'),
-            'gitSshCommand' => config('server_tools.git_ssh_command'),
-            'binaries' => config('server_tools.binaries', []),
         ]);
     }
 

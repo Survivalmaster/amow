@@ -24,21 +24,13 @@
                     @endif
                 </div>
 
-                <div class="grid gap-5 px-6 py-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
-                    <div class="space-y-4">
-                        @if ($changelog->body)
-                            <div class="text-sm leading-6 text-white/70">
-                                {!! nl2br(e($changelog->body)) !!}
-                            </div>
-                        @endif
-                    </div>
-
-                    <aside class="space-y-4 rounded-2xl border border-[#7ead59]/20 bg-[#7ead59]/10 p-4">
+                <div class="px-6 py-5">
+                    <div class="grid gap-4 md:grid-cols-3">
                         @php($groups = $changelog->groupedFeatures())
                         @forelse (array_filter($groups) as $group => $features)
                             @php($icon = ['Added' => 'fa-plus', 'Edited' => 'fa-pen', 'Removed' => 'fa-minus'][$group])
                             @php($color = ['Added' => '#7ead59', 'Edited' => '#f4d77a', 'Removed' => '#f0b29f'][$group])
-                            <div>
+                            <div class="rounded-2xl border border-[#7ead59]/20 bg-[#7ead59]/10 p-4">
                                 <p class="text-xs font-semibold uppercase tracking-[0.22em]" style="color: {{ $color }}">
                                     <i class="fa-solid {{ $icon }} mr-1"></i>{{ $group }}
                                 </p>
@@ -54,7 +46,7 @@
                         @empty
                             <p class="text-sm text-white/55">No update list was attached to this release.</p>
                         @endforelse
-                    </aside>
+                    </div>
                 </div>
             </article>
         @empty
