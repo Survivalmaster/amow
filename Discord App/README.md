@@ -109,6 +109,61 @@ Users can generate a Discord link code from their AMOW profile, then run:
 
 The bot sends that code to the website and links the Discord user ID to the AMOW account. The bot needs `WEBSITE_BASE_URL` or `AMOW_API_URL`, plus `WEBSITE_DISCORD_LINK_SECRET` matching Laravel's `DISCORD_LINKING_SECRET`.
 
+## AMOW Channel Exports
+
+Administrators can export a Discord channel transcript as an HTML attachment:
+
+```text
+/amow-export
+/amow-export channel:#ticket-0160 limit:500
+/amow-export channel:#ticket-0160 public:true
+```
+
+The command is only available to members with the Discord Administrator permission. By default, the export is sent privately to the administrator who ran it. Set `public:true` to post the transcript attachment in the channel. The export includes message content, authors, timestamps, basic embed content, and attachments.
+
+## AMOW Admin Tools
+
+Administrators can run guarded maintenance actions from Discord:
+
+```text
+/amow-tools artisan migrate
+/amow-tools artisan optimize-clear
+/amow-tools github status
+/amow-tools github pull
+/amow-tools github deploy
+```
+
+The command only registers for members with the Discord Administrator permission, and the bot checks that permission again before running anything.
+
+Optional bot `.env` values:
+
+```env
+AMOW_DEPLOY_PATH=/var/www/vhosts/example.com/httpdocs
+AMOW_GIT_REPO_PATH=/var/www/vhosts/example.com/git/site.git
+AMOW_GIT_BRANCH=main
+AMOW_GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new"
+AMOW_PHP_BINARY=php
+AMOW_GIT_BINARY=git
+AMOW_COMPOSER_BINARY=composer
+AMOW_NPM_BINARY=npm
+AMOW_TOOLS_TIMEOUT_MS=120000
+```
+
+If `AMOW_GIT_REPO_PATH` is set, the GitHub actions use that Plesk-managed bare repository and deploy the configured branch into `AMOW_DEPLOY_PATH`. If it is not set, the bot assumes `AMOW_DEPLOY_PATH` is a normal Git checkout.
+On Plesk, set `AMOW_PHP_BINARY` to the full PHP CLI path, such as `/opt/plesk/php/8.4/bin/php`. If Composer still reports `/usr/bin/env: 'php': No such file or directory`, set `AMOW_COMPOSER_BINARY` to the full Composer executable path too; the bot will run it through the configured PHP binary.
+
+`github deploy` runs:
+
+```text
+git fetch origin main:refs/heads/main
+git --work-tree=<deploy-path> checkout -f main -- .
+composer install --no-dev --optimize-autoloader --no-interaction
+php artisan migrate --force
+php artisan optimize
+```
+
+`github npm-build` is separate and runs `npm install` then `npm run build`, in case frontend assets need rebuilding on the server.
+
 ## Leadership Rank Panels
 
 Rank panels let a leadership role manage only the rank roles you add to that panel, and only for members with the configured team role.

@@ -27,7 +27,7 @@ class DiscordStoreController extends Controller
         }
 
         $licences = Licence::query()->orderBy('cost')->get();
-        $items = Item::query()->with('requiredLicence')->orderBy('type')->orderBy('price')->get();
+        $items = Item::query()->where('is_buyable', true)->with('requiredLicence')->orderBy('type')->orderBy('price')->get();
 
         return response()->json([
             'linked' => true,

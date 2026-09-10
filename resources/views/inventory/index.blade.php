@@ -28,7 +28,7 @@
                         <p class="mt-2 font-['Teko'] text-4xl uppercase text-[#c2a84f]">{{ $character->buildingItems()->sum(fn ($item) => (int) $item->pivot->quantity) }}</p>
                     </div>
                 </div>
-                <p class="mt-4 text-sm leading-7 text-white/65">Base capacity is 12 slots. Backpack items add more room. Each item stack uses one slot, which keeps the system quick and readable while still making capacity matter.</p>
+                <p class="mt-4 text-sm leading-7 text-white/65">Base capacity is 12 slots. Backpack items add more room. Item quantities split across slots based on each item's max-per-slot setting.</p>
             </div>
 
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
@@ -73,7 +73,7 @@
                                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/35 text-lg text-[#d7edc7]">
                                         <i class="{{ $slot->display_icon_class }}"></i>
                                     </span>
-                                    <span class="rounded-full bg-[#c2a84f]/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f4ecd0]">x{{ $slot->pivot->quantity }}</span>
+                                    <span class="rounded-full bg-[#c2a84f]/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f4ecd0]">x{{ $slot->slot_stack_quantity ?? $slot->pivot->quantity }}</span>
                                 </div>
                                 <div class="mt-3 min-h-0 flex-1">
                                     <p class="font-['Teko'] text-xl uppercase leading-none tracking-[0.05em] text-[#f4ecd0]">{{ $slot->name }}</p>
@@ -85,6 +85,9 @@
                                     @endif
                                     @if ($slot->inventory_slot_bonus > 0)
                                         <span class="rounded-full border border-[#c2a84f]/30 bg-[#c2a84f]/10 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-[#f4ecd0]">+{{ $slot->inventory_slot_bonus }}</span>
+                                    @endif
+                                    @if (($slot->slot_stack_max ?? $slot->max_stack_per_slot ?? 1) > 1)
+                                        <span class="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] text-white/55">Max {{ $slot->slot_stack_max ?? $slot->max_stack_per_slot }}</span>
                                     @endif
                                 </div>
                             </div>

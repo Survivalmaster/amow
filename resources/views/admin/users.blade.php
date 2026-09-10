@@ -38,6 +38,7 @@
                             <th class="px-5 py-4 text-left">Account</th>
                             <th class="px-5 py-4 text-left">Character</th>
                             <th class="px-5 py-4 text-left">Status</th>
+                            <th class="px-5 py-4 text-left">Last Active</th>
                             <th class="px-5 py-4 text-left">Permissions</th>
                             <th class="px-5 py-4 text-right">Actions</th>
                         </tr>
@@ -53,6 +54,18 @@
                                         <span class="rounded-full border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#f0b29f]">Banned</span>
                                     @else
                                         <span class="rounded-full border border-[#7ead59]/35 bg-[#7ead59]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Active</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4">
+                                    @if ($user->last_seen_at)
+                                        <div class="whitespace-nowrap font-semibold text-white">
+                                            {{ $user->last_seen_at->timezone(config('app.timezone'))->format('d M Y H:i') }}
+                                        </div>
+                                        <div class="mt-1 text-xs uppercase tracking-[0.16em] {{ $user->isOnline() ? 'text-[#7ead59]' : 'text-white/40' }}">
+                                            {{ $user->isOnline() ? 'Online now' : $user->last_seen_at->diffForHumans() }}
+                                        </div>
+                                    @else
+                                        <span class="text-white/40">Never</span>
                                     @endif
                                 </td>
                                 <td class="px-5 py-4">

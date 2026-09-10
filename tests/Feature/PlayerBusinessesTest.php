@@ -79,6 +79,13 @@ test('developer with business licence can create a player business', function ()
     $this->assertDatabaseHas('player_business_logs', [
         'type' => 'business_created',
     ]);
+
+    $this->actingAs($user)
+        ->get(route('characters.show'))
+        ->assertOk()
+        ->assertSee('Plastic Works')
+        ->assertSee('Creates Items On Order')
+        ->assertSee('Bank 0 credits');
 });
 
 test('owner can add menu entries and move business bank credits', function () {

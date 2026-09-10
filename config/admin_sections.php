@@ -12,6 +12,7 @@ return [
     'items' => ['label' => 'Items', 'route' => 'admin.items.index'],
     'jobs' => ['label' => 'Jobs', 'route' => 'admin.jobs.index'],
     'skirmishes' => ['label' => 'Skirmishes', 'route' => 'admin.skirmishes.index'],
+    'changelogs' => ['label' => 'Changelogs', 'route' => 'admin.changelogs.index'],
     'units' => ['label' => 'Units', 'route' => 'admin.units.index'],
     'permissions' => ['label' => 'Permissions', 'route' => 'admin.permissions.index'],
     'statistics' => ['label' => 'Statistics', 'route' => 'admin.statistics.index'],
@@ -20,6 +21,7 @@ return [
     'discord_management' => ['label' => 'Discord Management', 'route' => 'admin.discord-management.index'],
     'nation_requisitions' => ['label' => 'Nation Requisitions', 'route' => 'admin.nation-requisitions.index'],
     'stock_market' => ['label' => 'Stock Market', 'route' => 'admin.stock-market.index'],
+    'server_tools' => ['label' => 'Server Tools', 'route' => 'admin.server-tools.index'],
     'game_master' => ['label' => 'Game Master', 'route' => 'admin.game-master.index'],
     'moderator' => ['label' => 'Moderator', 'route' => 'admin.moderator.index'],
 ];

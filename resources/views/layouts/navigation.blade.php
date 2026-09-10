@@ -13,6 +13,8 @@
 @php($canLeadNation = $navCharacter?->canLeadNation())
 @php($canAccessTerritoryMap = $navUser->hasPermission('developer'))
 @php($canAccessStockMarket = $navUser->hasPermission('developer'))
+@php($canAccessJobsNew = $navUser->hasPermission('developer'))
+@php($hasReleasedChangelogs = \App\Models\Changelog::query()->released()->exists())
 @php(
     $formattedCredits = match (true) {
         $creditAmount >= 1000000 => rtrim(rtrim(number_format($creditAmount / 1000000, 1), '0'), '.') . 'M',
@@ -36,7 +38,7 @@
         $navCharacter?->hasLand() ? ['label' => 'Land', 'route' => 'home.index', 'match' => ['home.*'], 'icon' => 'fa-solid fa-house'] : null,
         $navCharacter ? ['label' => 'Nation HQ', 'route' => 'nation.index', 'match' => ['nation.index'], 'icon' => 'fa-solid fa-landmark-flag'] : null,
         ['label' => 'Settings', 'route' => 'profile.edit', 'match' => ['profile.*'], 'icon' => 'fa-solid fa-gear'],
-        $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.dashboard', 'admin.users.*', 'admin.characters.*', 'admin.refunds.*', 'admin.nation-logs.*', 'admin.factions.*', 'admin.cities.*', 'admin.locations.*', 'admin.items.*', 'admin.licences.*', 'admin.permissions.*', 'admin.statistics.*', 'admin.jobs.*', 'admin.map-markers.*', 'admin.discord.*', 'admin.discord-management.*', 'admin.nation-requisitions.*', 'admin.stock-market.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
+        $navUser->canAccessAdmin() ? ['label' => 'Admin', 'route' => 'admin.dashboard', 'match' => ['admin.dashboard', 'admin.users.*', 'admin.characters.*', 'admin.refunds.*', 'admin.nation-logs.*', 'admin.factions.*', 'admin.cities.*', 'admin.locations.*', 'admin.items.*', 'admin.licences.*', 'admin.permissions.*', 'admin.statistics.*', 'admin.jobs.*', 'admin.changelogs.*', 'admin.map-markers.*', 'admin.discord.*', 'admin.discord-management.*', 'admin.nation-requisitions.*', 'admin.stock-market.*', 'admin.server-tools.*'], 'icon' => 'fa-solid fa-shield-halved'] : null,
         $navUser->canAccessAdminSection('game_master') ? ['label' => 'Game Master', 'route' => 'admin.game-master.index', 'match' => ['admin.game-master.*'], 'icon' => 'fa-solid fa-dice-d20'] : null,
         $navUser->canAccessAdminSection('moderator') ? ['label' => 'Moderator', 'route' => 'admin.moderator.index', 'match' => ['admin.moderator.*'], 'icon' => 'fa-solid fa-gavel'] : null,
     ]))
@@ -156,6 +158,20 @@
                             </a>
                         @endif
                         @if ($item['label'] === 'Jobs')
+                            @if ($canAccessJobsNew)
+                                <a href="{{ route('jobs-new.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('jobs-new.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                    <span class="h-6 w-1 rounded-full {{ request()->routeIs('jobs-new.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                    <i class="fa-solid fa-helmet-safety w-5 text-center text-[#7ead59]"></i>
+                                    <span>Jobs New</span>
+                                </a>
+                            @else
+                                <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                                    <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                                    <i class="fa-solid fa-lock w-5 text-center text-white/25"></i>
+                                    <span class="flex-1">Jobs New</span>
+                                    <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                                </div>
+                            @endif
                             <button
                                 type="button"
                                 @click="toggleGameGroup('marketplaceOpen')" :aria-expanded="marketplaceOpen"
@@ -206,6 +222,14 @@
                                 <span class="flex-1">Skirmishes</span>
                                 <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
                             </div>
+                            <a href="{{ route('changelogs.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('changelogs.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('changelogs.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="fa-solid fa-scroll w-5 text-center text-[#7ead59]"></i>
+                                <span class="flex-1">Changelogs</span>
+                                @unless ($hasReleasedChangelogs)
+                                    <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                                @endunless
+                            </a>
                         @endif
                     @endforeach
                 </div>
@@ -320,4 +344,280 @@
         </form>
     </div>
 
+    <div x-show="open" x-cloak class="border-t border-white/10 px-4 py-4 lg:hidden">
+        <div class="grid gap-2">
+            @if ($navCharacter)
+                <div class="relative mb-2 overflow-hidden rounded-[1.25rem] bg-[linear-gradient(180deg,rgba(15,27,20,0.95),rgba(8,15,11,0.92))] p-3 pl-5">
+                    <div class="absolute inset-y-0 left-0 w-2.5 opacity-95" style="background:
+                        linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.04) 22%, rgba(0,0,0,0.22) 100%),
+                        repeating-linear-gradient(135deg, rgba(255,255,255,0.16) 0 4px, rgba(255,255,255,0) 4px 8px),
+                        repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0 2px, rgba(0,0,0,0) 2px 6px),
+                        {{ $factionColor }};"></div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex shrink-0 flex-col items-center gap-2">
+                            <div class="inline-flex items-center justify-center rounded-full border border-[#c2a84f]/30 bg-[#0c140f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#c2a84f]">
+                                Lvl <span class="ml-1" data-character-field="level">{{ $navCharacter->level }}</span>
+                            </div>
+                            <div class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-[#17271e] text-xl font-bold text-[#f4ecd0] ring-1 ring-[#2b4a36]">
+                                @if ($discordAvatarUrl)
+                                    <img src="{{ $discordAvatarUrl }}" alt="{{ $navUser->name }} Discord avatar" class="h-full w-full object-cover">
+                                @else
+                                    <span class="leading-none">?</span>
+                                @endif
+                            </div>
+                            @if ($accountIcons->isNotEmpty())
+                                <div class="grid w-12 grid-cols-3 justify-items-center gap-1">
+                                    @foreach ($accountIcons as $accountIcon)
+                                        <span class="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/10 bg-black/25 text-[8px] shadow-inner shadow-black/30" title="{{ $accountIcon->icon_tooltip ?: $accountIcon->name }}" style="color: {{ $accountIcon->icon_color ?: '#f4ecd0' }};">
+                                            <i class="{{ $accountIcon->icon_value }}"></i>
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate font-['Teko'] text-[1.3rem] uppercase leading-none tracking-[0.04em]" data-character-field="name">{{ $navCharacter->name }}</p>
+                            <p class="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-white/55">
+                                <span data-character-field="rank_name">{{ $navCharacter->rank?->name ?? 'Unranked' }}</span>
+                                |
+                                <span data-character-field="displayed_job_name">{{ $navCharacter->displayed_job_name }}</span>
+                            </p>
+                            <div class="mt-1.5 flex items-center gap-4 text-[12px] font-semibold text-[#d9e5d0]">
+                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fa-solid fa-heart text-[#d75b5b]"></i>
+                                    <span data-character-field="health_label">{{ $healthPoints }}/100</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-white/75">
+                                    <i class="fa-solid fa-shield-halved text-[#8f949d]"></i>
+                                    <span data-character-field="armor_points">{{ $armorPoints }}</span>
+                                </span>
+                                <span class="inline-flex items-center gap-1.5 whitespace-nowrap text-[#f4ecd0]">
+                                    <i class="fa-solid fa-coins text-[#c2a84f]"></i>
+                                    <span class="min-w-[3.5rem]" data-character-field="formatted_credits">{{ $formattedCredits }}</span>
+                                </span>
+                            </div>
+                            <div class="mt-2">
+                                <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
+                                    <span class="text-[#c2a84f]">XP</span>
+                                    <span data-character-field="experience_label">{{ $navCharacter->experience_points }}/{{ $experienceRequired }}</span>
+                                </div>
+                                <div class="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
+                                    <div class="h-full rounded-full bg-[linear-gradient(90deg,#c2a84f_0%,#f4d77a_100%)]" data-character-width="experience_progress_percent" style="width: {{ $experiencePercent }}%;"></div>
+                                </div>
+                            </div>
+                            <div class="mt-1.5">
+                                <div class="flex items-center justify-between gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/72">
+                                    <span class="inline-flex items-center gap-1.5 text-[#d7edc7]">
+                                        <i class="fa-solid fa-bolt text-[#7ead59]"></i>
+                                        Stamina
+                                    </span>
+                                    <span data-character-field="stamina_label">{{ $staminaPoints }}/100</span>
+                                </div>
+                                <div class="mt-1 h-2.5 overflow-hidden rounded-full bg-white/10">
+                                    <div class="h-full rounded-full bg-[linear-gradient(90deg,#7ead59_0%,#b7d680_100%)]" data-character-width="stamina_percent" style="width: {{ $staminaPercent }}%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <p class="mt-2 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">Dashboard</p>
+            @foreach ($primaryNav as $item)
+                @php($isActive = request()->routeIs(...$item['match']))
+                @if ($item['locked'] ?? false)
+                    @php($lockedPillClass = ($item['locked_label'] ?? null) === 'DISABLED' ? 'border-[#d75b5b]/35 bg-[#d75b5b]/10 text-[#ff9a9a]' : 'border-white/10 bg-black/25 text-white/38')
+                    <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                        <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                        <i class="{{ $item['icon'] }} w-5 text-center text-white/25"></i>
+                        <span class="flex-1">{{ $item['label'] }}</span>
+                        <span class="rounded-full border px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] {{ $lockedPillClass }}">{{ $item['locked_label'] ?? 'Coming Soon' }}</span>
+                    </div>
+                @else
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endif
+                @if ($item['label'] === 'Jobs')
+                    @if ($canAccessJobsNew)
+                        <a href="{{ route('jobs-new.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('jobs-new.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <span class="h-6 w-1 rounded-full {{ request()->routeIs('jobs-new.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                            <i class="fa-solid fa-helmet-safety w-5 text-center text-[#7ead59]"></i>
+                            <span>Jobs New</span>
+                        </a>
+                    @else
+                        <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                            <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                            <i class="fa-solid fa-lock w-5 text-center text-white/25"></i>
+                            <span class="flex-1">Jobs New</span>
+                            <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                        </div>
+                    @endif
+                    <button
+                        type="button"
+                        @click="marketplaceOpen = !marketplaceOpen"
+                        class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/82 transition hover:bg-white/[0.05]"
+                    >
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('bank.*', 'store.*', 'businesses.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-store w-5 text-center text-[#7ead59]"></i>
+                        <span class="flex-1 text-left">Marketplace</span>
+                        <i class="fa-solid text-xs text-white/45" :class="marketplaceOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </button>
+
+                    <div x-show="marketplaceOpen" x-cloak class="grid gap-1 pl-4">
+                        <a href="{{ route('bank.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('bank.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <span class="h-6 w-1 rounded-full {{ request()->routeIs('bank.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                            <i class="fa-solid fa-building-columns w-5 text-center text-[#7ead59]"></i>
+                            <span>Bank</span>
+                        </a>
+                        <a href="{{ route('store.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('store.index') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <span class="h-6 w-1 rounded-full {{ request()->routeIs('store.index') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                            <i class="fa-solid fa-basket-shopping w-5 text-center text-[#7ead59]"></i>
+                            <span>Store</span>
+                        </a>
+                        <a href="{{ route('store.licences') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('store.licences') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <span class="h-6 w-1 rounded-full {{ request()->routeIs('store.licences') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                            <i class="fa-solid fa-id-card w-5 text-center text-[#7ead59]"></i>
+                            <span>License Center</span>
+                        </a>
+                        @if ($canAccessTerritoryMap)
+                            <a href="{{ route('businesses.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('businesses.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                                <span class="h-6 w-1 rounded-full {{ request()->routeIs('businesses.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                                <i class="fa-solid fa-shop w-5 text-center text-[#7ead59]"></i>
+                                <span>Player Businesses</span>
+                            </a>
+                        @else
+                            <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                                <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                                <i class="fa-solid fa-shop-lock w-5 text-center text-white/25"></i>
+                                <span class="flex-1">Player Businesses</span>
+                                <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+                @if ($item['label'] === 'Leaderboards')
+                    <div class="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold text-white/35">
+                        <span class="h-6 w-1 rounded-full bg-transparent"></span>
+                        <i class="fa-solid fa-crosshairs w-5 text-center text-white/25"></i>
+                        <span class="flex-1">Skirmishes</span>
+                        <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                    </div>
+                    <a href="{{ route('changelogs.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('changelogs.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('changelogs.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-scroll w-5 text-center text-[#7ead59]"></i>
+                        <span class="flex-1">Changelogs</span>
+                        @unless ($hasReleasedChangelogs)
+                            <span class="rounded-full border border-white/10 bg-black/25 px-2 py-0.5 text-[9px] uppercase tracking-[0.14em] text-white/38">Coming Soon</span>
+                        @endunless
+                    </a>
+                @endif
+            @endforeach
+
+            <p class="mt-4 px-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/38">User Area</p>
+            <button
+                type="button"
+                @click="ucpOpen = !ucpOpen"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+            >
+                <span class="h-6 w-1 rounded-full {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                <i class="fa-solid fa-user-gear w-5 text-center text-[#7ead59]"></i>
+                <span class="flex-1 text-left">UCP</span>
+                <i class="fa-solid text-xs text-white/45" :class="ucpOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </button>
+
+            <div x-show="ucpOpen" x-cloak class="grid gap-1 pl-4">
+                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Land', 'Settings'], true)) as $item)
+                    @php($isActive = request()->routeIs(...$item['match']))
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endforeach
+            </div>
+
+            <button
+                type="button"
+                @click="nationOpen = !nationOpen"
+                class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+            >
+                <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                <i class="fa-solid fa-flag w-5 text-center text-[#7ead59]"></i>
+                <span class="flex-1 text-left">Nation</span>
+                <i class="fa-solid text-xs text-white/45" :class="nationOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </button>
+
+            <div x-show="nationOpen" x-cloak class="grid gap-1 pl-4">
+                @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation HQ'], true)) as $item)
+                    @php($isActive = request()->routeIs(...$item['match']))
+                    <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                        <span>{{ $item['label'] }}</span>
+                    </a>
+                @endforeach
+                @if ($canLeadNation)
+                    <a href="{{ route('nation.requisitions.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('nation.requisitions.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.requisitions.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-file-signature w-5 text-center text-[#7ead59]"></i>
+                        <span>Requisitions Request</span>
+                    </a>
+                @endif
+            </div>
+
+            @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Settings'], true)) as $item)
+                @php($isActive = request()->routeIs(...$item['match']))
+                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                    <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                    <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                    <span>{{ $item['label'] }}</span>
+                </a>
+            @endforeach
+
+            @if ($navUser->canAccessAdmin())
+                <button
+                    type="button"
+                    @click="adminOpen = !adminOpen"
+                    class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition text-white/82 hover:bg-white/[0.05]"
+                >
+                    <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                    <i class="fa-solid fa-shield-halved w-5 text-center text-[#7ead59]"></i>
+                    <span class="flex-1 text-left">Admin</span>
+                    <i class="fa-solid text-xs text-white/45" :class="adminOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </button>
+
+                <div x-show="adminOpen" x-cloak class="grid gap-1 pl-4">
+                    <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('admin.dashboard') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                        <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.dashboard') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                        <i class="fa-solid fa-chart-pie w-5 text-center text-[#7ead59]"></i>
+                        <span>Overview</span>
+                    </a>
+                    @if ($navUser->canAccessAdminSection('discord_management'))
+                        <a href="{{ route('admin.discord-management.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('admin.discord-management.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                            <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.discord-management.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                            <i class="fa-brands fa-discord w-5 text-center text-[#7ead59]"></i>
+                            <span>Discord Management</span>
+                        </a>
+                    @endif
+                </div>
+            @endif
+
+            @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Game Master', 'Moderator'], true)) as $item)
+                @php($isActive = request()->routeIs(...$item['match']))
+                <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
+                    <span class="h-6 w-1 rounded-full {{ $isActive ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
+                    <i class="{{ $item['icon'] }} w-5 text-center text-[#7ead59]"></i>
+                    <span>{{ $item['label'] }}</span>
+                </a>
+            @endforeach
+
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button class="amow-action-button mt-2 w-full rounded-full border border-[#7ead59]/35 bg-[#7ead59]/12 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#d7edc7]">Logout</button>
+            </form>
+        </div>
+    </div>
 </nav>

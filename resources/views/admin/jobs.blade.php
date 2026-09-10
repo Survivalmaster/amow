@@ -27,18 +27,61 @@
     @php($fieldClass = 'rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm text-white outline-none transition focus:border-[#7ead59]/50 focus:bg-black/35')
     @php($labelClass = 'space-y-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45')
     @php($toggleClass = 'flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm text-white/70')
+    @php($oldJobs = $jobs->where('is_new', false)->values())
+    @php($newJobs = $jobs->where('is_new', true)->values())
+    @php($dropItemOptions = $dropItems->map(fn ($item) => [
+        'id' => (string) $item->id,
+        'name' => $item->name,
+        'slug' => $item->slug,
+        'icon_class' => $item->icon_class ?: 'fa-solid fa-box',
+    ])->values())
+
+    <script>
+        window.dropRuleBuilder = function (initialRows = [], items = []) {
+            return {
+                items,
+                rows: initialRows.map((row, index) => ({ key: `${Date.now()}-${index}`, editing: false, ...row })),
+                itemFor(row) {
+                    return this.items.find((item) => item.id === `${row.item_id}`) || null;
+                },
+                addRule() {
+                    this.rows.push({
+                        key: `${Date.now()}-${this.rows.length}-${Math.random()}`,
+                        item_id: '',
+                        min_tier: 1,
+                        max_tier: 0,
+                        min_quantity: 1,
+                        max_quantity: 1,
+                        drop_chance_percent: 100,
+                        editing: true,
+                    });
+                },
+                removeRule(index) {
+                    this.rows.splice(index, 1);
+                },
+            };
+        };
+    </script>
 
     <div
         x-data="{
             openId: null,
-            showCreate: false,
+            showCreate: {{ $errors->any() && old('_method') !== 'PATCH' ? 'true' : 'false' }},
             query: '',
             status: 'all',
             level: 'all',
             sort: 'level',
+            groups: { old: true, new: true },
+            init() {
+                const saved = JSON.parse(localStorage.getItem('adminJobsGroups') || '{}');
+                this.groups = { ...this.groups, ...saved };
+            },
+            toggleGroup(group) {
+                this.groups[group] = !this.groups[group];
+                localStorage.setItem('adminJobsGroups', JSON.stringify(this.groups));
+            },
             visibleJobs() {
-                if (!this.$refs.jobsList) return;
-                const rows = [...this.$refs.jobsList.querySelectorAll('[data-job-row]')];
+                const rows = [...this.$root.querySelectorAll('[data-job-row]')];
                 rows.forEach((row) => {
                     const textMatch = !this.query || row.dataset.search.includes(this.query.toLowerCase());
                     const statusMatch = this.status === 'all' || row.dataset.status === this.status;
@@ -67,6 +110,7 @@
                             <option value="active">Active</option>
                             <option value="hidden">Hidden</option>
                             <option value="starter">Starter</option>
+                            <option value="new">New</option>
                         </select>
                     </label>
                     <label class="{{ $labelClass }}">
@@ -95,54 +139,102 @@
         <x-admin.modal open="showCreate" title="Create Job" subtitle="Set work rewards, cooldowns, and progression gates." max-width="56rem">
             <form method="POST" action="{{ route('admin.jobs.store') }}" class="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-6">
                 @csrf
+                @if ($errors->any() && old('_method') !== 'PATCH')
+                    <div class="rounded-xl border border-[#c65b3f]/35 bg-[#c65b3f]/10 px-4 py-3 text-sm text-[#f0b29f] md:col-span-2 xl:col-span-6">
+                        <p class="font-semibold text-white">Job was not created.</p>
+                        <ul class="mt-2 list-disc space-y-1 pl-5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <label class="{{ $labelClass }} xl:col-span-2">
                     <span>Job Name</span>
-                    <input class="{{ $fieldClass }} w-full" name="name" placeholder="Royal Advisor" required>
+                    <input class="{{ $fieldClass }} w-full" name="name" value="{{ old('name') }}" placeholder="Royal Advisor" required>
                 </label>
                 <label class="{{ $labelClass }} xl:col-span-2">
                     <span>Slug</span>
-                    <input class="{{ $fieldClass }} w-full" name="slug" placeholder="royal-advisor" required>
+                    <input class="{{ $fieldClass }} w-full" name="slug" value="{{ old('slug') }}" placeholder="royal-advisor" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Min Pay</span>
-                    <input class="{{ $fieldClass }} w-full" name="min_pay" type="number" min="0" placeholder="25" required>
+                    <input class="{{ $fieldClass }} w-full" name="min_pay" type="number" min="0" value="{{ old('min_pay') }}" placeholder="25" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Max Pay</span>
-                    <input class="{{ $fieldClass }} w-full" name="max_pay" type="number" min="0" placeholder="75" required>
+                    <input class="{{ $fieldClass }} w-full" name="max_pay" type="number" min="0" value="{{ old('max_pay') }}" placeholder="75" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Level</span>
-                    <input class="{{ $fieldClass }} w-full" name="required_level" type="number" min="0" placeholder="0" required>
+                    <input class="{{ $fieldClass }} w-full" name="required_level" type="number" min="0" value="{{ old('required_level', 0) }}" placeholder="0" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Cooldown</span>
-                    <input class="{{ $fieldClass }} w-full" name="work_cooldown_minutes" type="number" min="1" placeholder="5" required>
+                    <input class="{{ $fieldClass }} w-full" name="work_cooldown_minutes" type="number" min="1" value="{{ old('work_cooldown_minutes') }}" placeholder="5" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>Stamina</span>
-                    <input class="{{ $fieldClass }} w-full" name="stamina_decrease" type="number" min="0" max="100" value="0" required>
+                    <input class="{{ $fieldClass }} w-full" name="stamina_decrease" type="number" min="0" max="100" value="{{ old('stamina_decrease', 0) }}" required>
                 </label>
                 <label class="{{ $labelClass }}">
                     <span>XP</span>
-                    <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="5" required>
+                    <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="{{ old('experience_reward', 5) }}" required>
+                </label>
+                <label class="{{ $labelClass }}">
+                    <span>Max Tier</span>
+                    <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="0" max="20" value="{{ old('max_tier', 0) }}" required>
+                </label>
+                <label class="{{ $labelClass }}">
+                    <span>Tier XP</span>
+                    <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="0" value="{{ old('tier_xp_required', 0) }}" required>
+                </label>
+                <label class="{{ $labelClass }}">
+                    <span>Tier Pay %</span>
+                    <input class="{{ $fieldClass }} w-full" name="tier_pay_bonus_percent" type="number" min="0" max="500" value="{{ old('tier_pay_bonus_percent', 0) }}" required>
+                </label>
+                <label class="{{ $labelClass }}">
+                    <span>Tier XP %</span>
+                    <input class="{{ $fieldClass }} w-full" name="tier_xp_bonus_percent" type="number" min="0" max="500" value="{{ old('tier_xp_bonus_percent', 0) }}" required>
                 </label>
                 <label class="{{ $labelClass }} md:col-span-2">
                     <span>Activity</span>
-                    <input class="{{ $fieldClass }} w-full" name="working_display_message" placeholder="Advising the crown.">
+                    <input class="{{ $fieldClass }} w-full" name="working_display_message" value="{{ old('working_display_message') }}" placeholder="Advising the crown.">
                 </label>
                 <label class="{{ $toggleClass }}">
-                    <input type="checkbox" name="is_starter" value="1" class="accent-[#7ead59]">
+                    <input type="checkbox" name="is_starter" value="1" class="accent-[#7ead59]" @checked(old('is_starter'))>
                     Starter
                 </label>
                 <label class="{{ $toggleClass }}">
-                    <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" checked>
+                    <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" @checked(old('is_active', true))>
                     Active
+                </label>
+                <label class="{{ $toggleClass }}">
+                    <input type="checkbox" name="is_new" value="1" class="accent-[#7ead59]" @checked(old('is_new'))>
+                    New
                 </label>
                 <label class="{{ $labelClass }} md:col-span-2 xl:col-span-6">
                     <span>Description</span>
-                    <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description" placeholder="A short description players will see."></textarea>
+                    <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description" placeholder="A short description players will see.">{{ old('description') }}</textarea>
                 </label>
+                <div x-data='dropRuleBuilder([], @json($dropItemOptions))' class="space-y-3 md:col-span-2 xl:col-span-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Item Drops</p>
+                            <p class="mt-1 text-xs text-white/45">Add one row per tier range. Job-only rewards can be marked not buyable in Admin Items.</p>
+                        </div>
+                        <button type="button" @click="addRule()" class="inline-flex items-center gap-2 rounded-full border border-[#7ead59]/35 bg-[#7ead59]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d7edc7]">
+                            <i class="fa-solid fa-plus"></i>
+                            Add Drop
+                        </button>
+                    </div>
+                    <template x-if="rows.length === 0">
+                        <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-5 text-sm text-white/50">No item drops configured.</div>
+                    </template>
+                    <template x-if="rows.length > 0">
+                        @include('admin.partials.job-drop-rule-table')
+                    </template>
+                </div>
                 <div class="flex justify-end gap-2 border-t border-white/10 pt-3 md:col-span-2 xl:col-span-6">
                     <button type="button" @click="showCreate = false" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
                         Cancel
@@ -156,85 +248,32 @@
         </x-admin.modal>
 
         <section class="overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 shadow-2xl shadow-black/30">
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-white/75">
-                    <thead class="bg-black/30 text-[11px] uppercase tracking-[0.18em] text-white/40">
-                        <tr>
-                            <th class="px-5 py-3 text-left">Job</th>
-                            <th class="px-4 py-3 text-left">Level</th>
-                            <th class="px-4 py-3 text-left">Pay</th>
-                            <th class="px-4 py-3 text-left">XP</th>
-                            <th class="px-4 py-3 text-left">Cooldown</th>
-                            <th class="px-4 py-3 text-left">Stamina</th>
-                            <th class="px-4 py-3 text-left">Assigned</th>
-                            <th class="px-5 py-3 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody x-ref="jobsList" class="divide-y divide-white/10">
-                        @forelse ($jobs as $job)
-                            @php($averagePay = (int) round(($job->min_pay + $job->max_pay) / 2))
-                            @php($levelBucket = $job->required_level <= 1 ? 'starter' : ($job->required_level <= 5 ? 'mid' : 'late'))
-                            @php($status = $job->is_starter ? 'starter' : ($job->is_active ? 'active' : 'hidden'))
-                            <tr
-                                data-job-row
-                                data-status="{{ $status }}"
-                                data-level-bucket="{{ $levelBucket }}"
-                                data-search="{{ str($job->name.' '.$job->slug.' '.$job->description.' '.$job->working_display_message)->lower() }}"
-                                class="transition hover:bg-white/[0.035]"
-                            >
-                                <td class="min-w-[18rem] px-5 py-4">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <p class="font-['Teko'] text-2xl uppercase leading-none tracking-[0.06em] text-white">{{ $job->name }}</p>
-                                        @if ($job->is_starter)
-                                            <span class="rounded-full border border-[#f4d77a]/30 bg-[#f4d77a]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#f4d77a]">Starter</span>
-                                        @endif
-                                        <span class="rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] {{ $job->is_active ? 'border-[#7ead59]/30 bg-[#7ead59]/10 text-[#d7edc7]' : 'border-white/10 bg-black/20 text-white/45' }}">
-                                            {{ $job->is_active ? 'Active' : 'Hidden' }}
-                                        </span>
-                                    </div>
-                                    <p class="mt-1 font-mono text-xs text-white/38">{{ $job->slug }}</p>
-                                    <p class="mt-1 max-w-xl truncate text-xs text-white/50">{{ $job->working_display_message ?: $job->description ?: 'No activity message set.' }}</p>
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-4 font-semibold text-white">Lv {{ number_format($job->required_level) }}</td>
-                                <td class="whitespace-nowrap px-4 py-4">
-                                    <p class="font-semibold text-white">{{ number_format($job->min_pay) }}-{{ number_format($job->max_pay) }}</p>
-                                    <p class="text-xs text-white/38">Avg {{ number_format($averagePay) }}</p>
-                                </td>
-                                <td class="whitespace-nowrap px-4 py-4 font-semibold text-[#d7edc7]">{{ number_format($job->experience_reward) }}</td>
-                                <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->work_cooldown_minutes) }} min</td>
-                                <td class="whitespace-nowrap px-4 py-4 font-semibold {{ $job->stamina_decrease > 50 ? 'text-[#f0b29f]' : 'text-white' }}">-{{ number_format($job->stamina_decrease) }}</td>
-                                <td class="whitespace-nowrap px-4 py-4">{{ number_format($job->characters_count) }}</td>
-                                <td class="px-5 py-4 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <button
-                                            type="button"
-                                            @click="openId = {{ $job->id }}"
-                                            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/75 transition hover:border-[#7ead59]/35 hover:text-[#d7edc7]"
-                                            title="Edit"
-                                        >
-                                            <i class="fa-solid fa-pen"></i>
-                                        </button>
-                                        <form method="POST" action="{{ route('admin.jobs.destroy', $job) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button
-                                                class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#c65b3f]/35 bg-[#c65b3f]/10 text-[#f0b29f] transition hover:bg-[#c65b3f]/20 disabled:cursor-not-allowed disabled:opacity-40"
-                                                title="{{ $job->characters_count > 0 ? 'Assigned jobs cannot be deleted' : 'Delete' }}"
-                                                @disabled($job->characters_count > 0)
-                                            >
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="px-5 py-10 text-center text-sm text-white/55">No jobs created yet.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <button type="button" @click="toggleGroup('old')" class="flex w-full items-center justify-between gap-4 bg-black/20 px-5 py-4 text-left transition hover:bg-white/[0.035]">
+                <span>
+                    <span class="block font-['Teko'] text-3xl uppercase tracking-[0.12em] text-white">Old Jobs</span>
+                    <span class="mt-1 block text-sm text-white/50">{{ number_format($oldJobs->count()) }} current jobs used by the live jobs page.</span>
+                </span>
+                <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70">
+                    <i class="fa-solid fa-chevron-down transition" :class="{ 'rotate-180': groups.old }"></i>
+                </span>
+            </button>
+            <div x-show="groups.old">
+                @include('admin.partials.job-table', ['tableJobs' => $oldJobs, 'emptyMessage' => 'No old jobs created yet.'])
+            </div>
+        </section>
+
+        <section class="overflow-hidden rounded-[2rem] border border-[#7aa7ff]/20 bg-[#7aa7ff]/[0.04] shadow-2xl shadow-black/30">
+            <button type="button" @click="toggleGroup('new')" class="flex w-full items-center justify-between gap-4 bg-black/20 px-5 py-4 text-left transition hover:bg-white/[0.035]">
+                <span>
+                    <span class="block font-['Teko'] text-3xl uppercase tracking-[0.12em] text-white">New Jobs</span>
+                    <span class="mt-1 block text-sm text-white/50">{{ number_format($newJobs->count()) }} jobs flagged for the new jobs page.</span>
+                </span>
+                <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70">
+                    <i class="fa-solid fa-chevron-down transition" :class="{ 'rotate-180': groups.new }"></i>
+                </span>
+            </button>
+            <div x-show="groups.new">
+                @include('admin.partials.job-table', ['tableJobs' => $newJobs, 'emptyMessage' => 'No new jobs created yet.'])
             </div>
         </section>
 
@@ -298,11 +337,27 @@
                                 <span>XP</span>
                                 <input class="{{ $fieldClass }} w-full" name="experience_reward" type="number" min="0" value="{{ $job->experience_reward }}" required>
                             </label>
+                            <label class="{{ $labelClass }}">
+                                <span>Max Tier</span>
+                                <input class="{{ $fieldClass }} w-full" name="max_tier" type="number" min="0" max="20" value="{{ $job->max_tier }}" required>
+                            </label>
+                            <label class="{{ $labelClass }}">
+                                <span>Tier XP</span>
+                                <input class="{{ $fieldClass }} w-full" name="tier_xp_required" type="number" min="0" value="{{ $job->tier_xp_required }}" required>
+                            </label>
+                            <label class="{{ $labelClass }}">
+                                <span>Tier Pay %</span>
+                                <input class="{{ $fieldClass }} w-full" name="tier_pay_bonus_percent" type="number" min="0" max="500" value="{{ $job->tier_pay_bonus_percent }}" required>
+                            </label>
+                            <label class="{{ $labelClass }}">
+                                <span>Tier XP %</span>
+                                <input class="{{ $fieldClass }} w-full" name="tier_xp_bonus_percent" type="number" min="0" max="500" value="{{ $job->tier_xp_bonus_percent }}" required>
+                            </label>
                             <label class="{{ $labelClass }} md:col-span-2">
                                 <span>Activity</span>
                                 <input class="{{ $fieldClass }} w-full" name="working_display_message" value="{{ $job->working_display_message }}" placeholder="Working display message">
                             </label>
-                            <div class="grid gap-3 md:col-span-2 md:grid-cols-2">
+                            <div class="grid gap-3 md:col-span-2 md:grid-cols-3">
                                 <label class="{{ $toggleClass }}">
                                     <input type="checkbox" name="is_starter" value="1" class="accent-[#7ead59]" @checked($job->is_starter)>
                                     Starter
@@ -311,11 +366,41 @@
                                     <input type="checkbox" name="is_active" value="1" class="accent-[#7ead59]" @checked($job->is_active)>
                                     Active
                                 </label>
+                                <label class="{{ $toggleClass }}">
+                                    <input type="checkbox" name="is_new" value="1" class="accent-[#7ead59]" @checked($job->is_new)>
+                                    New
+                                </label>
                             </div>
                             <label class="{{ $labelClass }} md:col-span-2">
                                 <span>Description</span>
                                 <textarea class="{{ $fieldClass }} min-h-20 w-full" name="description">{{ $job->description }}</textarea>
                             </label>
+                            @php($dropRuleRows = $job->drops->map(fn ($drop) => [
+                                'item_id' => (string) $drop->item_id,
+                                'min_tier' => $drop->min_tier,
+                                'max_tier' => $drop->max_tier,
+                                'min_quantity' => $drop->min_quantity,
+                                'max_quantity' => $drop->max_quantity,
+                                'drop_chance_percent' => rtrim(rtrim(number_format((float) $drop->drop_chance_percent, 2), '0'), '.'),
+                            ])->values())
+                            <div x-data='dropRuleBuilder(@json($dropRuleRows), @json($dropItemOptions))' class="space-y-3 md:col-span-2">
+                                <div class="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/45">Item Drops</p>
+                                        <p class="mt-1 text-xs text-white/45">Add one row per tier range.</p>
+                                    </div>
+                                    <button type="button" @click="addRule()" class="inline-flex items-center gap-2 rounded-full border border-[#7ead59]/35 bg-[#7ead59]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d7edc7]">
+                                        <i class="fa-solid fa-plus"></i>
+                                        Add Drop
+                                    </button>
+                                </div>
+                                <template x-if="rows.length === 0">
+                                    <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-5 text-sm text-white/50">No item drops configured.</div>
+                                </template>
+                                <template x-if="rows.length > 0">
+                                    @include('admin.partials.job-drop-rule-table')
+                                </template>
+                            </div>
                             <div class="flex justify-end gap-2 border-t border-white/10 pt-3 md:col-span-2">
                                 <button type="button" @click="openId = null" class="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/65">
                                     Cancel

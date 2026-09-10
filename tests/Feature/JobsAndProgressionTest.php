@@ -1,15 +1,19 @@
 <?php
 
 use App\Models\Character;
+use App\Models\CharacterJobProgress;
 use App\Models\Faction;
 use App\Models\GameEvent;
 use App\Models\GameJob;
+use App\Models\Item;
 use App\Models\Location;
+use App\Models\Permission;
 use App\Models\Rank;
 use App\Models\User;
 use Database\Seeders\FactionSeeder;
 use Database\Seeders\GameJobSeeder;
 use Database\Seeders\LicenceSeeder;
+use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RankSeeder;
 use Database\Seeders\WorldSeeder;
 use Illuminate\Support\Facades\Http;
@@ -20,6 +24,7 @@ beforeEach(function () {
         RankSeeder::class,
         LicenceSeeder::class,
         GameJobSeeder::class,
+        PermissionSeeder::class,
         WorldSeeder::class,
     ]);
 });
@@ -278,4 +283,261 @@ test('job changes obey the 24 hour cooldown', function () {
         ->post(route('jobs.store', $thirdJob))
         ->assertSessionHasErrors('job')
         ->assertRedirect(route('jobs.index'));
+});
+
+test('jobs new is visible only to developers', function () {
+    $user = User::factory()->create();
+    createCharacterForUser($user);
+    $previewJob = GameJob::query()->create([
+        'name' => 'Log Chopper',
+        'slug' => 'log-chopper',
+        'description' => 'Cuts timber for land projects.',
+        'min_pay' => 10,
+        'max_pay' => 15,
+        'required_level' => 0,
+        'work_cooldown_minutes' => 5,
+        'is_active' => true,
+        'is_new' => true,
+    ]);
+    $oldJob = GameJob::query()->create([
+        'name' => 'Old Miner',
+        'slug' => 'old-miner',
+        'description' => 'Old jobs page only.',
+        'min_pay' => 10,
+        'max_pay' => 15,
+        'required_level' => 0,
+        'work_cooldown_minutes' => 5,
+        'is_active' => true,
+        'is_new' => false,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('lobby'))
+        ->assertOk()
+        ->assertSee('Jobs New')
+        ->assertSee('Coming Soon')
+        ->assertDontSee(route('jobs-new.index'), false);
+
+    $this->actingAs($user)
+        ->get(route('jobs-new.index'))
+        ->assertForbidden();
+
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+
+    $this->actingAs($user)
+        ->get(route('jobs-new.index'))
+        ->assertOk()
+        ->assertSee('Jobs New')
+        ->assertSee($previewJob->name)
+        ->assertDontSee($oldJob->name);
+});
+
+test('jobs new work advances job tier and awards configured drops', function () {
+    $user = User::factory()->create();
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+    $character = createCharacterForUser($user);
+    $character->currentJob()->update([
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'experience_reward' => 100,
+        'tier_xp_required' => 100,
+        'tier_pay_bonus_percent' => 10,
+        'tier_xp_bonus_percent' => 10,
+        'work_cooldown_minutes' => 1,
+        'is_new' => true,
+    ]);
+    $item = Item::query()->create([
+        'name' => 'Log',
+        'slug' => 'log',
+        'description' => 'Job reward material.',
+        'type' => 'material',
+        'icon_class' => 'fa-solid fa-tree',
+        'is_buyable' => false,
+        'price' => 1,
+    ]);
+    $character->currentJob->drops()->create([
+        'item_id' => $item->id,
+        'min_tier' => 1,
+        'max_tier' => 20,
+        'min_quantity' => 2,
+        'max_quantity' => 2,
+        'drop_chance_percent' => 100,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.work'))
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('status');
+
+    $progress = CharacterJobProgress::query()
+        ->where('character_id', $character->id)
+        ->where('game_job_id', $character->current_job_id)
+        ->firstOrFail();
+
+    expect($progress->tier)->toBe(2);
+    expect($character->fresh()->plastic_credits)->toBe(110);
+    expect((int) $character->fresh('inventory')->inventory->firstWhere('id', $item->id)->pivot->quantity)->toBe(2);
+});
+
+test('jobs new work uses event multipliers and sends discord work logs', function () {
+    config()->set('services.discord.bot_token', 'test-token');
+    Http::fake([
+        'https://discord.com/api/v10/channels/1483329516796379136/messages' => Http::response(['id' => '123'], 200),
+    ]);
+
+    $user = User::factory()->create();
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+    $character = createCharacterForUser($user);
+    $character->currentJob()->update([
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'experience_reward' => 8,
+        'tier_pay_bonus_percent' => 0,
+        'tier_xp_bonus_percent' => 0,
+        'work_cooldown_minutes' => 1,
+        'working_display_message' => 'Is testing new jobs.',
+        'is_new' => true,
+    ]);
+    GameEvent::query()->create([
+        'created_by_user_id' => $user->id,
+        'title' => 'Factory Surge',
+        'body' => 'Temporary production bonuses.',
+        'is_enabled' => true,
+        'xp_multiplier_enabled' => true,
+        'xp_multiplier' => 1.5,
+        'credit_multiplier_enabled' => true,
+        'credit_multiplier' => 1.5,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.work'))
+        ->assertSessionHasNoErrors()
+        ->assertRedirect();
+
+    $character->refresh();
+
+    expect($character->plastic_credits)->toBe(115);
+    expect($character->experience_points)->toBe(12);
+
+    $transaction = $character->transactions()->where('type', 'work')->latest()->firstOrFail();
+
+    expect($transaction->amount)->toBe(15);
+    expect($transaction->metadata['credit_multiplier'])->toBe(1.5);
+    expect($transaction->metadata['xp_multiplier'])->toBe(1.5);
+    expect($transaction->metadata['tier_before'])->toBe(1);
+    expect($transaction->metadata['tier_after'])->toBe(1);
+    expect($transaction->metadata['credit_multiplier_events'][0]['name'])->toBe('Factory Surge');
+    expect($transaction->metadata['xp_multiplier_events'][0]['name'])->toBe('Factory Surge');
+
+    Http::assertSent(function ($request) {
+        $embed = $request->data()['embeds'][0] ?? [];
+        $description = $embed['description'] ?? '';
+
+        return $request->url() === 'https://discord.com/api/v10/channels/1483329516796379136/messages'
+            && ($embed['title'] ?? '') === 'Tester is testing new jobs.'
+            && str_contains($description, '**Event bonus:**')
+            && str_contains($description, 'XP 1.5x from Factory Surge')
+            && str_contains($description, 'Credits 1.5x from Factory Surge');
+    });
+});
+
+test('jobs new work supports starter jobs without tiers', function () {
+    $user = User::factory()->create();
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+    $character = createCharacterForUser($user);
+    $character->currentJob()->update([
+        'min_pay' => 15,
+        'max_pay' => 15,
+        'experience_reward' => 5,
+        'max_tier' => 0,
+        'tier_xp_required' => 0,
+        'tier_pay_bonus_percent' => 0,
+        'tier_xp_bonus_percent' => 0,
+        'work_cooldown_minutes' => 1,
+        'is_new' => true,
+    ]);
+    $item = Item::query()->create([
+        'name' => 'Worthless Trash',
+        'slug' => 'worthless-trash',
+        'description' => 'Starter job reward.',
+        'type' => 'material',
+        'icon_class' => 'fa-solid fa-trash',
+        'is_buyable' => false,
+        'price' => 1,
+    ]);
+    $character->currentJob->drops()->create([
+        'item_id' => $item->id,
+        'min_tier' => 0,
+        'max_tier' => 0,
+        'min_quantity' => 1,
+        'max_quantity' => 1,
+        'drop_chance_percent' => 100,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.work'))
+        ->assertSessionHasNoErrors()
+        ->assertSessionHas('status');
+
+    $progress = CharacterJobProgress::query()
+        ->where('character_id', $character->id)
+        ->where('game_job_id', $character->current_job_id)
+        ->firstOrFail();
+
+    expect($progress->tier)->toBe(0);
+    expect($progress->tier_experience)->toBe(0);
+    expect($character->fresh()->plastic_credits)->toBe(115);
+    expect((int) $character->fresh('inventory')->inventory->firstWhere('id', $item->id)->pivot->quantity)->toBe(1);
+});
+
+test('jobs new keeps tier progress when characters change jobs and return', function () {
+    $user = User::factory()->create();
+    $user->permissions()->attach(Permission::query()->where('slug', 'developer')->firstOrFail());
+    $character = createCharacterForUser($user);
+    $firstJob = $character->currentJob;
+    $firstJob->update([
+        'min_pay' => 10,
+        'max_pay' => 10,
+        'experience_reward' => 100,
+        'tier_xp_required' => 100,
+        'work_cooldown_minutes' => 1,
+        'is_new' => true,
+    ]);
+    $secondJob = GameJob::query()->create([
+        'name' => 'Stone Gatherer',
+        'slug' => 'stone-gatherer',
+        'description' => 'Collects stone for builders.',
+        'min_pay' => 10,
+        'max_pay' => 15,
+        'required_level' => 0,
+        'work_cooldown_minutes' => 5,
+        'stamina_decrease' => 5,
+        'experience_reward' => 5,
+        'is_active' => true,
+        'is_new' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.work'))
+        ->assertSessionHasNoErrors();
+
+    expect(CharacterJobProgress::query()
+        ->where('character_id', $character->id)
+        ->where('game_job_id', $firstJob->id)
+        ->firstOrFail()->tier)->toBe(2);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.store', $secondJob))
+        ->assertSessionHasNoErrors();
+
+    $character->refresh()->update(['job_changed_at' => now()->subDay()]);
+
+    $this->actingAs($user)
+        ->post(route('jobs-new.store', $firstJob))
+        ->assertSessionHasNoErrors();
+
+    expect(CharacterJobProgress::query()
+        ->where('character_id', $character->id)
+        ->where('game_job_id', $firstJob->id)
+        ->firstOrFail()->tier)->toBe(2);
 });

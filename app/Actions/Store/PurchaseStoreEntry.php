@@ -70,11 +70,15 @@ class PurchaseStoreEntry
     {
         $item = Item::query()->with('requiredLicence')->findOrFail($id);
 
+        if (! $item->is_buyable) {
+            throw new RuntimeException('That item cannot be purchased.');
+        }
+
         if (! $character->canPurchaseItem($item)) {
             throw new RuntimeException('Your rank, role, or licences do not allow this purchase.');
         }
 
-        if (! $character->canStoreAdditionalItem($item)) {
+        if (! $character->canStoreItemQuantity($item, 1)) {
             throw new RuntimeException('Inventory capacity reached. Buy or equip a backpack-style item to unlock more slots.');
         }
 

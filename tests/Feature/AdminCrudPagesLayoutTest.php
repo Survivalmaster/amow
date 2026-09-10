@@ -101,8 +101,10 @@ test('main admin crud pages render with compact management controls', function (
         route('admin.locations.index') => 'Create Location',
         route('admin.items.index') => 'Create Item',
         route('admin.skirmishes.index') => 'Create Skirmish',
+        route('admin.changelogs.index') => 'Create Changelog',
         route('admin.units.index') => 'Create Unit',
         route('admin.permissions.index') => 'Create Permission',
+        route('admin.server-tools.index') => 'Artisan',
         route('admin.game-master.index') => 'Create Event',
     ] as $route => $expectedText) {
         $this
@@ -228,4 +230,18 @@ test('game master events show work participation stats', function () {
         ->assertSee('Credits:</span> 35', false)
         ->assertSee('XP:</span> 28', false)
         ->assertSee('Event Worker x2');
+});
+
+test('server tools reject unavailable actions', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $admin->permissions()->attach(Permission::query()->where('slug', 'admin')->firstOrFail());
+
+    $this
+        ->actingAs($admin)
+        ->post(route('admin.server-tools.run'), [
+            'section' => 'github',
+            'action' => 'reset-hard',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasErrors('tools');
 });

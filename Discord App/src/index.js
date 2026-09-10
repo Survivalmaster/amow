@@ -2,6 +2,7 @@ require('./loadEnv');
 
 const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const { handleRankToolsCommand } = require('./bulkRank');
+const { startChangelogPublisher } = require('./changelogPublisher');
 const { handleLinkCommand } = require('./linking');
 const {
   handleBankCommand,
@@ -13,6 +14,8 @@ const {
   isJobPickSelect,
   isStorePurchaseSelect
 } = require('./amowGame');
+const { handleExportCommand } = require('./amowExport');
+const { handleToolsCommand } = require('./amowTools');
 const {
   handleRoleButton,
   handleRolePanelCommand,
@@ -64,6 +67,7 @@ client.once(Events.ClientReady, (readyClient) => {
   syncDiscordRoles(readyClient).catch((error) => {
     console.error('Failed to sync Discord roles to the website:', error);
   });
+  startChangelogPublisher(readyClient);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -95,6 +99,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isChatInputCommand() && interaction.commandName === 'amow-store') {
       await handleStoreCommand(interaction);
+      return;
+    }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === 'amow-export') {
+      await handleExportCommand(interaction);
+      return;
+    }
+
+    if (interaction.isChatInputCommand() && interaction.commandName === 'amow-tools') {
+      await handleToolsCommand(interaction);
       return;
     }
 

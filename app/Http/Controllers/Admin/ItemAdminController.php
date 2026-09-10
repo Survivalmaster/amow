@@ -34,11 +34,13 @@ class ItemAdminController extends Controller
             'icon_class' => ['nullable', 'string', 'max:255'],
             'is_home' => ['nullable', 'boolean'],
             'is_building' => ['nullable', 'boolean'],
+            'is_buyable' => ['nullable', 'boolean'],
             'footprint_width' => ['nullable', 'integer', 'min:1', 'max:10'],
             'footprint_height' => ['nullable', 'integer', 'min:1', 'max:10'],
             'build_time_minutes' => ['nullable', 'integer', 'min:0'],
             'produced_by_building_item_id' => ['nullable', Rule::exists('items', 'id')->where('is_building', true)],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
+            'max_stack_per_slot' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'price' => ['required', 'integer', 'min:1'],
             'required_level' => ['nullable', 'integer', 'min:0'],
             'required_role_type' => ['nullable', 'in:civilian,military'],
@@ -47,10 +49,12 @@ class ItemAdminController extends Controller
         ]) + [
             'is_home' => $request->boolean('is_home'),
             'is_building' => $request->boolean('is_building'),
+            'is_buyable' => $request->has('is_buyable') ? $request->boolean('is_buyable') : true,
             'footprint_width' => (int) $request->input('footprint_width', 1),
             'footprint_height' => (int) $request->input('footprint_height', 1),
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
+            'max_stack_per_slot' => (int) $request->input('max_stack_per_slot', 1),
             'required_rank_id' => null,
         ];
 
@@ -71,11 +75,13 @@ class ItemAdminController extends Controller
             'icon_class' => ['nullable', 'string', 'max:255'],
             'is_home' => ['nullable', 'boolean'],
             'is_building' => ['nullable', 'boolean'],
+            'is_buyable' => ['nullable', 'boolean'],
             'footprint_width' => ['nullable', 'integer', 'min:1', 'max:10'],
             'footprint_height' => ['nullable', 'integer', 'min:1', 'max:10'],
             'build_time_minutes' => ['nullable', 'integer', 'min:0'],
             'produced_by_building_item_id' => ['nullable', Rule::exists('items', 'id')->where('is_building', true)],
             'inventory_slot_bonus' => ['nullable', 'integer', 'min:0'],
+            'max_stack_per_slot' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'price' => ['required', 'integer', 'min:1'],
             'required_level' => ['nullable', 'integer', 'min:0'],
             'required_role_type' => ['nullable', 'in:civilian,military'],
@@ -84,10 +90,12 @@ class ItemAdminController extends Controller
         ]) + [
             'is_home' => $request->boolean('is_home'),
             'is_building' => $request->boolean('is_building'),
+            'is_buyable' => $request->has('is_buyable') ? $request->boolean('is_buyable') : (bool) $item->is_buyable,
             'footprint_width' => (int) $request->input('footprint_width', 1),
             'footprint_height' => (int) $request->input('footprint_height', 1),
             'build_time_minutes' => (int) $request->input('build_time_minutes', 0),
             'inventory_slot_bonus' => (int) $request->input('inventory_slot_bonus', 0),
+            'max_stack_per_slot' => (int) $request->input('max_stack_per_slot', $item->max_stack_per_slot ?? 1),
             'required_rank_id' => null,
         ];
 

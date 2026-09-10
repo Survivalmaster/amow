@@ -12,6 +12,7 @@
     'items' => 'fa-boxes-stacked',
     'jobs' => 'fa-briefcase',
     'skirmishes' => 'fa-crosshairs',
+    'changelogs' => 'fa-scroll',
     'units' => 'fa-shield-halved',
     'permissions' => 'fa-key',
     'statistics' => 'fa-chart-pie',
@@ -21,6 +22,7 @@
     'nation_requisitions' => 'fa-file-signature',
     'stock_market' => 'fa-chart-simple',
     'character_logs' => 'fa-clock-rotate-left',
+    'server_tools' => 'fa-screwdriver-wrench',
     'game_master' => 'fa-dice-d20',
     'moderator' => 'fa-gavel',
 ])

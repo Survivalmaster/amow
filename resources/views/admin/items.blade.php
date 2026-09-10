@@ -74,6 +74,11 @@
                         <input type="checkbox" name="is_building" value="1">
                         Building item
                     </label>
+                    <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                        <input type="hidden" name="is_buyable" value="0">
+                        <input type="checkbox" name="is_buyable" value="1" checked>
+                        Buyable in store
+                    </label>
                     <label class="{{ $labelClass }}">
                         <span class="{{ $labelTitleClass }}">Build Time Minutes</span>
                         <input class="{{ $fieldClass }}" type="number" name="build_time_minutes" min="0" value="0">
@@ -102,6 +107,10 @@
                     <label class="{{ $labelClass }}">
                         <span class="{{ $labelTitleClass }}">Inventory Slot Bonus</span>
                         <input class="{{ $fieldClass }}" type="number" name="inventory_slot_bonus" min="0" value="0">
+                    </label>
+                    <label class="{{ $labelClass }}">
+                        <span class="{{ $labelTitleClass }}">Max Per Slot</span>
+                        <input class="{{ $fieldClass }}" type="number" name="max_stack_per_slot" min="1" value="1">
                     </label>
                     <label class="{{ $labelClass }}">
                         <span class="{{ $labelTitleClass }}">Price</span>
@@ -191,10 +200,12 @@
                         <tr>
                             <th class="px-5 py-4 text-left">Name</th>
                             <th class="px-5 py-4 text-left">Type</th>
+                            <th class="px-5 py-4 text-left">Buyable</th>
                             <th class="px-5 py-4 text-left">Building</th>
                             <th class="px-5 py-4 text-left">Footprint</th>
                             <th class="px-5 py-4 text-left">Build Time</th>
                             <th class="px-5 py-4 text-left">Produced By</th>
+                            <th class="px-5 py-4 text-left">Stack</th>
                             <th class="px-5 py-4 text-left">Required Level</th>
                             <th class="px-5 py-4 text-left">Price</th>
                             <th class="px-5 py-4 text-right">Actions</th>
@@ -205,10 +216,12 @@
                             <tr data-admin-row data-search="{{ str($item->name.' '.$item->slug.' '.$item->type.' '.$item->description.' level '.$item->required_level.' '.$item->required_role_type.' '.$item->requiredLicence?->name.' '.$item->producingBuilding?->name)->lower() }}">
                                 <td class="px-5 py-4 font-semibold text-white">{{ $item->name }}</td>
                                 <td class="px-5 py-4">{{ $item->type_label }}</td>
+                                <td class="px-5 py-4">{{ $item->is_buyable ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ $item->is_building ? 'Yes' : 'No' }}</td>
                                 <td class="px-5 py-4">{{ $item->footprint_width }}x{{ $item->footprint_height }}</td>
                                 <td class="px-5 py-4">{{ $item->build_time_minutes }} min</td>
                                 <td class="px-5 py-4">{{ $item->producingBuilding?->name ?? 'None' }}</td>
+                                <td class="px-5 py-4">{{ number_format($item->max_stack_per_slot ?? 1) }}/slot</td>
                                 <td class="px-5 py-4">{{ $item->required_level !== null ? 'Level '.$item->required_level : 'None' }}</td>
                                 <td class="px-5 py-4">{{ number_format($item->price) }}</td>
                                 <td class="px-5 py-4 text-right">
@@ -250,6 +263,11 @@
                                             <input type="checkbox" name="is_building" value="1" @checked($item->is_building)>
                                             Building item
                                         </label>
+                                        <label class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-sm text-white/70">
+                                            <input type="hidden" name="is_buyable" value="0">
+                                            <input type="checkbox" name="is_buyable" value="1" @checked($item->is_buyable)>
+                                            Buyable in store
+                                        </label>
                                         <label class="{{ $labelClass }}">
                                             <span class="{{ $labelTitleClass }}">Build Time Minutes</span>
                                             <input class="{{ $fieldClass }}" type="number" name="build_time_minutes" value="{{ $item->build_time_minutes }}" min="0">
@@ -280,6 +298,10 @@
                                         <label class="{{ $labelClass }}">
                                             <span class="{{ $labelTitleClass }}">Inventory Slot Bonus</span>
                                             <input class="{{ $fieldClass }}" type="number" name="inventory_slot_bonus" value="{{ $item->inventory_slot_bonus }}" min="0">
+                                        </label>
+                                        <label class="{{ $labelClass }}">
+                                            <span class="{{ $labelTitleClass }}">Max Per Slot</span>
+                                            <input class="{{ $fieldClass }}" type="number" name="max_stack_per_slot" value="{{ $item->max_stack_per_slot ?? 1 }}" min="1">
                                         </label>
                                         <label class="{{ $labelClass }}">
                                             <span class="{{ $labelTitleClass }}">Price</span>
