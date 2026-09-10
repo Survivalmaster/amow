@@ -288,6 +288,7 @@
                 }
             </style>
         @endif
+        @include('layouts.partials.navigation-behavior')
         @stack('styles')
 
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -311,14 +312,21 @@
         @php($authUser = auth()->user()?->fresh())
         @php($chatCharacter = $authUser?->character?->loadMissing(['user.permissions']))
         <div class="{{ $isAdminArea ? 'amow-admin-root' : 'min-h-screen bg-[rgba(4,8,6,0.35)]' }}">
-            <div class="{{ $isAdminArea ? 'amow-admin-layout' : 'lg:grid lg:grid-cols-[320px_minmax(0,1fr)]' }}">
+            <div x-data="amowNavigation" class="amow-navigation-layout {{ $isAdminArea ? 'amow-admin-layout' : '' }}" :class="{ 'navigation-collapsed': collapsed, 'navigation-open': mobileOpen }" @keydown.escape.window="closeMobile()" @keydown="trapNavigationFocus($event)">
+                <button x-show="mobileOpen" x-cloak class="amow-navigation-overlay" @click="closeMobile()" aria-label="Close navigation" tabindex="-1"></button>
                 @if ($isAdminArea)
                     @include('layouts.admin-navigation')
                 @else
                     @include('layouts.navigation')
                 @endif
 
-                <div class="min-w-0">
+                <div class="min-w-0" :inert="mobileOpen && !desktop">
+                    <div class="amow-navigation-toolbar">
+                        <button type="button" x-ref="toggle" @click="toggleNavigation()" :aria-expanded="desktop ? !collapsed : mobileOpen" aria-controls="amow-navigation" aria-label="Toggle navigation" class="rounded-lg border border-white/10 px-3 py-2 text-sm">
+                            <i class="fa-solid fa-bars" aria-hidden="true"></i> <span>Menu</span>
+                        </button>
+                        <a href="{{ route($isAdminArea ? 'admin.dashboard' : 'dashboard') }}" class="ml-3 lg:hidden">{{ $isAdminArea ? 'AMOW Admin' : 'AMOW' }}</a>
+                    </div>
                     @isset($header)
                         <header class="{{ $isAdminArea ? 'amow-admin-main-header' : 'px-4 pt-8 sm:px-6 lg:px-8' }}">
                             <div class="{{ $isAdminArea ? 'amow-admin-header mx-auto max-w-[120rem]' : 'rounded-[2rem] border border-white/10 bg-white/5 px-6 py-5 shadow-2xl shadow-black/30 backdrop-blur' }}">

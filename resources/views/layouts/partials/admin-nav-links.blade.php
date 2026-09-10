@@ -97,9 +97,14 @@
 
 <div
     x-data="{
+        toggleGroup(key) {
+            const next = !this.groups[key];
+            Object.keys(this.groups).forEach(group => this.groups[group] = false);
+            this.groups[key] = next;
+        },
         groups: {
             @foreach ($resolvedGroups as $key => $group)
-                {{ $key }}: {{ $group['active'] || $key === 'core' ? 'true' : 'false' }},
+                {{ $key }}: {{ $group['active'] ? 'true' : 'false' }},
             @endforeach
         }
     }"
@@ -107,12 +112,12 @@
 >
     @foreach ($resolvedGroups as $key => $group)
         <div class="amow-admin-nav-group">
-            <button type="button" class="amow-admin-group-toggle" @click="groups.{{ $key }} = !groups.{{ $key }}">
+            <button type="button" class="amow-admin-group-toggle" @click="toggleGroup('{{ $key }}')" :aria-expanded="groups.{{ $key }}">
                 <span>{{ $group['label'] }}</span>
                 <i class="fa-solid fa-chevron-down" :class="groups.{{ $key }} ? 'rotate-180' : ''"></i>
             </button>
 
-            <div x-show="groups.{{ $key }}" class="mt-1 space-y-1">
+            <div x-cloak x-show="groups.{{ $key }}" class="mt-1 space-y-1">
                 @foreach ($group['items'] as $item)
                     <a href="{{ route($item['route']) }}" class="amow-admin-side-link {{ request()->routeIs(...$item['match']) ? 'is-active' : '' }}">
                         <i class="{{ $item['icon'] }}"></i>

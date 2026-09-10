@@ -25,15 +25,9 @@
     'moderator' => 'fa-gavel',
 ])
 
-<nav x-data="{ open: false }" class="amow-admin-sidebar">
-    <div class="amow-admin-mobile-bar flex items-center justify-between px-4 py-4">
-        <a href="{{ route('admin.dashboard') }}" class="font-semibold text-slate-100">
-            <span>AMOW Admin</span>
-        </a>
-        <button @click="open = ! open" class="rounded-lg border border-slate-700 px-3 py-2 text-sm text-slate-200">Menu</button>
-    </div>
-
-    <div class="amow-admin-desktop-nav">
+<nav class="amow-admin-sidebar amow-navigation">
+    <div id="amow-navigation" class="amow-navigation-panel flex flex-col" tabindex="-1" aria-label="Admin navigation">
+        @include('layouts.partials.navigation-close')
         <div class="border-b border-slate-800 px-5 py-5">
             <a href="{{ route('admin.dashboard') }}" class="block text-sm font-semibold text-slate-100">
                 AMOW Admin
@@ -47,25 +41,16 @@
         <div class="border-t border-slate-800 p-4">
             <a href="{{ route('lobby') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-slate-100">
                 <i class="fa-solid fa-arrow-left w-5 text-center"></i>
-                Back to Game
+                <span>Back to Game</span>
             </a>
             <form method="POST" action="{{ route('logout') }}" class="mt-2">
                 @csrf
                 <button class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-slate-100">
                     <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>
-                    Logout
+                    <span>Logout</span>
                 </button>
             </form>
         </div>
     </div>
 
-    <div x-show="open" x-cloak class="amow-admin-mobile-menu border-t border-slate-800 px-3 py-4">
-        @include('layouts.partials.admin-nav-links', ['adminNavUser' => $adminNavUser, 'adminSections' => $adminSections, 'adminIcons' => $adminIcons])
-        <div class="mt-4 border-t border-slate-800 pt-4">
-            <a href="{{ route('lobby') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400">
-                <i class="fa-solid fa-arrow-left w-5 text-center"></i>
-                Back to Game
-            </a>
-        </div>
-    </div>
 </nav>

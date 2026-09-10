@@ -7,7 +7,6 @@ use App\Models\GameJob;
 use App\Models\Rank;
 use App\Support\CharacterActivity;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,11 +37,20 @@ class CharacterController extends Controller
             return redirect()->route('lobby');
         }
 
-        $faction = Faction::query()->findOrFail($request->session()->get('selected_faction_id'));
+        $faction = Faction::query()->find($request->session()->get('selected_faction_id'));
+
+        if (! $faction) {
+            return redirect()->route('factions.index')
+                ->withInput($request->only('name', 'age', 'biography'))
+                ->with('status', 'Please choose your faction again before creating your character.');
+        }
+
         $starterJob = GameJob::query()->where('is_starter', true)->where('is_active', true)->first();
 
         if (! $starterJob) {
-            throw new ModelNotFoundException('No starter job is configured.');
+            return redirect()->route('characters.create')
+                ->withInput($request->only('name', 'age', 'biography'))
+                ->withErrors(['character' => 'Character creation is temporarily unavailable because no starting job is available. Please contact an administrator. Your details have been kept so you can try again.']);
         }
 
         $validated = $request->validate([
@@ -53,7 +61,13 @@ class CharacterController extends Controller
 
         $rank = Rank::query()
             ->where('name', 'Civilian')
-            ->firstOrFail();
+            ->first();
+
+        if (! $rank) {
+            return redirect()->route('characters.create')
+                ->withInput($request->only('name', 'age', 'biography'))
+                ->withErrors(['character' => 'Character creation is temporarily unavailable because the Civilian rank is missing. Please contact an administrator. Your details have been kept so you can try again.']);
+        }
 
         $character = $request->user()->character()->create([
             ...$validated,
