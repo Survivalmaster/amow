@@ -181,10 +181,11 @@
                                 <span class="h-6 w-1 rounded-full {{ request()->routeIs('bank.*', 'store.*', 'businesses.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                                 <i class="fa-solid fa-store w-5 text-center text-[#7ead59]"></i>
                                 <span class="flex-1 text-left">Marketplace</span>
-                                <i class="fa-solid text-xs text-white/45" :class="marketplaceOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                <i class="fa-solid fa-chevron-down amow-nav-chevron text-xs text-white/45" :class="marketplaceOpen ? 'rotate-180' : ''"></i>
                             </button>
 
-                            <div id="nav-marketplaceOpen" x-show="marketplaceOpen" x-cloak class="amow-nav-submenu grid gap-1 pl-4">
+                            <div id="nav-marketplaceOpen" :class="{ 'is-open': marketplaceOpen }" :inert="!(desktop && collapsed) && !marketplaceOpen" x-cloak class="amow-nav-submenu grid gap-1 pl-4">
+<div class="amow-nav-submenu-content grid gap-1">
                                 <a href="{{ route('bank.index') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('bank.*') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                                     <span class="h-6 w-1 rounded-full {{ request()->routeIs('bank.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                                     <i class="fa-solid fa-building-columns w-5 text-center text-[#7ead59]"></i>
@@ -215,6 +216,7 @@
                                     </div>
                                 @endif
                             </div>
+</div>
 </div>
                         @endif
                         @if ($item['label'] === 'Leaderboards')
@@ -249,10 +251,11 @@
                         <span class="h-6 w-1 rounded-full {{ request()->routeIs('characters.show', 'inventory.*', 'home.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="fa-solid fa-user-gear w-5 text-center text-[#7ead59]"></i>
                         <span class="flex-1 text-left">UCP</span>
-                        <i class="fa-solid text-xs text-white/45" :class="ucpOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                        <i class="fa-solid fa-chevron-down amow-nav-chevron text-xs text-white/45" :class="ucpOpen ? 'rotate-180' : ''"></i>
                     </button>
 
-                    <div id="nav-ucpOpen" x-show="ucpOpen" x-cloak class="amow-nav-submenu grid gap-1 pl-4">
+                    <div id="nav-ucpOpen" :class="{ 'is-open': ucpOpen }" :inert="!(desktop && collapsed) && !ucpOpen" x-cloak class="amow-nav-submenu grid gap-1 pl-4">
+<div class="amow-nav-submenu-content grid gap-1">
                         @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Character', 'Inventory', 'Land', 'Settings'], true)) as $item)
                             @php($isActive = request()->routeIs(...$item['match']))
                             <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
@@ -262,6 +265,7 @@
                             </a>
                         @endforeach
                     </div>
+</div>
 </div>
 
                     <div class="amow-nav-item" @mouseenter="positionFlyout($el)" @focusin="positionFlyout($el)">
@@ -273,10 +277,11 @@
                         <span class="h-6 w-1 rounded-full {{ request()->routeIs('nation.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                         <i class="fa-solid fa-flag w-5 text-center text-[#7ead59]"></i>
                         <span class="flex-1 text-left">Nation</span>
-                        <i class="fa-solid text-xs text-white/45" :class="nationOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                        <i class="fa-solid fa-chevron-down amow-nav-chevron text-xs text-white/45" :class="nationOpen ? 'rotate-180' : ''"></i>
                     </button>
 
-                    <div id="nav-nationOpen" x-show="nationOpen" x-cloak class="amow-nav-submenu grid gap-1 pl-4">
+                    <div id="nav-nationOpen" :class="{ 'is-open': nationOpen }" :inert="!(desktop && collapsed) && !nationOpen" x-cloak class="amow-nav-submenu grid gap-1 pl-4">
+<div class="amow-nav-submenu-content grid gap-1">
                         @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Nation HQ'], true)) as $item)
                             @php($isActive = request()->routeIs(...$item['match']))
                             <a href="{{ route($item['route']) }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ $isActive ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
@@ -293,6 +298,7 @@
                             </a>
                         @endif
                     </div>
+</div>
 </div>
 
                     @foreach (array_filter($operationsNav, fn ($item) => in_array($item['label'], ['Settings'], true)) as $item)
@@ -314,10 +320,11 @@
                             <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.*') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                             <i class="fa-solid fa-shield-halved w-5 text-center text-[#7ead59]"></i>
                             <span class="flex-1 text-left">Admin</span>
-                            <i class="fa-solid text-xs text-white/45" :class="adminOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                            <i class="fa-solid fa-chevron-down amow-nav-chevron text-xs text-white/45" :class="adminOpen ? 'rotate-180' : ''"></i>
                         </button>
 
-                        <div id="nav-adminOpen" x-show="adminOpen" x-cloak class="amow-nav-submenu grid gap-1 pl-4">
+                        <div id="nav-adminOpen" :class="{ 'is-open': adminOpen }" :inert="!(desktop && collapsed) && !adminOpen" x-cloak class="amow-nav-submenu grid gap-1 pl-4">
+<div class="amow-nav-submenu-content grid gap-1">
                             <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 rounded-xl px-3 py-3 text-[14px] font-semibold transition {{ request()->routeIs('admin.dashboard') ? 'bg-white/[0.06] text-[#f4ecd0]' : 'text-white/82 hover:bg-white/[0.05]' }}">
                                 <span class="h-6 w-1 rounded-full {{ request()->routeIs('admin.dashboard') ? 'bg-[#7ead59]' : 'bg-transparent' }}"></span>
                                 <i class="fa-solid fa-chart-pie w-5 text-center text-[#7ead59]"></i>
@@ -331,6 +338,7 @@
                                 </a>
                             @endif
                         </div>
+</div>
 </div>
                     @endif
 

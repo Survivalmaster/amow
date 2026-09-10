@@ -120,7 +120,8 @@
                 <i class="fa-solid fa-chevron-down" :class="groups.{{ $key }} ? 'rotate-180' : ''"></i>
             </button>
 
-            <div id="admin-nav-{{ $key }}" x-cloak x-show="groups.{{ $key }}" class="amow-nav-submenu mt-1 space-y-1">
+            <div id="admin-nav-{{ $key }}" x-cloak :class="{ 'is-open': groups.{{ $key }} }" :inert="!(desktop && collapsed) && !groups.{{ $key }}" class="amow-nav-submenu mt-1 space-y-1">
+<div class="amow-nav-submenu-content space-y-1">
                 @foreach ($group['items'] as $item)
                     <a href="{{ route($item['route']) }}" class="amow-admin-side-link {{ request()->routeIs(...$item['match']) ? 'is-active' : '' }}">
                         <i class="{{ $item['icon'] }}"></i>
@@ -128,6 +129,7 @@
                     </a>
                 @endforeach
             </div>
+</div>
         </div>
     @endforeach
 </div>

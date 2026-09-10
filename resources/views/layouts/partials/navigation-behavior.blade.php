@@ -21,7 +21,13 @@
     .amow-admin-group-toggle { justify-content: flex-start; font-size: .875rem; letter-spacing: normal; text-transform: none; }
     .amow-admin-group-toggle > span { flex: 1; }
     .amow-admin-group-toggle .amow-group-icon { font-size: 1rem; color: inherit; }
-    .amow-nav-submenu { padding-left: 1rem; }
+    .amow-nav-item > button { transition: background-color 180ms ease, color 180ms ease; }
+    .amow-nav-item > button:active { background-color: rgb(255 255 255 / .09) !important; }
+    .amow-nav-chevron, .amow-admin-group-toggle > i:last-child { transition: transform 240ms cubic-bezier(.22, 1, .36, 1); }
+    .amow-nav-chevron.rotate-180 { transform: rotate(180deg); }
+    .amow-nav-submenu { display: grid; grid-template-rows: 0fr; opacity: 0; padding-left: 1rem; margin-top: 0; transition: grid-template-rows 260ms cubic-bezier(.22, 1, .36, 1), opacity 180ms ease; }
+    .amow-nav-submenu.is-open { grid-template-rows: 1fr; opacity: 1; }
+    .amow-nav-submenu-content { min-height: 0; overflow: hidden; }
     @media (min-width: 768px) {
         .amow-navigation-layout { display: grid; grid-template-columns: var(--navigation-offset) minmax(0, 1fr); }
         .amow-navigation-layout.navigation-collapsed { --navigation-offset: var(--navigation-rail); }
@@ -39,6 +45,7 @@
         .navigation-collapsed .amow-nav-link > i:first-of-type { font-size: 20px; }
         .navigation-collapsed .amow-nav-link > span, .navigation-collapsed .amow-nav-link > i:not(:first-of-type) { display: none; }
         .navigation-collapsed .amow-nav-submenu { display: none !important; }
+        .navigation-collapsed .amow-nav-submenu { opacity: 1; transition: none; }
         .navigation-collapsed .amow-nav-item:is(:hover, :focus-within) > .amow-nav-submenu { display: block !important; position: fixed; left: var(--navigation-rail); top: calc(var(--flyout-top, 70px) + 44px); width: 250px; max-height: calc(100dvh - var(--flyout-top, 70px) - 52px); overflow-y: auto; margin: 0; padding: .5rem; background: var(--navigation-background); border-radius: 0 0 .35rem .35rem; box-shadow: 4px 8px 20px rgb(0 0 0 / .3); z-index: 52; }
         .navigation-collapsed .amow-nav-item:is(:hover, :focus-within) > .amow-nav-link > .amow-nav-label,
         .navigation-collapsed .amow-nav-link:is(:hover, :focus-visible) > .amow-nav-label { display: flex; align-items: center; position: fixed; top: var(--flyout-top, 70px); left: var(--navigation-rail); width: 250px; height: 44px; padding: 0 1rem; background: var(--navigation-background); color: inherit; z-index: 53; font-size: .875rem; box-shadow: 4px 0 15px rgb(0 0 0 / .15); }
@@ -53,7 +60,10 @@
         .amow-navigation { position: fixed; inset: 0 auto 0 0; width: min(var(--navigation-width), 90vw); transform: translateX(-100%); visibility: hidden; transition: transform 180ms ease, visibility 180ms; }
         .navigation-open .amow-navigation { transform: translateX(0); visibility: visible; }
     }
-    @media (prefers-reduced-motion: reduce) { .amow-navigation { transition: none; } }
+    @media (prefers-reduced-motion: reduce) {
+        .amow-navigation, .amow-nav-submenu, .amow-nav-chevron,
+        .amow-nav-item > button, .amow-admin-group-toggle > i:last-child { transition: none; }
+    }
 </style>
 <script>
     document.addEventListener('alpine:init', () => {
