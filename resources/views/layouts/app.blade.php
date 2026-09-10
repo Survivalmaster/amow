@@ -312,7 +312,7 @@
         @php($authUser = auth()->user()?->fresh())
         @php($chatCharacter = $authUser?->character?->loadMissing(['user.permissions']))
         <div class="{{ $isAdminArea ? 'amow-admin-root' : 'min-h-screen bg-[rgba(4,8,6,0.35)]' }}">
-            <div x-data="amowNavigation" class="amow-navigation-layout {{ $isAdminArea ? 'amow-admin-layout' : '' }}" :class="{ 'navigation-collapsed': collapsed, 'navigation-open': mobileOpen }" @keydown.escape.window="closeMobile()" @keydown="trapNavigationFocus($event)">
+            <div x-data="amowNavigation" class="amow-navigation-layout {{ $isAdminArea ? 'amow-admin-layout' : '' }}" :class="{ 'navigation-collapsed': collapsed, 'navigation-open': mobileOpen }" @keydown.escape.window="closeNavigation()" @keydown="trapNavigationFocus($event)">
                 <button x-show="mobileOpen" x-cloak class="amow-navigation-overlay" @click="closeMobile()" aria-label="Close navigation" tabindex="-1"></button>
                 @if ($isAdminArea)
                     @include('layouts.admin-navigation')
@@ -320,12 +320,12 @@
                     @include('layouts.navigation')
                 @endif
 
-                <div class="min-w-0" :inert="mobileOpen && !desktop">
+                <div class="amow-navigation-content min-w-0" :inert="mobileOpen && !desktop">
                     <div class="amow-navigation-toolbar">
                         <button type="button" x-ref="toggle" @click="toggleNavigation()" :aria-expanded="desktop ? !collapsed : mobileOpen" aria-controls="amow-navigation" aria-label="Toggle navigation" class="rounded-lg border border-white/10 px-3 py-2 text-sm">
                             <i class="fa-solid fa-bars" aria-hidden="true"></i> <span>Menu</span>
                         </button>
-                        <a href="{{ route($isAdminArea ? 'admin.dashboard' : 'dashboard') }}" class="ml-3 lg:hidden">{{ $isAdminArea ? 'AMOW Admin' : 'AMOW' }}</a>
+                        <a href="{{ route($isAdminArea ? 'admin.dashboard' : 'dashboard') }}" class="amow-navigation-mobile-brand ml-3">{{ $isAdminArea ? 'AMOW Admin' : 'AMOW' }}</a>
                     </div>
                     @isset($header)
                         <header class="{{ $isAdminArea ? 'amow-admin-main-header' : 'px-4 pt-8 sm:px-6 lg:px-8' }}">

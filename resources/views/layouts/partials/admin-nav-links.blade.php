@@ -113,13 +113,14 @@
     class="space-y-2"
 >
     @foreach ($resolvedGroups as $key => $group)
-        <div class="amow-admin-nav-group">
-            <button type="button" class="amow-admin-group-toggle" @click="toggleGroup('{{ $key }}')" :aria-expanded="groups.{{ $key }}">
+        <div class="amow-admin-nav-group amow-nav-item" @mouseenter="positionFlyout($el)" @focusin="positionFlyout($el)">
+            <button type="button" class="amow-admin-group-toggle" @click="toggleGroup('{{ $key }}')" :aria-expanded="groups.{{ $key }}" aria-controls="admin-nav-{{ $key }}">
+                <i class="{{ $group['items']->first()['icon'] }} amow-group-icon" aria-hidden="true"></i>
                 <span>{{ $group['label'] }}</span>
                 <i class="fa-solid fa-chevron-down" :class="groups.{{ $key }} ? 'rotate-180' : ''"></i>
             </button>
 
-            <div x-cloak x-show="groups.{{ $key }}" class="mt-1 space-y-1">
+            <div id="admin-nav-{{ $key }}" x-cloak x-show="groups.{{ $key }}" class="amow-nav-submenu mt-1 space-y-1">
                 @foreach ($group['items'] as $item)
                     <a href="{{ route($item['route']) }}" class="amow-admin-side-link {{ request()->routeIs(...$item['match']) ? 'is-active' : '' }}">
                         <i class="{{ $item['icon'] }}"></i>
