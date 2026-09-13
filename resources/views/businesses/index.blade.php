@@ -1,4 +1,81 @@
 <x-app-layout>
+    @push('styles')
+        <style>
+            .business-page .business-create,
+            .business-page .business-card {
+                background: linear-gradient(135deg, #17231b, #0d1510);
+                border: 1px solid rgba(255, 255, 255, .1);
+                border-radius: 24px;
+                overflow: hidden;
+            }
+            .business-page .business-form-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+                gap: 28px;
+                padding: 24px;
+            }
+            .business-page .business-icon-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .business-page .business-icon-choice {
+                display: flex;
+                min-height: 104px;
+                padding: 16px 8px;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
+                border: 1px solid rgba(255, 255, 255, .12);
+                border-radius: 12px;
+                background: rgba(0, 0, 0, .16);
+                color: #a4ada6;
+            }
+            .business-page .business-icon-choice:hover {
+                border-color: #7ead59;
+            }
+            .business-page input:checked + .business-icon-choice {
+                border-color: #7ead59;
+                background: rgba(126, 173, 89, .16);
+                color: #d7edc7;
+                box-shadow: inset 0 0 0 1px rgba(126, 173, 89, .25);
+            }
+            .business-page input:focus-visible + .business-icon-choice {
+                outline: 2px solid #b8d99d;
+                outline-offset: 3px;
+            }
+            .business-page .business-icon-check {
+                display: none;
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                color: #b8d99d;
+                font-size: 12px;
+            }
+            .business-page input:checked ~ .business-icon-check { display: block; }
+            .business-page .business-directory-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+                gap: 20px;
+            }
+            .business-page .business-card-top { padding: 24px 24px 0; }
+            .business-page .business-card-body { padding: 20px 24px; }
+            .business-page .business-card-meta { margin: 0 24px; padding: 16px 0; }
+            .business-page .business-card-meta .fa-user { margin-right: 6px; }
+            .business-page .business-card-action { padding: 14px 24px; }
+            @media (min-width: 640px) {
+                .business-page .business-icon-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            }
+            @media (min-width: 1100px) {
+                .business-page .business-form-grid {
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                    gap: 40px;
+                    padding: 28px;
+                }
+            }
+        </style>
+    @endpush
     <x-slot name="header">
         <div>
             <p class="font-['Teko'] text-5xl uppercase tracking-[0.12em]">Player Businesses</p>
@@ -8,7 +85,7 @@
 
     @include('store._marketplace-tabs', ['marketplaceSection' => 'businesses'])
 
-    <div class="space-y-6">
+    <div class="business-page space-y-6">
         <section class="grid gap-6">
             <div class="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30">
                 <div class="flex items-center gap-4">
@@ -36,7 +113,7 @@
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#17231b] to-[#0d1510] shadow-xl shadow-black/20">
+            <div class="business-create shadow-xl shadow-black/20">
                 <div class="flex items-center gap-4 border-b border-white/10 px-5 py-5 sm:px-7">
                     <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#7ead59]/25 bg-[#7ead59]/10 text-[#b8d99d]" aria-hidden="true"><i class="fa-solid fa-plus"></i></span>
                     <div>
@@ -51,7 +128,7 @@
                 @else
                     <form method="POST" action="{{ route('businesses.store') }}">
                         @csrf
-                        <div class="grid gap-7 p-5 sm:p-7 lg:grid-cols-2 lg:gap-10">
+                        <div class="business-form-grid">
                             <div class="min-w-0 space-y-5">
                                 <div>
                                     <label for="business-name" class="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-white/70">Business name</label>
@@ -76,15 +153,15 @@
                             <fieldset class="min-w-0">
                                 <legend class="text-xs font-semibold uppercase tracking-[0.14em] text-white/70">Choose your business icon</legend>
                                 <p class="mb-4 mt-2 text-sm text-white/45">The face of your business on the commerce board.</p>
-                                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                                <div class="business-icon-grid">
                                     @foreach ($businessIcons as $class => $label)
                                         <label class="relative cursor-pointer">
                                             <input class="peer sr-only" type="radio" name="icon_class" value="{{ $class }}" @checked(old('icon_class', array_key_first($businessIcons)) === $class) required>
-                                            <span class="flex h-24 flex-col items-center justify-center gap-3 rounded-xl border border-white/10 bg-black/15 text-white/55 transition hover:border-[#7ead59]/50 hover:bg-white/5 peer-checked:border-[#7ead59] peer-checked:bg-[#7ead59]/15 peer-checked:text-[#d7edc7] peer-focus-visible:ring-2 peer-focus-visible:ring-[#b8d99d] peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[#101a13]">
+                                            <span class="business-icon-choice transition">
                                                 <i class="{{ $class }} text-xl" aria-hidden="true"></i>
                                                 <span class="text-center text-[10px] font-semibold uppercase tracking-[0.1em]">{{ $label }}</span>
                                             </span>
-                                            <i class="fa-solid fa-circle-check absolute right-2 top-2 hidden text-xs text-[#b8d99d] peer-checked:block" aria-hidden="true"></i>
+                                            <i class="business-icon-check fa-solid fa-circle-check" aria-hidden="true"></i>
                                         </label>
                                     @endforeach
                                 </div>
@@ -107,11 +184,11 @@
                 <h2 id="business-directory-heading" class="font-['Teko'] text-3xl uppercase tracking-[0.08em]">Business Directory</h2>
                 <span class="rounded-full border border-white/10 px-2.5 py-0.5 text-xs text-white/55">{{ number_format($businesses->count()) }}</span>
             </div>
-            <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <div class="business-directory-grid">
                 @forelse ($businesses as $business)
-                    <a href="{{ route('businesses.show', $business) }}" class="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#18231b] to-[#0d1510] shadow-lg shadow-black/20 transition duration-200 hover:border-[#7ead59]/50 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7ead59] motion-safe:hover:-translate-y-1">
+                    <a href="{{ route('businesses.show', $business) }}" class="business-card group relative flex min-w-0 flex-col shadow-lg shadow-black/20 transition duration-200 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7ead59] motion-safe:hover:-translate-y-1">
                         <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#7ead59]/60 to-transparent" aria-hidden="true"></div>
-                        <div class="flex items-center justify-between gap-3 px-6 pt-6">
+                        <div class="business-card-top flex items-center justify-between gap-3">
                             <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#7ead59]/25 bg-[#7ead59]/10 text-xl text-[#c9e3b4]">
                                 <i class="{{ $business->icon_class }}" aria-hidden="true"></i>
                             </span>
@@ -119,23 +196,23 @@
                                 <span class="rounded-full border border-[#7ead59]/25 bg-[#7ead59]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#c9e3b4]">Your business</span>
                             @endif
                         </div>
-                        <div class="flex-1 px-6 pb-5 pt-5">
+                        <div class="business-card-body flex-1">
                             <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b8d99d]/80">{{ $business->type_label }}</p>
                             <h3 class="mt-2 break-words font-['Teko'] text-3xl uppercase leading-tight tracking-[0.05em] transition group-hover:text-[#d7edc7]">{{ $business->name }}</h3>
                             <p class="mt-1 text-xs text-white/45">{{ $business->faction?->name }}</p>
                             <p class="mt-4 line-clamp-3 text-sm leading-6 text-white/65">{{ $business->description ?: 'No business description yet.' }}</p>
                         </div>
-                        <div class="mx-6 flex items-center justify-between gap-3 border-t border-white/10 py-4">
+                        <div class="business-card-meta flex items-center justify-between gap-3 border-t border-white/10">
                             <span class="min-w-0 truncate text-xs text-white/55"><i class="fa-solid fa-user mr-1.5 text-white/30" aria-hidden="true"></i>{{ $business->owner?->name }}</span>
                             <span class="shrink-0 text-xs text-white/55"><span class="font-semibold text-[#d4bf7c]">{{ number_format($business->bank_credits) }}</span> banked</span>
                         </div>
-                        <div class="flex items-center justify-between border-t border-white/5 bg-black/15 px-6 py-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#b8d99d]">
+                        <div class="business-card-action flex items-center justify-between border-t border-white/5 bg-black/15 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#b8d99d]">
                             <span>{{ $business->owner_character_id === $character->id ? 'Manage business' : 'View business' }}</span>
                             <i class="fa-solid fa-arrow-right transition-transform motion-safe:group-hover:translate-x-1" aria-hidden="true"></i>
                         </div>
                     </a>
                 @empty
-                    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-sm text-white/60 md:col-span-2 xl:col-span-3">No player businesses have opened yet.</div>
+                    <div class="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-sm text-white/60">No player businesses have opened yet.</div>
                 @endforelse
             </div>
         </section>
